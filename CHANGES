@@ -1,3 +1,22 @@
+Version 0.6.2:
+ - Merge branch 'develop'
+ - UI Update: Fixed textbox justification
+ - Bug Fix: Display duration as time, not as a fractional day
+ - BugFix: FD Search Bar now works regardless of UI container hierarchy
+ - Revert "BugFix: updateSearchResults works for UIControls in different containers"
+ - BugFix: updateSearchResults works for UIControls in different containers
+ - Merge branch 'addSearch' into develop
+ - New Feature: Added searchable FD list to plot setup tool
+ - Bug Fix: replaced depricated verLessThan call
+ - Updated to return a struct containing the values and strings.
+ - Bug Fix: Generate initial dataIndex in management tool
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Bug Fix: Write dataIndex if no index file found
+ - Documentation: Added RJ to contributors
+ - Documentation: Added links to contributers
+ - Documentation: Revised readme.md to include installation and usage
+ - Bug Fix: Supressed warnings for /overloads/ path
+
 Version 0.6.1:
  - Merge branch 'develop'
  - Merge branch 'master' into develop
