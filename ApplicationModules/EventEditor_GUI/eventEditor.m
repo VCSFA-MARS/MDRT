@@ -78,7 +78,6 @@ function eventEditor1_OpeningFcn(hObject, eventdata, handles, varargin)
 % Debugging purposes: load existant timeline file.
 % load('~/Documents/MATLAB/Data Review/ORB-1/data/timeline.mat')
 
-
 % Constant Definitions
 % -------------------------------------------------------------------------
 
@@ -509,6 +508,8 @@ end
 % is found.
 function eventEditor_pre_populate_GUI(handles)
 
+handles.checkbox_UseT0.Value = handles.timeline.uset0;
+    
     t0Month  = str2double(datestr(handles.timeline.t0.time, 'mm'));
     t0Day    = str2double(datestr(handles.timeline.t0.time, 'dd'));
     t0Year   = str2double(datestr(handles.timeline.t0.time, 'yyyy'));
@@ -535,7 +536,6 @@ function eventEditor_pre_populate_GUI(handles)
     set(handles.ui_editBox_minute, 'String', t0Minute);
     set(handles.ui_editBox_second, 'String', t0Second);
 
-
 % Set event information with the T0 info as default
     set(handles.ui_popup_eventMonthPicker,  'Value',    t0Month);
     set(handles.ui_editBox_eventDay,        'String',   t0Day);
@@ -551,8 +551,6 @@ function eventEditor_pre_populate_GUI(handles)
     
 
 function updateGUIfromHandles(handles)
-
-    
     
     index = handles.ui_eventListBox.Value;
     currentEvent = handles.timeline.milestone(index);
@@ -577,7 +575,7 @@ function updateGUIfromHandles(handles)
     end
         
     % Update Event information group
-    handles.ui_popup_monthPicker.Value      = datestr(currentEvent.Time, 'mm');
+    handles.ui_popup_monthPicker.Value      = month(currentEvent.Time);
     
     handles.ui_editBox_eventDay.String      = datestr(currentEvent.Time, 'dd');
     handles.ui_editBox_eventYear.String     = datestr(currentEvent.Time, 'yyyy');
