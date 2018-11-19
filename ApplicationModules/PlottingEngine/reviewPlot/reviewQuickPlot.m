@@ -97,19 +97,6 @@ end
         
         timeline = varargin(1);
 
-
-
-        t0time = timeline.t0.time;
-        if timeline.t0.utc
-            timezone = ' eastern';
-        else
-            timezone = ' UTC';
-        end
-
-        % Manual plotting of t0 in red...
-        t0string = [timeline.t0.name, ': ', datestr(timeline.t0.time,'HH:MM.SS'), timezone];
-        vline(timeline.t0.time,'r-',t0string,0.5)
-
         % Cheat and plot everything the quick and dirty way
         reviewPlotAllTimelineEvents(timeline);
 
