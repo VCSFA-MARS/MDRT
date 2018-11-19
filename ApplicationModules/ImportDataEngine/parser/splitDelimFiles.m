@@ -192,12 +192,9 @@ debugout(fileName);
     
     debugout(FDlistForGrep)
     
-    % Append a , to the end of each FD to make GREP string better.
-    % Hopefully this will protect the "valve group" without breaking other
-    % retrievals where the FDs share a common root. In the future, perhaps
-    % do away with the valve blocks and move this trick to the actual grep
-    % command assembly.
-    FDlistForGrep = cellfun(@(c)[c ','], FDlistForGrep, 'uni', false);
+    % Wrap each unique FD String in commas to prevent accidentally
+    % combining FDs that share the same ending.
+    FDlistForGrep = cellfun(@(c)[',' c ','], FDlistForGrep, 'uni', false);
 
 % % make cell array of strings containing all unique valve identifiers
 % % -------------------------------------------------------------------------
