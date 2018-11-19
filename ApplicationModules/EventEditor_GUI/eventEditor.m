@@ -22,7 +22,7 @@ function varargout = eventEditor(varargin)
 
 % Edit the above text to modify the response to help eventEditor1
 
-% Last Modified by GUIDE v2.5 24-May-2017 15:14:09
+% Last Modified by GUIDE v2.5 19-Nov-2018 10:30:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1087,3 +1087,12 @@ function uiToolbar_newButton_ClickedCallback(hObject, ~, handles)
 % Update handles structure
     guidata(hObject, handles);
 
+
+
+% --------------------------------------------------------------------
+function ui_findTool_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to ui_findTool (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+eventFinderGUI

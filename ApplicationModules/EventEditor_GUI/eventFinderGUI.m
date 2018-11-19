@@ -1,3 +1,17 @@
+% eventFinderGUI.m creates a graphical tool for generating MDRT milestone
+% events from a .delim file.
+%
+% NOTE: This script is a work in progress
+%
+% Select one of the unique FDs from the top list
+% Select the instance (by timestamp) from the bottom list
+% Click the "Use" button
+% Work your way through all the events you want to use
+% When you are finished, click the "Save" icon in the toolbar to save the
+% events
+%
+% Counts, 2017
+
 hs.fig = figure;
 
 hs.master = uicontrol(hs.fig, 'Style', 'listbox', ...
@@ -34,7 +48,7 @@ hs.infoString = uicontrol(hs.fig, 'Style', 'text', ...
                     
 
 %% Contents of getUniqueEventsFromDelim function
-[t, c1, c2, uc1, uc2] = getUniqueEventsFromDelim
+[t, c1, c2, uc1, uc2] = getUniqueEventsFromDelim;
 
 
 %%
