@@ -27,7 +27,19 @@ function [ info ] = getDataParams( str )
 
 t = regexp(str, ' |-', 'split');
 
-info = struct('ID',t(3), 'Type',t(2), 'System',t(1), 'FullString',str);
+info = struct('ID','', 'Type','', 'System','', 'FullString',str);
+
+for i = 1:numel(t)
+    switch i
+        case 1
+            info.System = t{1};
+        case 2
+            info.Type = t{2};
+        case 3
+            info.ID = t{1};
+        otherwise
+    end    
+end
 
     if( containsi(t,'flow') && ...
         containsi(t,'control') && ...
