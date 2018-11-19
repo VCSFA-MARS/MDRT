@@ -28,5 +28,8 @@ end
                        
 
 setappdata(gcf, 'milestones', milestones);
+
+hs.milestones.String = {milestones.String}';
+
 end
 
