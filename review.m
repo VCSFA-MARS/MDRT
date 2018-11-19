@@ -606,12 +606,17 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
     newDelimPath = fullfile(rootFolder, 'delim', filesep);
     newPlotPath  = fullfile(rootFolder, 'plots', filesep);
 
-    % Create new directory structure    
+    % Create new directory structure
+    
+    warning('off', 'MATLAB:MKDIR:DirectoryExists');
+    
     mkdir(newDataPath);
     mkdir(newDelimPath);
     mkdir(fullfile(newDelimPath, 'original'));
     mkdir(fullfile(newDelimPath, 'ignore'));
     mkdir(newPlotPath);
+    
+    warning('on', 'MATLAB:MKDIR:DirectoryExists');
     
     % Update the handles structure
     handles.configuration.dataFolderPath    = newDataPath;
