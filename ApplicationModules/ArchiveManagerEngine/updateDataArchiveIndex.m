@@ -108,6 +108,8 @@ dataIndexVariableName = 'dataIndex';
 % obtain input for dataIndexForSearching from dataIndexer function
 [~, filepaths] = findFilesInDirectory(dataRepositoryDirectory, 'metadata');
 
+progressbar('Indexing Data Repository');
+
 % index each file found by dataIndexer function
 for i = 1:numel(filepaths);
     
@@ -133,9 +135,10 @@ for i = 1:numel(filepaths);
             % creates array structure of FDLists
             dataIndex(i).FDList = metaData.fdList;
 
+    end
 
-    end % end if loop checking structure type  
-
+    progressbar(i/numel(filepaths));
+    
 end % end for loop iterating over each filepath
 
 % save dataToSearch as file and put this file in root search path
