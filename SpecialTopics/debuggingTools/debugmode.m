@@ -15,7 +15,7 @@ function [ output_args ] = debugmode( varargin )
 %
 %   Boolean (logicals) true, false, 1, 0
 %
-%   Strings not supported at this time: 'on', 'off', 'true', 'false'
+%   Strings 'on', 'off', 'true', 'false', 'yes', 'no'
 %
 %   Counts, VCSFA 2016
 
@@ -46,6 +46,26 @@ elseif nargin == 1
             else
                 % defaults to turn off
             end
+            
+        case {'char'}
+            
+            if isequal(varargin{1}, 'on')
+                setting = 'true';
+            elseif isequal(varargin{1}, 'yes')
+                setting = 'true';
+            elseif isequal(varargin{1}, 'true')
+                setting = 'true';
+            elseif isequal(varargin{1}, 'off')
+                setting = 'false';
+            elseif isequal(varargin{1}, 'no')
+                setting = 'false';
+            elseif isequal(varargin{1}, 'false')
+                setting = 'false';
+            else
+                warning( ['debugmode() does not support the argument ' varargin{1}]);
+                return
+            end
+                
                 
         otherwise
             
