@@ -48,21 +48,21 @@ elseif nargin == 1
             end
             
         case {'char'}
-            
-            if isequal(varargin{1}, 'on')
+            arg = lower(varargin{1});
+            if isequal(arg, 'on')
                 setting = 'true';
-            elseif isequal(varargin{1}, 'yes')
+            elseif isequal(arg, 'yes')
                 setting = 'true';
-            elseif isequal(varargin{1}, 'true')
+            elseif isequal(arg, 'true')
                 setting = 'true';
-            elseif isequal(varargin{1}, 'off')
+            elseif isequal(arg, 'off')
                 setting = 'false';
-            elseif isequal(varargin{1}, 'no')
+            elseif isequal(arg, 'no')
                 setting = 'false';
-            elseif isequal(varargin{1}, 'false')
+            elseif isequal(arg, 'false')
                 setting = 'false';
             else
-                warning( ['debugmode() does not support the argument ' varargin{1}]);
+                warning( ['debugmode() does not support the argument ' arg]);
                 return
             end
                 
