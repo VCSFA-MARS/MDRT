@@ -12,11 +12,15 @@ function [ flow ] = integrateTotalFlow( databrush, unit )
 %   Standard abbreviations for gallons per minute, hour and second are
 %   implemented.
 %
+%   unit    corresponds to the unit of time in the flow measurement. If
+%           your specific flow unit is not supported, use 'hr', 'min', or
+%           's' as appropriate.
+%
 %   Counts, 10-11-13 - Spaceport Support Services
 
 unit = lower(unit);
 switch unit
-    case {'gpm' 'min' 'minute' 'gal/m' 'gal/min' 'gallons per minute'}
+    case {'gpm' 'min' 'minute' 'gal/m' 'gal/min' 'gallons per minute' 'cfm' 'scfm'}
         % set timestep as one minute.
         deltat = 0.000694444;
     case {'gph' 'hr' 'hour' 'gal/h' 'gal/hr' 'gallons per hour'}
@@ -26,6 +30,7 @@ switch unit
         deltat = 0.000011574;
     otherwise
         % assume time step is one day
+        disp(sprintf('Unsupported unit ''%s''. Defaulting to 1/day', unit));
         deltat = 1;
 end
 
