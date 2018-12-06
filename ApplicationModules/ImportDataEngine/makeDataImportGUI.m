@@ -85,7 +85,8 @@ checkboxPositions       = { [300 339 117 23];
                             [14 81 111 23];
                             [14 48 111 23];
                             [14 15 111 23];
-                            [300 100 200 23]
+                            [300 100 200 23];
+                            [300  70 200 23]
                             };
 
                         
@@ -94,7 +95,8 @@ checkboxTags            = { 'checkbox_autoName';
                             'checkbox_isMARS';
                             'checkbox_hasUID';
                             'checkbox_vehicleSupport';
-                            'checkbox_autoSkipErrors'
+                            'checkbox_autoSkipErrors';
+                            'checkbox_combineDelims'
                             };
                             
 
@@ -103,7 +105,8 @@ checkboxStrings         = { 'Auto-name folder';
                             'MARS Procedure';
                             'Has MARS UID';
                             'Vehicle support';
-                            'Auto-skip parsing errors'
+                            'Auto-skip parsing errors';
+                            '.delims are from different TAMs'
                             };
 
 
@@ -112,6 +115,7 @@ checkboxParents         =   {   'fig';
                                 'panel_metaData';
                                 'panel_metaData';
                                 'panel_metaData';
+                                'fig';
                                 'fig'
                             };
                         
@@ -120,6 +124,7 @@ checkboxValue           =   {   true;
                                 false;
                                 false;
                                 false;
+                                true;
                                 false
                             };
                         
@@ -409,7 +414,8 @@ initialValues =    ...
         ImportFromGUI(  flbManager.getFileCellArray, ... 
                         metaData, ...
                         hs.edit_folderName.String, ...
-                        hs.checkbox_autoSkipErrors.Value );
+                        hs.checkbox_autoSkipErrors.Value, ...
+                        hs.checkbox_combineDelims.Value);
         
     end
 

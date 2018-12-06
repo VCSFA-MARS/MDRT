@@ -8,13 +8,26 @@ function [ output_args ] = splitDelimFiles( varargin )
 %   splitDelimFiles( filename, configStruct )
 %   splitDelimFiles( filename, configStruct )
 %
+%   splitDelimFiles( filename, configStruct, combineDelims )
+%
+%       filename        the full filename and path to a .delim file to be
+%                       processed. Can be a string or a cell string.
+%
+%       configStruct    an MDRT Config structure, as returned by the
+%                       configuration property of the MDRTConfig object
+%
+%       combineDelims   true/false - use when combining multiple .delim
+%                       files into one data set. Useful for retrievals that 
+%                       span multiple TAM files
+%
 %   This tool has been updated to support Windows as well as *nix systems.
 %   getFileLineCount.m and countlines.pl are required
 %   
 %   Counts, Spaceport Support Services. 2014
 
-%   Updated 2016, Counts, VCSFA - Better delim naming convention, should
-%   eliminate overloaded filenames.
+%   Updated 2018, Counts, VCSFA - Better delim naming convention, should
+%   eliminate overloaded filenames. Added support for concatination of
+%   .delim files during the split process.
 
 
 %% Constant definitions
@@ -24,6 +37,10 @@ function [ output_args ] = splitDelimFiles( varargin )
     
     DELIM_SPLIT_LINES = 2000000;
     
+%% Default parameters
+
+    concatinateDelimFiles = false;
+    noFilenamePassed = false;
     
 %% Argument parsing
 
@@ -34,7 +51,13 @@ switch nargin
     case 2
         fileName = varargin{1};
         configVar = varargin{2};
-        noFilenamePassed = false;
+    case 3
+        fileName = varargin{1};
+        configVar = varargin{2};
+        concatinateDelimFiles = varargin{3};
+        if concatinateDelimFiles
+            debugout('Combining .delim files from multiple TAM files');
+        end
     otherwise
         error('Invalid arguments for function splitDelimFiles');
         
@@ -309,7 +332,11 @@ reverseStr = '';
             grepExecutable = 'grep -F "';
         end
         
-        egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' > ', outputFile];
+        if concatinateDelimFiles
+            egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' >> ', outputFile];
+        else
+            egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' > ', outputFile];
+        end
         
         debugout(egrepCommand)
         
