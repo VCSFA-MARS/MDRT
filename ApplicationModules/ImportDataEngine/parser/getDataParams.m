@@ -36,7 +36,7 @@ for i = 1:numel(t)
         case 2
             info.Type = t{2};
         case 3
-            info.ID = t{1};
+            info.ID = t{3};
         otherwise
     end    
 end
