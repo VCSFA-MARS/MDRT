@@ -284,6 +284,10 @@ function ui_editBox_subplot1Title_Callback(hObject, eventdata, handles)
 %     % Contents are a string -> directly assign contents as cell
 %     handles.graph.subplots(1) = {get(hObject, 'String')};
 %     guidata(hObject, handles);
+    
+    graph = returnGraphStructureFromGUI(handles);
+    handles.graph = graph;
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function ui_editBox_subplot1Title_CreateFcn(hObject, eventdata, handles)
