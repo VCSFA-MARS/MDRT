@@ -17,6 +17,8 @@ function hs = makeDataComparisonGUI(varargin)
         
     end
     
+    hs.fig.ResizeFcn = @doWindowResize;
+    
     % MDRTConfig is now a singleton handle class!
     config = MDRTConfig.getInstance;
 
@@ -182,22 +184,37 @@ function hs = makeDataComparisonGUI(varargin)
                     'Comparison Plot Title';
                     'Data Set for Top Plot';
                     'Data Set for Bottom Plot' };
-
+    labels = [];
+    
     for i = 1:numel(position)
         t = uicontrol(	hs.fig,         'Style', 'text', ...
             'String',                   string(i), ...
             'HorizontalAlignment',      'left',...
             'Position',                 position{i} );
         t.Units = 'normalized';
+        labels = vertcat(labels, t);
     end
-                
+    
+    hLinkLabels = linkprop(labels, 'FontSize');
 
         
 %% Set rescale behavior
-u = fieldnames(hs);
-for i = 1:numel(u)
-    hs.(u{i}).Units = 'normalized';
-end
+
+    u = fieldnames(hs);
+    for i = 1:numel(u)
+        hs.(u{i}).Units = 'normalized';
+    end
+
+    hLinkUI = linkprop([hs.(u{2}), hs.(u{3})], 'FontSize');
+
+    for i = 4:numel(u)
+        hLinkUI.addtarget(hs.(u{i}))
+    end
+
+
+    defaultLabelFontSize = labels(1).FontSize;
+    defaultEditFontSize  = hs.edit_plotTitle.FontSize;
+    defaultWindowHeight  = hs.fig.Position(3);
         
 
 %% Populate GUI with stuff from dataIndex
@@ -239,6 +256,23 @@ debugout(allDataSetNames)
 
     updateSearchResults(hs.edit_searchField);
 
+    
+    function doWindowResize(o, ~)
+        defaultLabelFontSize;
+        defaultEditFontSize;
+        defaultWindowHeight;
+                
+        scaleFactor  = o.Position(3) / defaultWindowHeight;
+        newLabelSize = round(defaultLabelFontSize * scaleFactor);
+        newEditSize  = round(defaultEditFontSize * scaleFactor);
+        
+        hs.button_graph.FontSize = newEditSize;
+        labels(1).FontSize = newLabelSize; 
+
+        
+    end
+
+end
 
 
 
