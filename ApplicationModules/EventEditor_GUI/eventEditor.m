@@ -154,6 +154,11 @@ function ui_eventListBox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from ui_eventListBox
 
 eventIndex = get(hObject, 'Value');
+
+if isempty(eventIndex)
+    return
+end
+
 handles.timeline.milestone(eventIndex);
 
 t = handles.timeline.milestone(eventIndex).Time;
@@ -552,9 +557,6 @@ handles.checkbox_UseT0.Value = handles.timeline.uset0;
 
 function updateGUIfromHandles(handles)
     
-    index = handles.ui_eventListBox.Value;
-    currentEvent = handles.timeline.milestone(index);
-    
     t0flag = handles.timeline.uset0;
     
     % Update T-Zero Editor Group
@@ -573,22 +575,49 @@ function updateGUIfromHandles(handles)
         handles.ui_editBox_second.String    = datestr(t0time, 'SS.FFF');
         
     end
+    
+    
+    index = handles.ui_eventListBox.Value;
+    
+    if index
         
-    % Update Event information group
-    handles.ui_popup_monthPicker.Value      = month(currentEvent.Time);
-    
-    handles.ui_editBox_eventDay.String      = datestr(currentEvent.Time, 'dd');
-    handles.ui_editBox_eventYear.String     = datestr(currentEvent.Time, 'yyyy');
-    
-    handles.ui_editBox_eventHour.String     = datestr(currentEvent.Time, 'HH');
-    handles.ui_editBox_eventMinute.String   = datestr(currentEvent.Time, 'MM');
-    handles.ui_editBox_eventSecond.String   = datestr(currentEvent.Time, 'SS.FFF');
-    
-    handles.ui_editBox_eventNameString.String = currentEvent.String;
-    handles.ui_editBox_eventTriggerFD.String  = currentEvent.FD;
-    
-    % Update Event List
-    handles.ui_eventListBox.String = {handles.timeline.milestone.String}';
+        currentEvent = handles.timeline.milestone(index);
+        
+        % Update Event information group
+        handles.ui_popup_monthPicker.Value      = month(currentEvent.Time);
+
+        handles.ui_editBox_eventDay.String      = datestr(currentEvent.Time, 'dd');
+        handles.ui_editBox_eventYear.String     = datestr(currentEvent.Time, 'yyyy');
+
+        handles.ui_editBox_eventHour.String     = datestr(currentEvent.Time, 'HH');
+        handles.ui_editBox_eventMinute.String   = datestr(currentEvent.Time, 'MM');
+        handles.ui_editBox_eventSecond.String   = datestr(currentEvent.Time, 'SS.FFF');
+
+        handles.ui_editBox_eventNameString.String = currentEvent.String;
+        handles.ui_editBox_eventTriggerFD.String  = currentEvent.FD;
+
+        % Update Event List
+        handles.ui_eventListBox.String = {handles.timeline.milestone.String}';
+        
+    else
+        
+        % Update Event information group
+        handles.ui_popup_monthPicker.Value      = 1;
+
+        handles.ui_editBox_eventDay.String      = '';
+        handles.ui_editBox_eventYear.String     = '';
+
+        handles.ui_editBox_eventHour.String     = '';
+        handles.ui_editBox_eventMinute.String   = '';
+        handles.ui_editBox_eventSecond.String   = '';
+
+        handles.ui_editBox_eventNameString.String = '';
+        handles.ui_editBox_eventTriggerFD.String  = '';
+
+        % Update Event List
+        handles.ui_eventListBox.String = '';
+        
+    end
 
 
 function setEventTimeGUIValuesFromNumericArray ( MDYhms, handles )
@@ -814,24 +843,30 @@ function uipanel_timeZone_SelectionChangeFcn(hObject, ~, handles)
         % Enable the daylight savings time checkbox
         set(handles.checkbox_DST, 'Enable', 'on');
     end
-    
-    
-    
-     
+   
     
     
 % --- Executes on button press in uiAddEventButton.
 function uiAddEventButton_Callback(hObject, eventdata, handles)
-    
+
     timeline = handles.timeline;
     milestone = handles.timeline.milestone;
+    
     selected = handles.ui_eventListBox.Value;
+    if isempty(selected)
+        selected = 1
+    else
+        selected = selected + 1
+    end
+    
+    % update event list selection
+    handles.ui_eventListBox.Value = selected;
 
     list = handles.ui_eventListBox.String;
     
     % Generate new event contents;
-    newTimeline = newTimelineStructure;
-    newMilestone = newTimeline.milestone;
+    newTimeline     = newTimelineStructure;
+    newMilestone    = newTimeline.milestone;
     
     if timeline.uset0
         newMilestone.Time = timeline.t0.time;

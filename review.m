@@ -641,7 +641,7 @@ function compareDataButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-compareData
+makeDataComparisonGUI
 
 
 % --- Executes on button press in PIDButton.
