@@ -4,3 +4,5 @@ processDelimFiles.cfg
 .DS_Store
 
 *.m~
+
+*.gcf
