@@ -125,7 +125,7 @@ function saveRulesButton_Callback(hObject, eventdata, handles)
     if isfield(handles.configuration, 'programRootPath')
         % Loads path from configuration
         lookInPath = fullfile(handles.configuration.programRootPath, 'parser');
-        disp(lookInPath)
+        debugout(lookInPath)
     else
         % Set default path... to current working directory?
         lookInPath = '.';
@@ -156,7 +156,7 @@ function openDelimButton_Callback(hObject, eventdata, handles)
 
     if isnumeric(fileName)
         % User cancelled .delim pre-parse
-        disp('User cancelled .delim pre-parse');
+        debugout('User cancelled .delim pre-parse');
         return
     end
     

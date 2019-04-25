@@ -108,7 +108,6 @@ end
 
 function mypostcallback(varargin)
 
-disp('A zoom has just occurred.');
 newLim = get(evd.Axes,'XLim');
 msgbox(sprintf('The new X-Limits are [%.2f %.2f].',newLim));
 
@@ -132,5 +131,5 @@ msgbox(sprintf('The new X-Limits are [%.2f %.2f].',newLim));
 
 
 function myprecallback(obj,evd)
-disp('A zoom is about to occur.');
+% Nothing yet... someday
 

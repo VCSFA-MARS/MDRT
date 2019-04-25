@@ -44,7 +44,7 @@
 %         if isempty(pathstr)
         if exist(fullfile(config.dataFolderPath, 'timeline.mat'),'file')
             load(fullfile(config.dataFolderPath, 'timeline.mat'));
-            disp('using timeline markers')
+            debugout('using timeline markers')
         else
             if ~supressWarningDialogs
                 warndlg('Event data file "timeline.mat" was not found. Continuing with events disabled.');
@@ -363,7 +363,7 @@ for graphNumber = 1:numberOfGraphs
                 case true
                     % absolute timestamp
                     timeLimits(2) = graph(graphNumber).time.stopTime.Time;
-                    disp('Using UTC time!!! Hooray')
+                    debugout('Using UTC time!!! Hooray')
                 case false
                     % T- timestamp
                     % Added if/end block to accomodate non-timeline plots

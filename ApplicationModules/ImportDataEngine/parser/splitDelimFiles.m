@@ -90,7 +90,7 @@ end
 
         if isnumeric(fileName)
             % User cancelled .delim pre-parse
-            disp('User cancelled .delim pre-parse');
+            debugout('User cancelled .delim pre-parse');
             return
         end
         

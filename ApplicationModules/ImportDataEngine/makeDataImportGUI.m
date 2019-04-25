@@ -492,7 +492,7 @@ initialValues =    ...
        
     function windowCloseCleanup(varargin)
 
-        disp('Closing window')
+        debugout('Closing window')
 
         delete(flbManager)
 

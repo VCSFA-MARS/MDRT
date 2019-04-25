@@ -25,7 +25,7 @@ sampleTimeDelta = 1/24/60/60/sampleHz;
 
 for i = 1:numel(fileList)
     
-    disp(sprintf('Loading data file: %s', fileList{i}));
+    debugout(sprintf('Loading data file: %s', fileList{i}));
     f = load( fullfile( pathToData, fileList{i}) );
     
 	newTs = f.fd.ts.resample(f.fd.ts.Time(1):sampleTimeDelta:f.fd.ts.Time(end))
@@ -36,7 +36,7 @@ for i = 1:numel(fileList)
     newFileName = strjoin({fname, '-', 'Filtered'});
     newFileName = [newFileName, ext];
     
-    disp(sprintf('Saving data file: %s', newFileName));
+    debugout(sprintf('Saving data file: %s', newFileName));
     
     newTs.Name = newName;
     f.fd.ts = newTs
