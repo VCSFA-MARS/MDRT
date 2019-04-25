@@ -47,9 +47,13 @@ for i = 1:numel(files)
     fd = load(fullfile(path, files{i}));
     stairs(fd.fd.ts.Time, fd.fd.ts.Data, 'DisplayName', fd.fd.FullString);
     legend show
+    reviewPlotAllTimelineEvents;
 end
 
 linkaxes(ax(1:end), 'xy')
 dynamicDateTicks(ax(1:end), 'linked')
-
 ax(1).YLim = [0 5];
+
+% Override the data cursor text callback to show time stamp
+    dcmObj = datacursormode(gcf);
+    set(dcmObj,'UpdateFcn',@dateTipCallback,'Enable','on');
