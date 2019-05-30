@@ -368,7 +368,7 @@ initialValues =    ...
 
         switch lower(ext)
             case '.delim'
-                disp('Pre-processing .delim file')
+                debugout('Pre-processing .delim file')
                 textParseString = '%s %*s %*s %*s %*s %*s %*[^\n]';
                 rawTime = textscan(fid,textParseString,5,'Delimiter',',');
                 startTime = makeMatlabTimeVector(rawTime{1}, false, false);
