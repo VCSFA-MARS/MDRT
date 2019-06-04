@@ -22,7 +22,7 @@ end
 
 
 % -------------------------------------------------------------------------
-% Generate new figure and handle. Set up for priting
+% Generate new figure and handle. Set up for printing
 % -------------------------------------------------------------------------
     
     figureHandle = figure();
