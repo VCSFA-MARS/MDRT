@@ -1,6 +1,6 @@
 function dataChangeTool(hobj, event, varargin)
 
-    hfig = hobj.Parent.Parent;
+    hfig = hobj.Parent.Parent; 
     apdata = getappdata(hfig);
     
     numplots = numel(apdata.graph.subplots);
@@ -65,6 +65,10 @@ function dataChangeTool(hobj, event, varargin)
     dataNames = {tsarray.Name}';
     
     hmf = figure;
+    
+    % Add listnener for auto-close when parent closes
+    el = addlistener(hfig, 'Close', @callerClosed);
+    
     hlb = uicontrol('Style', 'listbox', ...
                     'String', dataNames, ...
                     'Units', 'normalized', ...
@@ -89,6 +93,10 @@ function dataChangeTool(hobj, event, varargin)
         
     end
 
+    % Cleanup: close tool when "parent" figure closes
+    function callerClosed(hobj, event)
+        close(hmf);
+    end
 
 
 
