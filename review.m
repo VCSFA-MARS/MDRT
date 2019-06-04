@@ -545,12 +545,10 @@ end
 
 
 % --- Executes on button press in uiButton_importData.
-function uiButton_importData_Callback(~, ~, handles)
-% hObject    handle to uiButton_importData (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function uiButton_importData_Callback(~, ~, ~)
+    makeDataImportGUI;
 
-makeDataImportGUI;
+
 
 function populateFDlistFromDataFolder(hObject, handles, folder)
 

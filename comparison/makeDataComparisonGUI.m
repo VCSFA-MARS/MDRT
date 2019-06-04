@@ -18,7 +18,7 @@ function hs = makeDataComparisonGUI(varargin)
     end
     
     hs.fig.ResizeFcn = @doWindowResize;
-    keyboard
+    
 
         
     %% Debugging Tasks - variable loading, etc...
