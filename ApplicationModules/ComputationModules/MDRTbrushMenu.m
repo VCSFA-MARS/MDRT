@@ -15,6 +15,9 @@ function MDRTbrushMenu(hobj, event)
 
 
     hs.parent = gcf;
+    
+    % Add listnener for auto-close when parent closes
+    el = addlistener(hs.parent, 'Close', @callerClosed);
 
 % #################################################
 %             GUI Figure Generation
@@ -200,6 +203,11 @@ function MDRTbrushMenu(hobj, event)
         
     end
     
+
+    % Cleanup: close tool when "parent" figure closes
+    function callerClosed(~, ~, varargin)
+        close(hs.fig);
+    end
 
 
 end % main function
