@@ -53,6 +53,10 @@ switch upper(fd.Type)
         h_plot = plot(fd.ts);
 end
 
+    % Stop TeX interpreter for Title to prevent subscripts
+    h_title = get(gca, 'title');
+    h_title.Interpreter = 'none';
+    
     
 
     h_zoom = zoom(figureHandle);
