@@ -118,6 +118,7 @@ for graphNumber = 1:numberOfGraphs
     %     graphName = parseGraphTitle(graph(graphNumber).name);                      
                             
     ST_h = suptitle(graph(graphNumber).name);
+    ST_h.Interpreter = 'none';
 
     
     % Reset axes label variables
@@ -317,6 +318,7 @@ for graphNumber = 1:numberOfGraphs
                 % Style the legend to use smaller font size
                     subPlotLegend(subPlotNumber) = legend(subPlotAxes(subPlotNumber), 'show');
                     set(subPlotLegend(subPlotNumber),'FontSize',legendFontSize);
+                    set(subPlotLegend(subPlotNumber), 'Interpreter', 'none');
                     
                 % Reset any subplot specific loop variables
                     axesTypeCell = [];
