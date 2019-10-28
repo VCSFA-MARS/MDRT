@@ -1,8 +1,12 @@
 function replayMDRTData
 
-dataPath = '/Users/nick/data/archive/2018-11-16 - NG10 Topoff/data';
+dataPath = '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
+% dataPath = '/Users/nick/data/archive/2018-11-16 - NG10 Topoff/data';
 % dataPath = '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 
+
+
+% [x,y,button] = ginput(1)
 
 
 I = imread('LO2-schematic.png');
@@ -18,7 +22,7 @@ hi = imagesc(I);
 p = hap.Position;
 % had = axes('Position', [0,0, 1, p(2)]);
 had = axes('Position', [0,0, 1, 0.28]);
-keyboard
+
 valveCenters = [ 341,   541;
                  329,   691;
                  329,   782;
@@ -26,7 +30,10 @@ valveCenters = [ 341,   541;
                  619,   603;
                  800,   540;
                  783,   660;
-                1651,   691];
+                1651,   691;
+                 922,   812;
+                 586,   871;
+                1683,   932];
             
 valveNames = {  'd2031';
                 'p2029';
@@ -35,19 +42,24 @@ valveNames = {  'd2031';
                 'd2027';
                 'd2035';
                 'd2099';
-                'd2040'};
+                'd2040';
+                'd4070';
+                'd4193';
+                'd4089'};
             
 tcPos = [   280     730;
             217     661;
             327     385;
             523     510;
-            851     512 ];
+            851     512;
+            1604    746];
             
 tsNames = { 'pm2029';
             't2908';
             't2910';
             't2911';
-            't2912'};
+            't2912';
+            't4920'};
             
 %% Draw Valve Symbols
             
@@ -85,28 +97,31 @@ end
 
 %% Plot Data Stream
 
-flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
-statData = 'LO2TopOffStatus.mat';
-stopData = 'StopLO2Top-Off.mat';
+% flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
+flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
+
+% statData = 'LO2TopOffStatus.mat';
+% stopData = 'StopLO2Top-Off.mat';
 
 temp = load(fullfile(dataPath, flowData));
 axes(had)
 hold on
 hdat = plot(had, temp.fd.ts.Time, temp.fd.ts.Data);
 
-temp = load(fullfile(dataPath, statData));
-hold on
-hstat = stairs(had, temp.fd.ts.Time, temp.fd.ts.Data * 500);
-
-temp = load(fullfile(dataPath, stopData));
-hold on
-hstop = stairs(had, temp.fd.ts.Time, temp.fd.ts.Data * 400);
+% temp = load(fullfile(dataPath, statData));
+% hold on
+% hstat = stairs(had, temp.fd.ts.Time, temp.fd.ts.Data * 500);
+% 
+% temp = load(fullfile(dataPath, stopData));
+% hold on
+% hstop = stairs(had, temp.fd.ts.Time, temp.fd.ts.Data * 400);
 
 tl = load(fullfile(dataPath, 'timeline.mat'));
 reviewPlotAllTimelineEvents(tl.timeline);
 
 had.XLim = [temp.fd.ts.Time(1), temp.fd.ts.Time(end)];
-had.YLim = [0, 1200];
+% had.YLim = [0, 1200];
+had.YLim = [-10, 60];
 
 %% Make Time Marker
 
@@ -131,11 +146,17 @@ hf.WindowButtonUpFcn = @stopDragFcn;
         '2040 LO2 DCVNO-2040 State.mat', 'd2040', 'valve';
         '2097 LO2 DCVNC-2097 State.mat', 'd2097', 'valve';
         '2099 LO2 DCVNO-2099 State.mat', 'd2099', 'valve';
+        '4070 Ghe DCVNC-4070 State.mat', 'd4070', 'valve';
+        '4193 Ghe DCVNC-4193 State.mat', 'd4193', 'valve';
+        '4089 Ghe DCVNO-4089 State.mat', 'd4089', 'valve';
         '2029 LO2 PCVNO-2029 Globe Valve Mon.mat', 'pm2029', 'sensor';
         '2908 LO2 TC-2908 Temp Sensor Mon.mat', 't2908', 'sensor';
         '2910 LO2 TC-2910 Temp Sensor Mon.mat', 't2910', 'sensor';
         '2911 LO2 TC-2911 Temp Sensor Mon.mat', 't2911', 'sensor';
-        '2912 LO2 TC-2912 Temp Sensor Mon.mat', 't2912', 'sensor' };
+        '2912 LO2 TC-2912 Temp Sensor Mon.mat', 't2912', 'sensor';
+        '4920 Ghe TC-4920 Temp Sensor Mon.mat', 't4920', 'sensor'};
+    
+    
    
  fds = struct;
  
