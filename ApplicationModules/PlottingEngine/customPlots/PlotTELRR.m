@@ -39,14 +39,16 @@ files = {   'TELHS RRFPV1 Device Status.mat';
 f = makeMDRTPlotFigure;
 
 ax = MDRTSubplot(2, 3);
-suptitle(plotTitle)
-
+H_ST = suptitle(plotTitle);
+H_ST.Interpreter = 'none';
 
 for i = 1:numel(files)
     axes(ax(i));
     fd = load(fullfile(path, files{i}));
     stairs(fd.fd.ts.Time, fd.fd.ts.Data, 'DisplayName', fd.fd.FullString);
-    legend show
+    h_leg = legend show
+    set(h_leg, 'Interpreter', 'none');
+    
     reviewPlotAllTimelineEvents;
 end
 
