@@ -35,9 +35,11 @@ metaDataFileName = 'metadata.mat';
 
 %% Load configuration struct and metaData
 
-config = MDRTConfig.getInstance;
+% config = MDRTConfig.getInstance;
+% metaDataFile = fullfile(config.workingDataPath, metaDataFileName);
 
-metaDataFile = fullfile(config.workingDataPath, metaDataFileName);
+config = getConfig;
+metaDataFile = fullfile(config.dataFolderPath, metaDataFileName);
 
     if exist(metaDataFile, 'file')
 

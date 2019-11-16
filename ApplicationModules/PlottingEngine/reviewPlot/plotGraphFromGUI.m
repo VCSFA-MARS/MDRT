@@ -116,8 +116,9 @@ for graphNumber = 1:numberOfGraphs
     
     % TODO: Insert code to parse graph title meta tags!
     %     graphName = parseGraphTitle(graph(graphNumber).name);                      
-                            
-    ST_h = suptitle(graph(graphNumber).name);
+    
+    titleStr = parseGraphTitle(graph(graphNumber).name);
+    ST_h = suptitle(titleStr);
     ST_h.Interpreter = 'none';
 
     
