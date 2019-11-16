@@ -97,8 +97,11 @@ function eventEditor1_OpeningFcn(hObject, eventdata, handles, varargin)
 % Check for existing timeline.mat file in the working data directory and
 % load if exists
 % -------------------------------------------------------------------------
+    timeline = [];
+
     if exist(fullfile(path, timelineFile),'file')
-        load([path timelineFile]);
+        s = load([path timelineFile], 'timeline');
+        timeline = s.timeline;
     else
         % timeline file not found
         timeline = newTimelineStructure;
@@ -1054,8 +1057,11 @@ function uiToolbar_openButton_callback(hObject, eventdata, handles)
     if file
         % User did not hit cancel
         % grab the variable to save
-                
-        load(fullfile(pathname, file));
+        
+        timeline = [];
+        
+        s = load(fullfile(pathname, file), 'timeline');
+        timeline = s.timeline;
         
         if exist('timeline','var')
             
