@@ -22,7 +22,12 @@ classdef MDRTAxes < handle
         
     
     methods
+        
         function self = MDRTAxes()
+            % MDRTAxes() constructor. With no arguments, creates a single
+            % MDRTAxes object (and stores the handle to the MATLAB axes
+            % object)
+            
             self.hAx = axes('Units','normalized', ...
                 ... 'Position',[xPos yPos axwidth axheight], ...
                 'XTickLabel','', ...
@@ -41,8 +46,7 @@ classdef MDRTAxes < handle
             
         end
         
-        
-        
+        %% Class Methods
         function addFD(self, fd)
             % addFD(fd) accepts an fd structure as an argument and plots
             % the FD.ts timeseries data to the axis, automatically
@@ -58,7 +62,6 @@ classdef MDRTAxes < handle
                     );
         end
         
-        
         function addFDfromFile(self, fileName)
             % addFD(fd) accepts an filename an argument, opens the file, 
             % loads the fd variable and plots the FD.ts timeseries data 
@@ -73,7 +76,7 @@ classdef MDRTAxes < handle
             end
         end
         
-        
+        %% Get Methods for Dependent Properties
         function lineColorStyle = get.lineColorStyle(self)
             % returns a cell array of name, value pairs for color and
             % linestyle. Automatically increments through all valid
@@ -99,35 +102,6 @@ classdef MDRTAxes < handle
                 end
             end
         end
-        
-        function retColor = getLineColor(self)
-            
-            lineColors = {  [0 0 1],        [0 .5 0],       [.75 0 .75],...
-                            [0 .75 .75],    [.68 .46 0]     };
-                        
-            retColor = lineColors{self.colorInd};
-            
-            self.colorInd = self.colorInd + 1;
-            if self.colorInd > length(lineColors)
-                self.colorInd = 1;
-                self.bumpLineStyle;
-            end
-            
-        end
-        
-        function retStyle = getLineStyle(self)
-
-            retStyle = self.lineStyles{self.styleInd};
-            
-        end
-        
-        function bumpLineStyle(self)
-            self.styleInd = self.styleInd + 1;
-            if self.styleInd > length(self.lineStyles)
-                self.styleInd = 1;
-            end
-        end
-        
         
         function hLegend = get.hLegend(self)
             hLegend = legend(self.hAx, 'show');
