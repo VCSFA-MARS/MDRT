@@ -3,13 +3,31 @@ classdef MDRTFigure < handle
     %   Detailed explanation goes here
     
     properties
-        hfig
-        subWindows = [];
+        hfig            = [];
+        subWindows      = [];
+        subplots        = [];
+        graphTitle      = 'MDRT Plot';
+        
+    end
+    
+    properties (SetAccess = private)
+        hGraphTitle
     end
     
     methods
-        % Constructor
+        
         % Register - add spawned windows to the list of subWindows
+        
+        % addData - pass an FD and add it to a plot
+        % removeData - remove an existing FD from the plot
+
+        % Constructor
+        function self = MDRTFigure()
+            self.hfig = figure;
+            self.subplots = MDRTAxes;
+            self.hGraphTitle = suptitle('MDRT Plot');
+        end
+        
         
     end
     
