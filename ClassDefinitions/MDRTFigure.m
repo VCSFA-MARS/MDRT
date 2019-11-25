@@ -26,6 +26,8 @@ classdef MDRTFigure < handle
             self.hfig = figure;
             self.subplots = MDRTAxes;
             self.hGraphTitle = suptitle('MDRT Plot');
+            
+            orient(self.hfig, 'landscape');
         end
         
         

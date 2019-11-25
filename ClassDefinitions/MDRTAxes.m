@@ -6,13 +6,16 @@ classdef MDRTAxes < handle
     properties
         hAx
         streams = {};
+        yrange
     end
     
     properties (SetAccess = private)
         hLines = [];
+    end
+    
+    properties (Hidden = true)
         colorInd = 1
         styleInd = 1
-%         lineStyles = {'-','--',':'}
     end
     
     properties (Dependent)
@@ -108,9 +111,6 @@ classdef MDRTAxes < handle
         end
         
     end
-    
-
-        
     
 end
 
