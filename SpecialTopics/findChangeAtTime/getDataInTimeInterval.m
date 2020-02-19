@@ -99,11 +99,17 @@ function nts = findDataInTimespan(ts, timespan)
             j = j + 1;
         end
         
-        if ~(max( abs( diff( ts.Data(i:j)))) )
+        
+        try % this check fails on NaN values. Let's soft-fail and continue
+            if ~(max( abs( diff( ts.Data(i:j)))) )
+                nts = [];
+                return;
+            else
+                nts = ts;
+                return;
+            end
+        catch % Return empty set if unable to parse the ts.Data
             nts = [];
-            return;
-        else
-            nts = ts;
             return;
         end
         
