@@ -1,5 +1,6 @@
 
 timelines = {
+    '/Users/nick/data/archive/2019-11-01 - NG-12/data/timeline.mat';
 	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data/timeline.mat';
 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data/timeline.mat';
 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data/timeline.mat';
@@ -8,7 +9,8 @@ timelines = {
 };
 
 datafiles = {
-	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data/4901 Ghe PT-4901 Press Sensor Mon.mat';
+    '/Users/nick/data/archive/2019-11-01 - NG-12/data/4901 Ghe PT-4901 Press Sensor Mon.mat';	
+    '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data/4901 Ghe PT-4901 Press Sensor Mon.mat';
 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data/4901 Ghe PT-4901 Press Sensor Mon.mat';
 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data/4901 Ghe PT-4901 Press Sensor Mon.mat';
 	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data/4901 Ghe PT-4901 Press Sensor Mon.mat';
@@ -16,7 +18,8 @@ datafiles = {
 };
 
 loxdata = {
-	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data/2909 LO2 PT-2909 Press Sensor Mon.mat';
+	'/Users/nick/data/archive/2019-11-01 - NG-12/data/2909 LO2 PT-2909 Press Sensor Mon.mat';
+    '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data/2909 LO2 PT-2909 Press Sensor Mon.mat';
 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data/2909 LO2 PT-2909 Press Sensor Mon.mat';
 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data/2909 LO2 PT-2909 Press Sensor Mon.mat';
 	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data/2909 LO2 PT-2909 Press Sensor Mon.mat';
@@ -25,6 +28,7 @@ loxdata = {
 
 
 metafiles = {
+    '/Users/nick/data/archive/2019-11-01 - NG-12/data/metadata.mat';
 	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data/metadata.mat';
 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data/metadata.mat';
 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data/metadata.mat';
@@ -36,6 +40,7 @@ metafiles = {
 fig = makeMDRTPlotFigure;
 
 colors = {      [0.0 0.0 0.9];
+                [0.0 0.6 0.0];
                 [0.0 0.6 0.6];
                 [0.5 0.0 0.5];
                 [0.4 0.4 0.0];

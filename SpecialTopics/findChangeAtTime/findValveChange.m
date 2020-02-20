@@ -2,8 +2,8 @@
 function valveFDs = findValveChange
     hf = figure;
     
-    start = datenum('04-17-2019 20:44:25')
-    stop = datenum('04-17-2019 20:46:07')
+    start = datenum('11-02-2019 13:50:00')
+    stop = datenum('11-02-2019 14:20:00')
 
     config = getConfig;
 
