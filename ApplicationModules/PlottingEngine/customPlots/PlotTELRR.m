@@ -4,16 +4,39 @@
 %   with 6 subplots, x and y axes linked. Puts each valve in its own
 %   subplot.
 
-% path = '/Users/engineer/Data Repository/2018-11-16 - NG-10 Launch/data';
-defaultpath = '/Users/engineer/Imported Data Repository/2019-03-27 - NG-11 Prep TELHS-6/data';
+%% Prompt user for data set - start with set selected in 'review'
 
-path = uigetdir(defaultpath); % No checking implemented yet!
+config = MDRTConfig.getInstance;
+[pth, fldr, b] = fileparts(config.userWorkingPath);
+questStr = ['Generate plot from data set in ', fldr];
+
+result = questdlg(questStr, 'Continue with data set', ...
+            'Yes', 'Select New', 'Quit', 'Yes');
+
+switch result
+    case 'Yes'     
+        
+    case 'Select New'
+        hbox = msgbox('Select the ''data'' folder that contains the .mat files.', 'Directions');
+        uiwait(hbox, 5);
+        defaultpath = config.dataArchivePath;
+        pth = uigetdir(defaultpath); % No checking implemented yet!;
+        
+    case 'No'    
+        disp('Quitting plot tool');
+        return
+        
+    otherwise
+        disp('Unknown selection');
+        return
+end
+
 
 %% Auto generate plot title:
 defaultTitle = 'TEL Rapid Retract Valve Firing';
     
-    if exist(fullfile(path, 'metadata.mat'),'file')
-        load(fullfile(path, 'metadata.mat'), '-mat');
+    if exist(fullfile(pth, 'metadata.mat'),'file')
+        load(fullfile(pth, 'metadata.mat'), '-mat');
         plotTitle = '';
         if metaData.isOperation
             plotTitle = [plotTitle, metaData.operationName];
@@ -25,7 +48,15 @@ defaultTitle = 'TEL Rapid Retract Valve Firing';
         plotTitle = [plotTitle, ' ', 'Rapid Retract Valve Firing'];
     else
         plotTitle = defaultTitle;
-    end 
+    end
+    
+    if exist(fullfile(pth, 'timeline.mat'), 'file')
+        tl = load(fullfile(pth, 'timeline.mat'), '-mat');
+    else
+        warning(['Could not load ', fullfile(pth, 'timeline.mat')]);
+        tl = struct;
+        tl.timeline = newTimelineStructure;
+    end
 
 
 
@@ -44,13 +75,13 @@ H_ST.Interpreter = 'none';
 
 for i = 1:numel(files)
     axes(ax(i));
-    fd = load(fullfile(path, files{i}));
+    fd = load(fullfile(pth, files{i}));
     stairs(fd.fd.ts.Time, fd.fd.ts.Data, 'DisplayName', fd.fd.FullString);
-    h_leg = legend('show')
+    h_leg = legend('show');
 
     set(h_leg, 'Interpreter', 'none');
     
-    reviewPlotAllTimelineEvents;
+    reviewPlotAllTimelineEvents(tl.timeline);
 end
 
 linkaxes(ax(1:end), 'xy')
