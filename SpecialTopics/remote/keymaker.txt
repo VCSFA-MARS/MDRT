@@ -1,0 +1,4 @@
+ssh-keygen -t rsa -f id_rsa_mdrt
+
+ssh-copy-id -i id_rsa_mdrt ops1@fcsdev3
+
