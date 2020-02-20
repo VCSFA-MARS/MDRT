@@ -6,3 +6,7 @@ processDelimFiles.cfg
 *.m~
 
 *.gcf
+
+SpecialTopics/remote/id_rsa_mdrt
+
+SpecialTopics/remote/id_rsa_mdrt.pub
