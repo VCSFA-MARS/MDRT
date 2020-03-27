@@ -4,6 +4,16 @@
 %   with 6 subplots, x and y axes linked. Puts each valve in its own
 %   subplot.
 
+
+%% Finding TEL Rapid Retract Command
+%
+%   {'Hartron:Eng:Hartron commanded to apply external power to CSOE'}
+%   {'TEL Rapid Retract Command'}
+%
+%   Look in the Hartron log file
+%
+%   2020-02-15T20:21:04.468261243Z Hartron: (-2) GENERIC_INFO_MSG [Interrupted system call] Hartron:Eng:Hartron commanded to apply external power to CSOE.
+
 %% Prompt user for data set - start with set selected in 'review'
 
 config = MDRTConfig.getInstance;
