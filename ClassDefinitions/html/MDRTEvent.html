@@ -1,0 +1,422 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MDRTEvent</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-27"><meta name="DC.source" content="MDRTEvent.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">classdef</span> MDRTEvent
+    <span class="comment">%MDRTEvent class manages display of individual event markers on MDRT Axes and Figures.</span>
+    <span class="comment">%   MDRTEvent manages the graphical objects that represent events on</span>
+    <span class="comment">%   MDRT plots. This class handles scaling, updating label positions,</span>
+    <span class="comment">%   and visibility of labels.</span>
+    <span class="comment">%</span>
+
+    <span class="comment">% Counts 2020</span>
+
+    <span class="keyword">properties</span>
+        String                  <span class="comment">% Human-readable description of event</span>
+        FD_String               <span class="comment">% The FD string used to generate the event from a retrieval</span>
+        Time                    <span class="comment">% A Matlab datenum representing the time (start) of the event</span>
+
+        Category                <span class="comment">% Used to group events for visibility management tool</span>
+        UserHidden = false      <span class="comment">% User tool has hidden this event. Default is false</span>
+
+        hLine                   <span class="comment">% handle to the line element</span>
+        hText                   <span class="comment">% handle to the text label element</span>
+
+        FontSize = 10           <span class="comment">% The font size of the event label as displayed in the plot</span>
+        FontSizePrint = 6       <span class="comment">% The font size of the event label when exported to pdf</span>
+        FontColor = <span class="string">'black'</span>     <span class="comment">% The font color of the event label. Default is black</span>
+        LineColor = 0.6*[1,1,1] <span class="comment">% The color of the event marker line. Default is black</span>
+        LineStyle = <span class="string">'--'</span>        <span class="comment">% The style of the event marker line. Default is solid</span>
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>
+
+        <span class="keyword">function</span> self = MDRTEvent(EventStruct, MFig)
+
+            self.String = EventStruct.String;
+            self.FD_String = EventStruct.FD;
+            self.Time = EventStruct.Time;
+
+            <span class="comment">% Default event values</span>
+                self.UserHidden = false;
+                self.Category = <span class="string">''</span>;
+
+
+            ylim = MFig.subplots.hAx.YLim;
+
+            self.hLine = line(  EventStruct.Time*[1,1], ylim , <span class="keyword">...</span>
+                            <span class="string">'Parent'</span>,           MFig.subplots.hAx , <span class="keyword">...</span>
+                            <span class="string">'Tag'</span>,              <span class="string">'MDRTEvent_line'</span>, <span class="keyword">...</span>
+                            <span class="string">'Color'</span>,            self.LineColor, <span class="keyword">...</span>
+                            <span class="string">'LineStyle'</span>,        self.LineStyle );
+
+            self.hText = text(self.Time, self.labelYCoordFromLimits(ylim), <span class="keyword">...</span>
+                            self.String, <span class="keyword">...</span>
+                            <span class="string">'Parent'</span>,           MFig.subplots.hAx , <span class="keyword">...</span>
+                            <span class="string">'Tag'</span>,              <span class="string">'MDRTEvent_label'</span>, <span class="keyword">...</span>
+                            <span class="string">'Rotation'</span>,         -90, <span class="keyword">...</span>
+                            <span class="string">'FontSize'</span>,         [self.FontSize], <span class="keyword">...</span>
+                            <span class="string">'Color'</span>,            self.FontColor );
+                            <span class="comment">% 'BackgroundColor', 	[1 1 1]);</span>
+
+            addlistener(MFig.subplots.hAx,<span class="string">'XLim'</span>,<span class="string">'PostSet'</span>,@self.AxisChanged);
+            addlistener(MFig.subplots.hAx,<span class="string">'YLim'</span>,<span class="string">'PostSet'</span>,@self.AxisChanged);
+
+        <span class="keyword">end</span>
+
+
+
+        <span class="keyword">function</span> self = set.FontColor(self, value)
+            <span class="comment">% set.FontColor allows numerical or 'black' style colors, just</span>
+            <span class="comment">% like Matlab's built-in color schemes for plot lines</span>
+            self.hText.Color = value;
+            self.FontColor = lower(value);
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> self = set.FontSize(self, value)
+            self.hText.FontSize = value;
+            self.FontSize = value;
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> self = set.FontSizePrint(self, value)
+            self.hText.FontSize = value;
+            self.FontSizePrint = value;
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> self = set.LineColor(self, value)
+            self.hLine.Color = value;
+            self.LineColor = lower(value);
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> self = set.LineStyle(self, value)
+            self.hLine.LineStyle = value;
+            self.LineStyle = value;
+        <span class="keyword">end</span>
+
+
+        <span class="keyword">function</span> AxisChanged(self, hobj, event)
+            <span class="comment">% AxisChanged is called whenever the listeners detect that an axis object has panned or zoomed.</span>
+
+            XLim = event.AffectedObject.XLim;
+            YLim = event.AffectedObject.YLim;
+
+            <span class="comment">% X-Axis Updates</span>
+            <span class="keyword">if</span> self.isVarOutsideInterval(self.Time, XLim)
+                self.hLine.Visible = <span class="string">'off'</span>;
+                self.hText.Visible = <span class="string">'off'</span>;
+            <span class="keyword">elseif</span> self.UserHidden
+                self.hLine.Visible = <span class="string">'off'</span>;
+                self.hText.Visible = <span class="string">'off'</span>;
+            <span class="keyword">else</span>
+                self.hLine.Visible = <span class="string">'on'</span>;
+                self.hText.Visible = <span class="string">'on'</span>;
+            <span class="keyword">end</span>
+
+            <span class="comment">% Y-Axis Updates</span>
+            self.hLine.YData = YLim;
+            self.hText.Position(2) = self.labelYCoordFromLimits(YLim);
+
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>(Static)
+        <span class="keyword">function</span> isOutsideRange = isVarOutsideInterval(variable, interval)
+            <span class="comment">% isVarOutsideInterval returns true if var is outside the open interval</span>
+            <span class="comment">%</span>
+            <span class="comment">%     isVarOutsideInterval(1, [0,2])</span>
+            <span class="comment">%           Returns false</span>
+            <span class="comment">%</span>
+            <span class="comment">%     isVarOutsideInterval(3, [0,2])</span>
+            <span class="comment">%           Returns true</span>
+            <span class="comment">%</span>
+            <span class="comment">%     isVarOutsideInterval(2, [0,2])</span>
+            <span class="comment">%           Returns false</span>
+
+            <span class="comment">% TODO: hText.Extent for text-box checking</span>
+
+            <span class="keyword">if</span> ((variable &lt; interval(1)) || variable &gt; interval(2))
+                isOutsideRange = true;
+            <span class="keyword">else</span>
+                isOutsideRange = false;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+
+        <span class="keyword">function</span> Ycoord = labelYCoordFromLimits(limits, percentOffset)
+            <span class="comment">% labelYCoordFromLimits(limits, percentOffset) returns the Y coordinate for placing an</span>
+            <span class="comment">% event marker label when passed a YLim tuple ( 2-element row</span>
+            <span class="comment">% vector ).</span>
+            <span class="comment">%</span>
+            <span class="comment">% The percentOffset is an optional parameter. 0.5 would offset</span>
+            <span class="comment">% the text 50% from the top of the axis.</span>
+            <span class="comment">%</span>
+            <span class="comment">% Note: function expects the limits parameter sorted in</span>
+            <span class="comment">% ascending order (XLim and YLim are always sorted). No</span>
+            <span class="comment">% checking or sorting is performed to keep the speed up. Be</span>
+            <span class="comment">% wise if using this on data that comes from another sourse and</span>
+            <span class="comment">% sort if required.</span>
+            <span class="comment">%</span>
+            <span class="comment">%     labelYCoordFromLimits([0, 100])</span>
+            <span class="comment">%         Returns 95</span>
+            <span class="comment">%</span>
+            <span class="comment">%     labelYCoordFromLimits([0, 100], 0.25)</span>
+            <span class="comment">%         Returns 75</span>
+            <span class="comment">%</span>
+
+            <span class="keyword">if</span> nargin == 1
+                percentOffset = 0.05;
+            <span class="keyword">end</span>
+
+            Ycoord = limits(2) - (limits(2)-limits(1)) * percentOffset;
+
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Error using MDRTEvent (line 33)
+Not enough input arguments.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+classdef MDRTEvent
+    %MDRTEvent class manages display of individual event markers on MDRT Axes and Figures.
+    %   MDRTEvent manages the graphical objects that represent events on
+    %   MDRT plots. This class handles scaling, updating label positions,
+    %   and visibility of labels.
+    %
+    
+    % Counts 2020
+    
+    properties
+        String                  % Human-readable description of event
+        FD_String               % The FD string used to generate the event from a retrieval
+        Time                    % A Matlab datenum representing the time (start) of the event
+        
+        Category                % Used to group events for visibility management tool
+        UserHidden = false      % User tool has hidden this event. Default is false
+        
+        hLine                   % handle to the line element
+        hText                   % handle to the text label element
+        
+        FontSize = 10           % The font size of the event label as displayed in the plot
+        FontSizePrint = 6       % The font size of the event label when exported to pdf
+        FontColor = 'black'     % The font color of the event label. Default is black
+        LineColor = 0.6*[1,1,1] % The color of the event marker line. Default is black
+        LineStyle = 'REPLACE_WITH_DASH_DASH'        % The style of the event marker line. Default is solid
+        
+    end
+    
+    methods
+        
+        function self = MDRTEvent(EventStruct, MFig)
+           
+            self.String = EventStruct.String;
+            self.FD_String = EventStruct.FD;
+            self.Time = EventStruct.Time;
+            
+            % Default event values
+                self.UserHidden = false;
+                self.Category = '';
+                
+            
+            ylim = MFig.subplots.hAx.YLim;
+                
+            self.hLine = line(  EventStruct.Time*[1,1], ylim , ...
+                            'Parent',           MFig.subplots.hAx , ...
+                            'Tag',              'MDRTEvent_line', ...
+                            'Color',            self.LineColor, ...
+                            'LineStyle',        self.LineStyle );                            
+                            
+            self.hText = text(self.Time, self.labelYCoordFromLimits(ylim), ...
+                            self.String, ...
+                            'Parent',           MFig.subplots.hAx , ...
+                            'Tag',              'MDRTEvent_label', ...
+                            'Rotation',         -90, ...
+                            'FontSize',         [self.FontSize], ...
+                            'Color',            self.FontColor );
+                            % 'BackgroundColor', 	[1 1 1]);
+                
+            addlistener(MFig.subplots.hAx,'XLim','PostSet',@self.AxisChanged);
+            addlistener(MFig.subplots.hAx,'YLim','PostSet',@self.AxisChanged);
+            
+        end
+        
+        
+        
+        function self = set.FontColor(self, value)
+            % set.FontColor allows numerical or 'black' style colors, just
+            % like Matlab's built-in color schemes for plot lines
+            self.hText.Color = value;
+            self.FontColor = lower(value);
+        end
+        
+        function self = set.FontSize(self, value)
+            self.hText.FontSize = value;
+            self.FontSize = value;
+        end
+        
+        function self = set.FontSizePrint(self, value)
+            self.hText.FontSize = value;
+            self.FontSizePrint = value;
+        end
+                
+        function self = set.LineColor(self, value)
+            self.hLine.Color = value;
+            self.LineColor = lower(value);
+        end
+        
+        function self = set.LineStyle(self, value)
+            self.hLine.LineStyle = value;
+            self.LineStyle = value;
+        end
+        
+            
+        function AxisChanged(self, hobj, event)
+            % AxisChanged is called whenever the listeners detect that an axis object has panned or zoomed.
+            
+            XLim = event.AffectedObject.XLim;
+            YLim = event.AffectedObject.YLim;
+            
+            % X-Axis Updates
+            if self.isVarOutsideInterval(self.Time, XLim)
+                self.hLine.Visible = 'off';
+                self.hText.Visible = 'off';
+            elseif self.UserHidden
+                self.hLine.Visible = 'off';
+                self.hText.Visible = 'off';
+            else
+                self.hLine.Visible = 'on';
+                self.hText.Visible = 'on';
+            end
+        
+            % Y-Axis Updates
+            self.hLine.YData = YLim;
+            self.hText.Position(2) = self.labelYCoordFromLimits(YLim);
+            
+        end
+    end
+    
+    methods(Static)
+        function isOutsideRange = isVarOutsideInterval(variable, interval)
+            % isVarOutsideInterval returns true if var is outside the open interval
+            %
+            %     isVarOutsideInterval(1, [0,2])
+            %           Returns false
+            % 
+            %     isVarOutsideInterval(3, [0,2])
+            %           Returns true
+            % 
+            %     isVarOutsideInterval(2, [0,2])
+            %           Returns false
+            
+            % TODO: hText.Extent for text-box checking
+            
+            if ((variable < interval(1)) || variable > interval(2))
+                isOutsideRange = true;
+            else
+                isOutsideRange = false;
+            end
+        end
+        
+        
+        function Ycoord = labelYCoordFromLimits(limits, percentOffset)
+            % labelYCoordFromLimits(limits, percentOffset) returns the Y coordinate for placing an
+            % event marker label when passed a YLim tuple ( 2-element row
+            % vector ).
+            %
+            % The percentOffset is an optional parameter. 0.5 would offset
+            % the text 50% from the top of the axis.
+            %
+            % Note: function expects the limits parameter sorted in
+            % ascending order (XLim and YLim are always sorted). No
+            % checking or sorting is performed to keep the speed up. Be
+            % wise if using this on data that comes from another sourse and
+            % sort if required.
+            %            
+            %     labelYCoordFromLimits([0, 100])
+            %         Returns 95
+            %
+            %     labelYCoordFromLimits([0, 100], 0.25)
+            %         Returns 75
+            %
+            
+            if nargin == 1
+                percentOffset = 0.05;
+            end
+            
+            Ycoord = limits(2) - (limits(2)-limits(1)) * percentOffset;
+             
+        end
+        
+    end
+    
+end
+
+
+##### SOURCE END #####
+--></body></html>
