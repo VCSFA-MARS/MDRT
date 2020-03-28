@@ -27,7 +27,7 @@ classdef MDRTFigure < handle
         function self = MDRTFigure()
             
             self.hfig = figure;
-            self.addSubplot(MDRTAxes);
+            self.addSubplot(MDRTAxes('Title', 'Subplot 1'));
             self.hGraphTitle = suptitle('MDRT Plot');
             
             orient(self.hfig, 'landscape');
