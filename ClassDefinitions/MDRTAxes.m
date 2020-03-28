@@ -79,6 +79,10 @@ classdef MDRTAxes < handle
             end
         end
         
+        function self = setParent(self, hfig)
+            self.hAx.Parent = hfig;
+        end
+        
         %% Get Methods for Dependent Properties
         function lineColorStyle = get.lineColorStyle(self)
             % returns a cell array of name, value pairs for color and

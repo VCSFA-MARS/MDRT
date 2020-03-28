@@ -8,21 +8,21 @@ classdef MDRTEvent
     % Counts 2020
     
     properties
-        String              % Human-readable description of event
-        FD_String           % The FD string used to generate the event from a retrieval
-        Time                % A Matlab datenum representing the time (start) of the event
+        String                  % Human-readable description of event
+        FD_String               % The FD string used to generate the event from a retrieval
+        Time                    % A Matlab datenum representing the time (start) of the event
         
-        Category            % Used to group events for visibility management tool
-        UserHidden = false  % User tool has hidden this event. Default is false
+        Category                % Used to group events for visibility management tool
+        UserHidden = false      % User tool has hidden this event. Default is false
         
-        hLine               % handle to the line element
-        hText               % handle to the text label element
+        hLine                   % handle to the line element
+        hText                   % handle to the text label element
         
-        FontSize = 10       % The font size of the event label as displayed in the plot
-        FontSizePrint = 6 	% The font size of the event label when exported to pdf
-        FontColor = 'black' % The font color of the event label. Default is black
+        FontSize = 10           % The font size of the event label as displayed in the plot
+        FontSizePrint = 6       % The font size of the event label when exported to pdf
+        FontColor = 'black'     % The font color of the event label. Default is black
         LineColor = 0.6*[1,1,1] % The color of the event marker line. Default is black
-        LineStyle = '--'     % The style of the event marker line. Default is solid
+        LineStyle = '--'        % The style of the event marker line. Default is solid
         
     end
     
