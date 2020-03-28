@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>MDRTAxes</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-27"><meta name="DC.source" content="MDRTAxes.m"><style type="text/css">
+      --><title>MDRTAxes</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-28"><meta name="DC.source" content="MDRTAxes.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Class Methods</a></li><li><a href="#4">Get Methods for Dependent Properties</a></li></ul></div><pre class="codeinput"><span class="keyword">classdef</span> MDRTAxes &lt; handle
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Class Methods</a></li><li><a href="#4">Set methods</a></li><li><a href="#5">Get Methods for Dependent Properties</a></li></ul></div><pre class="codeinput"><span class="keyword">classdef</span> MDRTAxes &lt; handle
     <span class="comment">%MDRTAxes is the MDRT controlling object for MDRT Figure Axes</span>
     <span class="comment">%   MDRTAxes has methods to add, remove, and modify data plots</span>
 
@@ -75,6 +75,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         hAx
         streams = {};
         yrange
+        title
     <span class="keyword">end</span>
 
     <span class="keyword">properties</span> (SetAccess = private)
@@ -93,10 +94,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
     <span class="keyword">methods</span>
-</pre><pre class="codeinput">        <span class="keyword">function</span> self = MDRTAxes()
+</pre><pre class="codeinput">        <span class="keyword">function</span> self = MDRTAxes(varargin)
             <span class="comment">% MDRTAxes() constructor. With no arguments, creates a single</span>
             <span class="comment">% MDRTAxes object (and stores the handle to the MATLAB axes</span>
             <span class="comment">% object)</span>
+            <span class="comment">%</span>
+            <span class="comment">% Optional key-value pairs:</span>
+            <span class="comment">%</span>
+            <span class="comment">% Title         - Sets the axes title string</span>
 
             self.hAx = axes(<span class="string">'Units'</span>,<span class="string">'normalized'</span>, <span class="keyword">...</span>
                 <span class="keyword">...</span><span class="comment"> 'Position',[xPos yPos axwidth axheight], ...</span>
@@ -113,6 +118,25 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
                 <span class="string">'YTickLabelMode'</span>, <span class="string">'auto'</span>, <span class="keyword">...</span>
                 <span class="string">'Box'</span>, <span class="string">'on'</span>, <span class="keyword">...</span>
                 <span class="string">'Tag'</span>, <span class="string">'MDRTAxes'</span>);
+
+            <span class="keyword">if</span> (mod(nargin, 2) == 1)
+                <span class="comment">% not a Key, Value pair</span>
+                <span class="keyword">return</span>
+            <span class="keyword">end</span>
+
+
+            <span class="keyword">for</span> i = 1:nargin/2
+
+                key = lower(varargin{i*2 - 1});
+                value = varargin{i*2};
+
+                <span class="keyword">switch</span> key
+                    <span class="keyword">case</span> <span class="string">'title'</span>
+                        self.title = value;
+                    <span class="keyword">otherwise</span>
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
 
         <span class="keyword">end</span>
 </pre><pre class="codeoutput">
@@ -147,7 +171,24 @@ Warning: Plot empty.
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
         <span class="keyword">end</span>
-</pre><h2>Get Methods for Dependent Properties<a name="4"></a></h2><pre class="codeinput">        <span class="keyword">function</span> lineColorStyle = get.lineColorStyle(self)
+
+        <span class="keyword">function</span> self = setParent(self, hfig)
+            self.hAx.Parent = hfig;
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> self = setPosition(self, pos)
+            self.hAx.Position = pos;
+        <span class="keyword">end</span>
+</pre><h2>Set methods<a name="4"></a></h2><pre class="codeinput">        <span class="keyword">function</span> self = set.title(self, titleString)
+            self.hAx.Title.String = titleString;
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> self = titleChanged(self, ~, event)
+
+            <span class="comment">% update the class if the title is changed through the editor</span>
+            self.title = event.AffectedObject.String;
+        <span class="keyword">end</span>
+</pre><h2>Get Methods for Dependent Properties<a name="5"></a></h2><pre class="codeinput">        <span class="keyword">function</span> lineColorStyle = get.lineColorStyle(self)
             <span class="comment">% returns a cell array of name, value pairs for color and</span>
             <span class="comment">% linestyle. Automatically increments through all valid</span>
             <span class="comment">% combinations.</span>
@@ -176,11 +217,16 @@ Warning: Plot empty.
         <span class="keyword">function</span> hLegend = get.hLegend(self)
             hLegend = legend(self.hAx, <span class="string">'show'</span>);
         <span class="keyword">end</span>
+
+        <span class="keyword">function</span> titleString = get.title(self)
+            titleString = self.hAx.Title.String;
+        <span class="keyword">end</span>
 </pre><pre class="codeoutput">  MDRTAxes with properties:
 
                hAx: [1x1 Axes]
            streams: {}
             yrange: []
+             title: ''
             hLines: []
            hLegend: []
     lineColorStyle: {'color'  [0 0 1]  'linestyle'  '-'}
@@ -199,6 +245,7 @@ classdef MDRTAxes < handle
         hAx
         streams = {};
         yrange
+        title
     end
     
     properties (SetAccess = private)
@@ -218,10 +265,14 @@ classdef MDRTAxes < handle
     
     methods
         
-        function self = MDRTAxes()
+        function self = MDRTAxes(varargin)
             % MDRTAxes() constructor. With no arguments, creates a single
             % MDRTAxes object (and stores the handle to the MATLAB axes
             % object)
+            %
+            % Optional key-value pairs:
+            %
+            % Title         - Sets the axes title string
             
             self.hAx = axes('Units','normalized', ...
                 ... 'Position',[xPos yPos axwidth axheight], ...
@@ -239,6 +290,25 @@ classdef MDRTAxes < handle
                 'Box', 'on', ...
                 'Tag', 'MDRTAxes');
             
+            if (mod(nargin, 2) == 1)
+                % not a Key, Value pair
+                return
+            end
+            
+            
+            for i = 1:nargin/2
+                
+                key = lower(varargin{i*2 - 1});
+                value = varargin{i*2};
+                
+                switch key
+                    case 'title'
+                        self.title = value;
+                    otherwise
+                end
+                
+            end
+                       
         end
         
         %% Class Methods
@@ -269,6 +339,25 @@ classdef MDRTAxes < handle
                     self.addFD(s.fd);
                 end
             end
+        end
+        
+        function self = setParent(self, hfig)
+            self.hAx.Parent = hfig;
+        end
+        
+        function self = setPosition(self, pos)
+            self.hAx.Position = pos;
+        end
+        
+        %% Set methods
+        function self = set.title(self, titleString)
+            self.hAx.Title.String = titleString;
+        end
+        
+        function self = titleChanged(self, ~, event)
+            
+            % update the class if the title is changed through the editor
+            self.title = event.AffectedObject.String;
         end
         
         %% Get Methods for Dependent Properties
@@ -302,6 +391,9 @@ classdef MDRTAxes < handle
             hLegend = legend(self.hAx, 'show');
         end
         
+        function titleString = get.title(self)
+            titleString = self.hAx.Title.String;
+        end
     end
     
 end
