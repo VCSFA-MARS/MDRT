@@ -7,6 +7,7 @@ classdef MDRTAxes < handle
         hAx
         streams = {};
         yrange
+        title
     end
     
     properties (SetAccess = private)
@@ -26,10 +27,14 @@ classdef MDRTAxes < handle
     
     methods
         
-        function self = MDRTAxes()
+        function self = MDRTAxes(varargin)
             % MDRTAxes() constructor. With no arguments, creates a single
             % MDRTAxes object (and stores the handle to the MATLAB axes
             % object)
+            %
+            % Optional key-value pairs:
+            %
+            % Title         - Sets the axes title string
             
             self.hAx = axes('Units','normalized', ...
                 ... 'Position',[xPos yPos axwidth axheight], ...
@@ -47,6 +52,25 @@ classdef MDRTAxes < handle
                 'Box', 'on', ...
                 'Tag', 'MDRTAxes');
             
+            if (mod(nargin, 2) == 1)
+                % not a Key, Value pair
+                return
+            end
+            
+            
+            for i = 1:nargin/2
+                
+                key = lower(varargin{i*2 - 1});
+                value = varargin{i*2};
+                
+                switch key
+                    case 'title'
+                        self.title = value;
+                    otherwise
+                end
+                
+            end
+                       
         end
         
         %% Class Methods
@@ -86,6 +110,18 @@ classdef MDRTAxes < handle
         function self = setPosition(self, pos)
             self.hAx.Position = pos;
         end
+        
+        %% Set methods
+        function self = set.title(self, titleString)
+            self.hAx.Title.String = titleString;
+        end
+        
+        function self = titleChanged(self, ~, event)
+            
+            % update the class if the title is changed through the editor
+            self.title = event.AffectedObject.String;
+        end
+        
         %% Get Methods for Dependent Properties
         function lineColorStyle = get.lineColorStyle(self)
             % returns a cell array of name, value pairs for color and
@@ -117,6 +153,9 @@ classdef MDRTAxes < handle
             hLegend = legend(self.hAx, 'show');
         end
         
+        function titleString = get.title(self)
+            titleString = self.hAx.Title.String;
+        end
     end
     
 end
