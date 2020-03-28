@@ -90,19 +90,22 @@ classdef MDRTFigure < handle
             %
             % ans =
             % 
-            %     0.0600    0.0600    0.3300    0.3300
-            %     0.0600    0.3900    0.3300    0.3300
-            %     0.3900    0.0600    0.3300    0.3300
-            %     0.3900    0.3900    0.3300    0.3300
+            %     0.0600    0.5250    0.4150    0.4150
+            %     0.0600    0.0600    0.4150    0.4150
+            %     0.5250    0.5250    0.4150    0.4150
+            %     0.5250    0.0600    0.4150    0.4150
             %
             %
             % >> MDRTFigure.axesPositionForNumberOfSubplots(4,2)
             %
             % ans =
             % 
-            %     0.0600    0.3900    0.3300    0.3300
+            %      0.0600    0.0600    0.4150    0.4150
 
-            
+            % Note to devs: the position attribute specifies the bottom
+            % left corner of the axes object. (0,0) is the bottom left
+            % corner of the figure window
+
             posArray = [];
             
             %	Default page setup for landscape US Letter
@@ -128,13 +131,13 @@ classdef MDRTFigure < handle
                     otherwise
                 end
                 
-                axWide = 1/plotsWide - 2*plotMargin - (plotsWide -1)*marginX ;
-                axHigh = 1/plotsHigh - 2*plotMargin - (plotsHigh -1)*marginY ;
+                axWide = (1 - 2*plotMargin - (plotsWide -1)*marginX)/plotsWide ;
+                axHigh = (1 - 2*plotMargin - (plotsHigh -1)*marginY)/plotsHigh ;
                 
                 for x = 1:plotsWide
                     for y = 1:plotsHigh
-                        xpos = plotMargin + (x-1)*axWide;
-                        ypos = plotMargin + (y-1)*axHigh;
+                        xpos = plotMargin + (x-1) * (axWide + marginX);
+                        ypos = 1 - plotMargin - (y)*axHigh - marginY*(y-1);
                         posArray = vertcat(posArray, [xpos, ypos, axWide, axHigh]);
                     end
                 end
