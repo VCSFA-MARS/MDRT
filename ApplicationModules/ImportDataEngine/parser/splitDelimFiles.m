@@ -316,26 +316,30 @@ reverseStr = '';
 
         % Handle Spaces in filenames for *nix systems
         outputFile = fullfile(delimPath, outName);
-        outputFile = regexprep(outputFile, '\s','\\ ');
+%         outputFile = regexprep(outputFile, '\s','\\ ');
         
-        grepFilename = regexprep(fileName, '\s','\\ ');
+%         grepFilename = regexprep(fileName, '\s','\\ ');
+        grepFilename = fileName;
+        
+        % Filter out accidental RAW value retrievals
+        grepFilterRAW = '-v ,RAW ';
                 
         % Generate grep command to split delim into parseable files
         % time LC_ALL=C grep -F "TELHS_SYS1 PT33  Mon" ../original/TEL-mon-s.delim > test.delim
         
         % Check for faster grep binary
         if exist('/usr/local/bin/grep', 'file')
-            grepExecutable = '/usr/local/bin/grep -F "';
+            grepExecutable = '/usr/local/bin/grep -F ';
         elseif exist('/usr/local/bin/ggrep', 'file')
-            grepExecutable = '/usr/local/bin/ggrep -F "';
+            grepExecutable = '/usr/local/bin/ggrep -F ';
         else
-            grepExecutable = 'grep -F "';
+            grepExecutable = 'grep -F ';
         end
         
         if concatinateDelimFiles
-            egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' >> ', outputFile];
+            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',grepFilename, '" | ' , grepExecutable , grepFilterRAW , ' >> "', outputFile , '"'];
         else
-            egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' > ', outputFile];
+            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',grepFilename, '" | ' , grepExecutable , grepFilterRAW , ' > "', outputFile , '"'];
         end
         
         debugout(egrepCommand)
