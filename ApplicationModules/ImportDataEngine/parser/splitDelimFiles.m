@@ -316,11 +316,7 @@ reverseStr = '';
 
         % Handle Spaces in filenames for *nix systems
         outputFile = fullfile(delimPath, outName);
-%         outputFile = regexprep(outputFile, '\s','\\ ');
-        
-%         grepFilename = regexprep(fileName, '\s','\\ ');
-        grepFilename = fileName;
-        
+                
         % Filter out accidental RAW value retrievals
         grepFilterRAW = '-v ,RAW ';
                 
@@ -337,16 +333,15 @@ reverseStr = '';
         end
         
         if concatinateDelimFiles
-            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',grepFilename, '" | ' , grepExecutable , grepFilterRAW , ' >> "', outputFile , '"'];
+            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',fileName, '" | ' , grepExecutable , grepFilterRAW , ' >> "', outputFile , '"'];
         else
-            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',grepFilename, '" | ' , grepExecutable , grepFilterRAW , ' > "', outputFile , '"'];
+            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',fileName, '" | ' , grepExecutable , grepFilterRAW , ' > "', outputFile , '"'];
         end
         
         debugout(egrepCommand)
         
-        system(egrepCommand);
+        [status,result] = system(egrepCommand);
         
-                
         progressbar(i/length(FDlistForGrep));
         
         
@@ -362,7 +357,6 @@ reverseStr = '';
     fprintf('\n');
         
     %% Cleanup any split files
-    % keyboard
     
 
 end
