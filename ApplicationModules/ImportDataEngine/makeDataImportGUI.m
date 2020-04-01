@@ -362,13 +362,14 @@ initialValues =    ...
         % Read the first line of each .delim file and keep the timestamp.
         guessFile = nonEmptyCellContents(guessFile);
         startTime = zeros(numel(guessFile), 1);
-        
+
         for j = 1:numel(guessFile)
         
             % Open guess file to read a few lines
             fid = fopen(guessFile{j});
             finfo = dir(guessFile{j});
-            
+            [~, ~, ext] = fileparts(finfo.name);
+
             % Make sure to handle the file type. and EXIT if bad filetype
             % -----------------------------------------------------------------
 
@@ -389,7 +390,15 @@ initialValues =    ...
                     fclose(fid); % cleanup your mess!
                     
                     % Keep the timestamp we found for later
-                    startTime(j,1) = makeMatlabTimeVector(rawTime{1}, false, false);
+                    try
+                        startTime(j,1) = makeMatlabTimeVector(rawTime{1}, false, false);
+                    catch
+                        % If you're here, then the file was called .delim,
+                        % it had a non-zero size, but the contents didn't
+                        % contain data the way we expected. The file must
+                        % be malformed.
+                        warning(['delim file ' finfo.name ' was malformed.']);
+                    end
                     
                 case '.csv'
                     warning('.csv files are not currently supported for automatic import');
@@ -404,7 +413,7 @@ initialValues =    ...
 
         end
         
-        startTime = min(startTime);
+        startTime = min(startTime(startTime ~= 0));
 
         % Build Folder Name String
         % -----------------------------------------------------------------
@@ -412,18 +421,27 @@ initialValues =    ...
         nameParts = {   metaData.operationName;
                         metaData.MARSprocedureName
                     };
-
-        guessName = strjoin( {  datestr(startTime(1), 'YYYY-mm-dd');
+        
+        if isempty(startTime)
+            return
+        end
+        
+        guessName = strjoin( {  datestr(startTime, 'YYYY-mm-dd');
                                 '-';
                                 strjoin(nameParts);
                                 });
 
         guessName = strtrim(guessName);
 
-        if hs.checkbox_autoName.Value
-            hs.edit_folderName.String = guessName;
-        end
-        
+        % Listener triggers on this update. Disabling/enabling around the
+        % programatic update. In a class, this should be a set method to
+        % handle it. Ugly workaround to clean up console output.
+
+        el(1).Enabled = false; 
+            if hs.checkbox_autoName.Value
+                hs.edit_folderName.String = guessName;
+            end
+        el(1).Enabled = true;
         
     end
 
