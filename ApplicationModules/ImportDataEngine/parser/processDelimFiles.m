@@ -55,6 +55,10 @@ end
 delimFiles = dir(fullfile(path, '*.delim'));
 filenameCellList = {delimFiles.name};
 
+    % Process in alphabetical lexographical order, ignoring case.
+    [sorted, ~] = sort(lower(filenameCellList));
+    filenameCellList = sorted;
+
 skippedFilesList = {};
 skipAllErrors = false;
 
@@ -197,7 +201,21 @@ for i = 1:length(filenameCellList)
 
         % Process time values
         tic
+        try
             timeVect = makeMatlabTimeVector(timeCell, false, false);
+        catch ME
+            warning (['unable to generate time vector from file' filenameCellList{i}]);
+            printSkipFileInfo;
+            skippedFilesList = vertcat(skippedFilesList, filenameCellList(i));
+            % UI Progress Update
+            % ------------------
+                frac = 5/5;
+                progressbar( (bytesProcessed + delimFiles(i).bytes * frac) / totalBytes, frac);
+                %update bytesProcessed for next file progress bar
+                bytesProcessed = bytesProcessed + delimFiles(i).bytes;
+            continue
+        end
+        
         disp(sprintf('Calling makeMatlabTimeVector took: %f seconds',toc));
         
         % UI Progress Update
@@ -333,8 +351,7 @@ for i = 1:length(filenameCellList)
                     
                     
                 if skipThisFile
-                    disp('SKIPPING THIS FILE');
-                    disp(sprintf('Total time spent on this file was: %f seconds',toc(tstart)));
+                    printSkipFileInfo
                     
                 else
 
@@ -369,6 +386,7 @@ for i = 1:length(filenameCellList)
     else
         % File is literally empty
         disp(sprintf('File %s is empty and will not be processed.',filenameCellList{i}));
+        skippedFilesList = vertcat(skippedFilesList, filenameCellList(i));
     end
 
     
@@ -395,6 +413,11 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
 %
 %       These functions are called by the parsing routine to perform
 %       common tasks
+
+    function printSkipFileInfo
+        disp('SKIPPING THIS FILE');
+        disp(sprintf('Total time spent on this file was: %f seconds',toc(tstart)));
+    end
 
 
     function saveFDtoDisk(fd)
