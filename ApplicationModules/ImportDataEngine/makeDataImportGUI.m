@@ -344,46 +344,67 @@ initialValues =    ...
         
         
         files = flbManager.getFileCellArray;
-        guessFile = {};
+        guessFile = cell(numel(files), 1);
 
         for j = 1:numel(files)
-            [~, ~, ext] = fileparts(files{j});
-            if strcmpi('.delim',ext)
-                guessFile = files{j};
-                break
+            finfo = dir(files{j});
+            [~, ~, ext] = fileparts(finfo.name);
+            if strcmpi('.delim',ext) && (finfo.bytes > 0) % if delim and not empty
+                guessFile{j} = files{j}; % fullfile path
             end           
         end
         
-        if isempty(guessFile)
+        if isCellArrayEmpty(guessFile)
             % No suitable file was found
             return
         end
         
+        % Read the first line of each .delim file and keep the timestamp.
+        guessFile = nonEmptyCellContents(guessFile);
+        startTime = zeros(numel(guessFile), 1);
         
-        % Open guess file to read a few lines
-        fid = fopen(guessFile);
+        for j = 1:numel(guessFile)
         
-        % Make sure to handle the file type. and EXIT if bad filetype
-        % -----------------------------------------------------------------
+            % Open guess file to read a few lines
+            fid = fopen(guessFile{j});
+            finfo = dir(guessFile{j});
+            
+            % Make sure to handle the file type. and EXIT if bad filetype
+            % -----------------------------------------------------------------
 
-        switch lower(ext)
-            case '.delim'
-                debugout('Pre-processing .delim file')
-                textParseString = '%s %*s %*s %*s %*s %*s %*[^\n]';
-                rawTime = textscan(fid,textParseString,5,'Delimiter',',');
-                startTime = makeMatlabTimeVector(rawTime{1}, false, false);
-            case '.csv'
-                warning('.csv files are not currently supported for automatic import');
-                fclose(fid);
-                return
+            switch lower(ext)
+                case '.delim'
+                    debugout('Pre-processing .delim file')
+                    textParseString = '%s %*s %*s %*s %*s %*s %*[^\n]';
+                    try
+                        rawTime = textscan(fid,textParseString,1,'Delimiter',',');
+                    catch
+                        % If you're here, then the file was called .delim,
+                        % it had a non-zero size, and the text-parse still
+                        % failed. File must be malformed.
+                        warning(['delim file ' finfo.name ' was malformed.']);
+                        fclose(fid);
+                    end
+                    
+                    fclose(fid); % cleanup your mess!
+                    
+                    % Keep the timestamp we found for later
+                    startTime(j,1) = makeMatlabTimeVector(rawTime{1}, false, false);
+                    
+                case '.csv'
+                    warning('.csv files are not currently supported for automatic import');
+                    fclose(fid);
+                    return
 
-            otherwise
-                warning('This file type is not currently supported for automatic import');
-                fclose(fid);
-                return
+                otherwise
+                    warning(['The file ' finfo.name ' is of a type not currently supported for automatic import']);
+                    fclose(fid);
+                    return
+            end
+
         end
-
-        fclose(fid);
+        
+        startTime = min(startTime);
 
         % Build Folder Name String
         % -----------------------------------------------------------------
@@ -407,7 +428,7 @@ initialValues =    ...
     end
 
 
-    function startImport(src, event, varargin)
+    function startImport(~, ~, varargin)
         
         updateFolderGuess;
         
@@ -420,7 +441,7 @@ initialValues =    ...
     end
 
 
-    function selectFiles(src, event, varargin)
+    function selectFiles(~, ~, varargin)
         
         [filename, pathname, filterindex] = uigetfile( ...
                        {'*.delim','FCS Retrievals (*.delim)'; ...
@@ -499,9 +520,25 @@ initialValues =    ...
     end
 
 
+    function outCell = nonEmptyCellContents(inCell)
+        if iscell(inCell)
+            outCell = inCell(~cellfun('isempty',inCell));
+        else
+            % not a cell as input!
+            outCell = cell(1,1);
+        end
+    end
 
-
-
+    function result = isCellArrayEmpty(inCell)
+        if iscell(inCell)
+            result = ~max(~cellfun('isempty', inCell));
+            if isempty(result)
+                result = true;
+            end
+        else
+            result = [];
+        end
+    end
 
 
 
