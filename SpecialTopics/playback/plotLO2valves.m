@@ -1,6 +1,7 @@
 function replayMDRTData
 
-dataPath = '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
+dataPath = '/Users/nick/data/archive/2019-11-01 - NG-12/data'
+% dataPath = '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
 % dataPath = '/Users/nick/data/archive/2018-11-16 - NG10 Topoff/data';
 % dataPath = '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 
@@ -98,7 +99,8 @@ end
 %% Plot Data Stream
 
 % flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
-flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
+% flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
+flowData = '4919 Ghe PT-4919 Press Sensor Mon.mat';
 
 % statData = 'LO2TopOffStatus.mat';
 % stopData = 'StopLO2Top-Off.mat';
@@ -121,7 +123,7 @@ reviewPlotAllTimelineEvents(tl.timeline);
 
 had.XLim = [temp.fd.ts.Time(1), temp.fd.ts.Time(end)];
 % had.YLim = [0, 1200];
-had.YLim = [-10, 60];
+% had.YLim = [-10, 60];
 
 %% Make Time Marker
 
