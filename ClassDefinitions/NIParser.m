@@ -34,7 +34,26 @@ classdef NIParser
             end
         end
         
-        
+        function dataTable = csvFileToTable(fileNameWithPath)
+            % reads a ,csv file and returns a Matlab Table
+            %
+            % Returns empty value [] if file not found or unable to parse.
+            dataTable = [];
+            
+            if ~exist(fileNameWithPath, 'file')
+                % return empty value if file doesn't exist
+                warning(['file does not exist: ' fileNameWithPath]);
+                return
+            end
+            
+            try
+                dataTable = readtable(fileNameWithPath);
+            catch
+                warning(['unable to parse ' fileNameWithPath]);
+                dataTable = [];
+                return
+            end
+        end
         
     end
     
