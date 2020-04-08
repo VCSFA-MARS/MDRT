@@ -38,6 +38,8 @@ classdef NIParser
             % reads a ,csv file and returns a Matlab Table
             %
             % Returns empty value [] if file not found or unable to parse.
+            
+            
             dataTable = [];
             
             if ~exist(fileNameWithPath, 'file')
@@ -53,6 +55,49 @@ classdef NIParser
                 dataTable = [];
                 return
             end
+        end
+        
+        function P0ADecoder = IOspreadsheet2table(fileNameWithPath)
+            % Parses the RL/P0A IO spreadsheet to generate FD descriptions
+            % If no argument is given
+            %
+            %
+            % Example:
+            %
+            % r = NIParser.IOspreadsheet2table([]);
+            % 
+            % To search for a value:
+            %
+            % r.Description(strcmp(r.IOCode,'KF-KI-DVL-B-288'))
+            %
+            % ans = 
+            % 
+            %     'Pump Transfer valve'
+            
+%             test = '/Users/nick/Documents/Developer/Repos/MDRT/UnitTests/TestData/LC2 IO - REV-A5.xlsx';
+            test = '/Users/nick/Documents/Developer/Repos/MDRT/UnitTests/TestData/PADC_IO.xlsx';
+            
+            P0ADecoder = [];
+            
+            if isempty(fileNameWithPath)
+                fileNameWithPath = test;
+            end
+            
+            P0ADecoder = readtable(fileNameWithPath);
+            
+            % Set variable names.
+            % NOTE: These headers are awful - we need to get some standard
+            % column names. We should see if there's a file that can be
+            % directly exported by RL. Or use whatever file they import to
+            % their configuration utility.
+
+            P0ADecoder.Properties.VariableNames = P0ADecoder.Properties.VariableNames;
+            
+            P0ADecoder.Description(strcmp(P0ADecoder.IOCode,'KF-KI-DVL-B-288'));
+            
+            % EndDevice_P_IDDesignator
+            % I_O_Code
+            
         end
         
     end
