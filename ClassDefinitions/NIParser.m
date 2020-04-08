@@ -59,12 +59,10 @@ classdef NIParser
         
         function P0ADecoder = IOspreadsheet2table(fileNameWithPath)
             % Parses the RL/P0A IO spreadsheet to generate FD descriptions
-            % If no argument is given
-            %
             %
             % Example:
             %
-            % r = NIParser.IOspreadsheet2table([]);
+            % r = NIParser.IOspreadsheet2table('IOSpreadsheet.xlsx');
             % 
             % To search for a value:
             %
@@ -74,13 +72,17 @@ classdef NIParser
             % 
             %     'Pump Transfer valve'
             
-%             test = '/Users/nick/Documents/Developer/Repos/MDRT/UnitTests/TestData/LC2 IO - REV-A5.xlsx';
-            test = '/Users/nick/Documents/Developer/Repos/MDRT/UnitTests/TestData/PADC_IO.xlsx';
-            
             P0ADecoder = [];
-            
+
             if isempty(fileNameWithPath)
-                fileNameWithPath = test;
+                % Will point to production IO Spreadsheet in future
+                % versions
+                return
+            end
+            
+            if ~exist(fileNameWithPath, 'file')
+                warning(['file does not exist: ' fileNameWithPath]);
+                return
             end
             
             P0ADecoder = readtable(fileNameWithPath);
