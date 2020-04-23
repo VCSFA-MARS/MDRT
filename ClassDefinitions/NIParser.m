@@ -3,6 +3,8 @@ classdef NIParser
     %   
     
     properties
+        Table           % The parsed NI-PAD-0C IO Table (Matlab table class)
+        
     end
     
     properties (Constant)
@@ -13,6 +15,25 @@ classdef NIParser
             'Delta', datenum('01/01/1904 00:00:00.00') ...          % Add to a NI timestamp to find MATLAB datenum
         );
     end
+    
+    
+    methods
+       
+        function self = NIParser()
+            % Constructor method
+            % NIParser('PADC_IO.xlsx', 'PADC_Data.csv')
+            % 
+            % 
+            
+            
+            
+            
+            
+            
+        end
+        
+    end
+    
     
     methods (Static)
         
