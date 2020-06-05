@@ -545,12 +545,10 @@ end
 
 
 % --- Executes on button press in uiButton_importData.
-function uiButton_importData_Callback(~, ~, handles)
-% hObject    handle to uiButton_importData (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function uiButton_importData_Callback(~, ~, ~)
+    makeDataImportGUI;
 
-makeDataImportGUI;
+
 
 function populateFDlistFromDataFolder(hObject, handles, folder)
 
@@ -606,12 +604,17 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
     newDelimPath = fullfile(rootFolder, 'delim', filesep);
     newPlotPath  = fullfile(rootFolder, 'plots', filesep);
 
-    % Create new directory structure    
+    % Create new directory structure
+    
+    warning('off', 'MATLAB:MKDIR:DirectoryExists');
+    
     mkdir(newDataPath);
     mkdir(newDelimPath);
     mkdir(fullfile(newDelimPath, 'original'));
     mkdir(fullfile(newDelimPath, 'ignore'));
     mkdir(newPlotPath);
+    
+    warning('on', 'MATLAB:MKDIR:DirectoryExists');
     
     % Update the handles structure
     handles.configuration.dataFolderPath    = newDataPath;
@@ -636,7 +639,7 @@ function compareDataButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-compareData
+makeDataComparisonGUI
 
 
 % --- Executes on button press in PIDButton.

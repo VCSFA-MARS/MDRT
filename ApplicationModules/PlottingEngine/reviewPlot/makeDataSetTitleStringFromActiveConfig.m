@@ -20,7 +20,9 @@ switch nargin
         
         if isempty(checkStructureType( varargin{1} ) )
             % broke checkStructureType - soft fail by exiting and returning
-            % enpty string
+            % empty string
+            debugout('Unrecognized argument')
+            debugout(varargin{1})
             return
         end
         
@@ -28,12 +30,13 @@ switch nargin
             case 'metadata'
                 % it was a metadata struct
                 metaData = varargin{1};
-                disp('passed a metadata struct')
+                debugout('passed a metadata struct')
                 
                 
             case 'config'
                 % it was a config struct
                 % load the metadata struct
+                debugout('passed a config struct')
                 
                 config = varargin{1};
                 
@@ -44,11 +47,13 @@ switch nargin
                     return
                 end
                 
-                disp('passed a config struct, loaded metadata')
+                debugout('loaded metadata from config struct')
                 
             otherwise
                 % User passed a bogus/unsupported variable type
                 % Soft fail by returning empty string
+                debugout('Unrecognized argument')
+                debugout(varargin{1})
                 return
                 
         end
@@ -58,16 +63,24 @@ switch nargin
         % Caller was a jerk and did give you anything!
         % Try to load config, grab metadata and then do the work
         
-        disp('you''re a jerk')
+        debugout('you''re a jerk')
         
         metaData = loadMetadataFromConfig(getConfig);
         
-        disp('but it worked out')
+        debugout('but it worked out')
         
     otherwise
         % If it's more than 1 variable passed I don't know what happened?
         % Soft fail and return empty set
         return
+end
+
+debugout(metaData)
+% Validate metaData structure
+if ~strcmpi(checkStructureType(metaData), 'metadata')
+    % metadata is missing fields or malformed.
+    errormsg = sprintf('%s contained a metadata structure, but it was malformed.', filename);
+    error(errormsg);
 end
 
 % If you made it this far, there is a valid metaData variable/struct in
@@ -92,6 +105,7 @@ filename = fullfile(config.dataFolderPath,'metadata.mat');
             % Pretty confident we have the real deal here
             load(filename);
             % now metaData is loaded. Should I do this explicitely?
+            
         else
            % If I failed this test, bad shit is happeneing.
            % Soft fail by returning empty string

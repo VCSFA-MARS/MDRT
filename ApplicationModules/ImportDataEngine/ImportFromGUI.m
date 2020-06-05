@@ -1,4 +1,4 @@
-function ImportFromGUI( filesIn, metaData, folderName, autoSkip )
+function ImportFromGUI( filesIn, metaData, folderName, autoSkip, catDelims )
 %ImportFromGUI 
 %   Automates the data importing process.
 %
@@ -111,7 +111,7 @@ end
 for i = 1:numel(workingFiles)
     
     % Eventually add try/catch for error handling?
-    splitDelimFiles( workingFiles{i}, config )
+    splitDelimFiles( workingFiles{i}, config, catDelims )
     
 end
 

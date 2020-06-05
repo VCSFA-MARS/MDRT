@@ -21,6 +21,13 @@ textParseString = '%s %*s %*s %s %*s %s %*[^\n]';
 
 [fileName, processPath] = uigetfile('*.delim');
 
+% Was a file selected?
+if isnumeric(fileName)
+    % User cancelled .delim pre-parse
+    disp('User cancelled file selection');
+    return
+end
+
 
 % Open the file selected above
 % -------------------------------------------------------------------------

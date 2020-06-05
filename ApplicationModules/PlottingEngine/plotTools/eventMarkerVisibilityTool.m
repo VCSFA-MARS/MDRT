@@ -137,10 +137,9 @@ jScrollPane = com.mathworks.mwswing.MJScrollPane(jCBList);
         
     end
 
-    function graphWindowClosed(hobj, event, varargin)
-        
+    % Cleanup: close tool when "parent" figure closes
+    function graphWindowClosed(~, ~, varargin)
         close(hs.fig);
-
     end
 
 end

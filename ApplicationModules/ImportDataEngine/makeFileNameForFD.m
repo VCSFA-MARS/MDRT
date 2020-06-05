@@ -54,7 +54,7 @@ function fileName = makeFileNameForFD(fdStruct)
 
     % fullStringTokens = regexp(info.FullString, '\w*','match');
     % keeps ABC-1234 together as one token
-    fullStringTokens = regexp(startingString, '\S+','match'); 
+    fullStringTokens = regexp(startingString, '\S+','match');
 
     % If fullstring follows ABC-#####, then start filename with #####
 
@@ -73,5 +73,9 @@ function fileName = makeFileNameForFD(fdStruct)
     % certain terms in the future?)
 
     fileName = strjoin([prependFindNumber, fullStringTokens]);
+    
+    % clean up unhappy reserved filename characters
+    fileName = regexprep(fileName,'[!@$^&*~?.|/[]<>\`";#()]','');
+    fileName = regexprep(fileName, '[:]','-');
 
 end

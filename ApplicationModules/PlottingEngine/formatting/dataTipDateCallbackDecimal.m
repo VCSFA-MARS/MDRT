@@ -23,8 +23,8 @@ end
 output_txt = {['X: ', datestr(pos(1),'HH:MM:SS.FFF') ],...
     ['Y: ',num2str( pos(2), xFormatString )]};
 
-% If there is a Z-coordinate in the position, display it as well
-if length(pos) > 2
-    output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
-end
+% % If there is a Z-coordinate in the position, display it as well
+% if length(pos) > 2
+%     output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
+% end
 
