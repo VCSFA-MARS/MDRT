@@ -1,15 +1,30 @@
 function linkTimeAxes( varargin )
 
+if nargin
+    switch class(varargin{1})
+        case 'matlab.ui.container.Menu'           
+            figureHandle = varargin{1}.Parent.Parent;
+            rawAxesArray = findobj( figureHandle, 'Type', 'Axes');
+                
+        case 'matlab.ui.Figure'
+            figureHandle = varargin{1};
+            rawAxesArray = findobj( figureHandle, 'Type', 'Axes');
+            
+        case 'matlab.graphics.axis.Axes'
+            rawAxesArray = varargin{1};
+            
+        otherwise
+            warning('unsupported argument data type');
+            return
+    end
+end
+    
 
-%This works if called from the figure's menu
-figureHandle = varargin{1}.Parent.Parent;
+% remove 'suptitle' from the array of axes
 
-% fig = 1;
-
-hgo = findobj( figureHandle, 'Type', 'Axes');
-
-% remove 'suptitle'
-axesElements = hgo(arrayfun(@(e) ~isequal(e.Tag,'suptitle'), hgo));
+axesArray = rawAxesArray(arrayfun(@(e) ...
+                            ~isequal(e.Tag,'suptitle'), ...
+                            rawAxesArray));
 
 
-linkaxes(axesElements,'x');
+linkaxes(axesArray,'x');
