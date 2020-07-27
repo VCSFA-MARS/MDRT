@@ -25,7 +25,8 @@
 % Flag to supress warning dialogs
     supressWarningDialogs = false;
 
-
+% Number of points in FD to trigger "reduce plot" routine
+    reducePlotThresholdLength = 250000;
     
     
 % Load the project configuration (paths to data, plots and raw data)
@@ -160,6 +161,14 @@ for graphNumber = 1:numberOfGraphs
             axes(subPlotAxes(subPlotNumber));
             
             for i = 1:length(toPlot)
+                
+                % Set useReducePlot based on FD length
+                if length(s(i).fd.ts.Time) > reducePlotThresholdLength
+                    useReducePlot = true;
+                else
+                    useReducePlot = false;
+                end
+                
                 
                 % Valve thing to do for the plot
                     if(any(strcmp('isValve',fieldnames(s(i).fd))))
