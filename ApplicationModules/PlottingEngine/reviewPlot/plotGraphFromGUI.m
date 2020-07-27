@@ -20,7 +20,7 @@
     useTimeline = true;
     
 % temporary hack to handle giant data sets
-    useReducePlot = false;
+    useReducePlot = true;
     
 % Flag to supress warning dialogs
     supressWarningDialogs = false;
@@ -176,10 +176,11 @@ for graphNumber = 1:numberOfGraphs
                             
                             if useReducePlot
                                 
-                                hDataPlot(graphNumber,subPlotNumber,i) = reduce_plot(s(i).fd.position.Time, ...
+                                hThisPlot = LinePlotReducer(s(i).fd.position.Time, ...
                                                   s(i).fd.position.Data, ...
                                                   'displayname', ...
                                                   [s(i).fd.Type '-' s(i).fd.ID]);
+                                hDataPlot(graphNumber,subPlotNumber,i) = hThisPlot.h_plot;
                             else
                             
                                 hDataPlot(graphNumber,subPlotNumber,i) = plot(s(i).fd.position.Time, ...
@@ -192,10 +193,11 @@ for graphNumber = 1:numberOfGraphs
                             
                             if useReducePlot
                                 
-                                hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
+                                hThisPlot = LinePlotReducer(@stairs, s(i).fd.ts.Time, ...
                                                   s(i).fd.ts.Data, ...
                                                   'displayname', ...
                                                   [s(i).fd.Type '-' s(i).fd.ID]);
+                                hDataPlot(graphNumber,subPlotNumber,i) = hThisPlot.h_plot;
                                               
                             else
 
@@ -218,9 +220,10 @@ for graphNumber = 1:numberOfGraphs
                         
                         if useReducePlot
                             
-                            hDataPlot(graphNumber,subPlotNumber,i) = reduce_plot(s(i).fd.ts, ...
+                            hThisPlot = LinePlotReducer(@stairs, s(i).fd.ts, ...
                                             'displayname', ...
                                             [s(i).fd.Type '-' s(i).fd.ID]);
+                            hDataPlot(graphNumber,subPlotNumber,i) = hThisPlot.h_plot;
                                         
                         else
                                     
@@ -232,13 +235,23 @@ for graphNumber = 1:numberOfGraphs
                                 
                 % Apply the appropriate color
                 if (isColorOverride)
-                    set(hDataPlot(graphNumber,subPlotNumber,i),'Color',overrideColor);
+                    thisColor = overrideColor;
                     isColorOverride = false;
                 else
-                    set(hDataPlot(graphNumber,subPlotNumber,i),'Color',colors{iColor})
+                    thisColor = colors{iColor};
+                    
                 end
-                set(hDataPlot(graphNumber,subPlotNumber,i),'LineStyle',lineStyle{iStyle});
-                set(hDataPlot(graphNumber,subPlotNumber,i),'LineWidth',lineWeight);
+                
+                switch class(hDataPlot(graphNumber,subPlotNumber,i))
+                    case 'LinePlotReducer'
+                        thisPlotHandle = hDataPlot(graphNumber,subPlotNumber,i).h_plot;
+                    otherwise
+                        thisPlotHandle = hDataPlot(graphNumber,subPlotNumber,i);
+                end
+                        
+                set(thisPlotHandle,'Color',thisColor)
+                set(thisPlotHandle,'LineStyle',lineStyle{iStyle});
+                set(thisPlotHandle,'LineWidth',lineWeight);
                 hold on;
 
                 % Increment Styles as needed
