@@ -43,20 +43,25 @@ for i = 1:length(Q{1})
     disp(Q{1,1}{i});
 end
 
+%%
+
 
 frewind(fid);
 
 
+% Read "Skipped header lines" into disposable array
 linesToSkip = input('How many header lines to skip: ');
     Q = textscan(fid, '%s', linesToSkip, 'Delimiter', '\n');
 
 
+% 0000, 4.9619E+00, 4.9116E-03, 2.4558E-03, 5.0577E+00,-8.8408E-02,-9.3320E-02, 1.0106E+00, 07-07-20, 08:35:40
 
 % Grab numbers!
 % R = textscan(fid, '%n %n %n *s', 'Delimiter', ',');
-    R = textscan(fid, '%n,%n,%n,%n,%n,%n,%n,%n');
+%     R = textscan(fid, '%n,%n,%n,%n,%n,%n,%n,%n,%*n,%*n');
+    R = textscan(fid, '%n %n %n %n %n %n %n %n %*s %*s', 'Delimiter', ',');
 
-fclose(fid);
+% fclose(fid);
 
 % create variables
     t = R{1};
@@ -70,7 +75,7 @@ fclose(fid);
 % clear Q R;
 
 
-
+%%
 
 disp('Data parsing is complete')
 disp('Creating FDs for MARS Review Tool')
