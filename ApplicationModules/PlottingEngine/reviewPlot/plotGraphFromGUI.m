@@ -213,7 +213,7 @@ for graphNumber = 1:numberOfGraphs
                                 hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
                                                       s(i).fd.ts.Data, ...
                                                       'displayname', ...
-                                                      [s(i).fd.Type '-' s(i).fd.ID]);
+                                          displayNameFromFD(s(i).fd));
                             end
                             
                         end
@@ -231,14 +231,14 @@ for graphNumber = 1:numberOfGraphs
                             
                             hThisPlot = LinePlotReducer(@stairs, s(i).fd.ts, ...
                                             'displayname', ...
-                                            [s(i).fd.Type '-' s(i).fd.ID]);
+                                        displayNameFromFD(s(i).fd));
                             hDataPlot(graphNumber,subPlotNumber,i) = hThisPlot.h_plot;
                                         
                         else
                                     
                             hDataPlot(graphNumber,subPlotNumber,i) = plot(s(i).fd.ts, ...
                                             'displayname', ...
-                                            [s(i).fd.Type '-' s(i).fd.ID]);
+                                        displayNameFromFD(s(i).fd));
                         end
                     end
                                 
