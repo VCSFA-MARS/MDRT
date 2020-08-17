@@ -20,12 +20,13 @@
     useTimeline = true;
     
 % temporary hack to handle giant data sets
-    useReducePlot = false;
+    useReducePlot = true;
     
 % Flag to supress warning dialogs
     supressWarningDialogs = false;
 
-
+% Number of points in FD to trigger "reduce plot" routine
+    reducePlotThresholdLength = 250000;
     
     
 % Load the project configuration (paths to data, plots and raw data)
@@ -161,103 +162,82 @@ for graphNumber = 1:numberOfGraphs
             
             for i = 1:length(toPlot)
                 
+                % Set useReducePlot based on FD length
+                if length(s(i).fd.ts.Time) > reducePlotThresholdLength
+                    useReducePlot = true;
+                else
+                    useReducePlot = false;
+                end
+                
+                
                 % Valve thing to do for the plot
-                    if(any(strcmp('isValve',fieldnames(s(i).fd))))
-                        
-                        
-                        debugout(subPlotAxes(subPlotNumber).HitTest)
-                        
-                        if(any(strcmp('isProportional',fieldnames(s(i).fd))))
-                            % Default to plotting just the position right
-                            % now. 
-                            %TODO: Implement selective plotting for
-                            %proportional valves
-                            
-                            
-                            if useReducePlot
-                                
-                                hDataPlot(graphNumber,subPlotNumber,i) = reduce_plot(s(i).fd.position.Time, ...
-                                                  s(i).fd.position.Data, ...
-                                                  'displayname', ...
-                                                  [s(i).fd.Type '-' s(i).fd.ID]);
-                            else
-                            
-                                hDataPlot(graphNumber,subPlotNumber,i) = plot(s(i).fd.position.Time, ...
-                                                      s(i).fd.position.Data, ...
-                                                      'displayname', ...
-                                                      [s(i).fd.Type '-' s(i).fd.ID]);
-                            end
-                            
-                        else
-                            
-                            if useReducePlot
-                                
-                                hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
-                                                  s(i).fd.ts.Data, ...
-                                                  'displayname', ...
-                                                  [s(i).fd.Type '-' s(i).fd.ID]);
-                                              
-                            else
+                if(strfind(s(i).fd.FullString, 'Param' ))
 
-                                hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
-                                                      s(i).fd.ts.Data, ...
-                                                      'displayname', ...
-                                                      [s(i).fd.Type '-' s(i).fd.ID]);
-                            end
-                            
-                        end
-                    elseif(any(strcmp('isLimit',fieldnames(s(i).fd))))
+                    hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
+                                          s(i).fd.ts.Data, ...
+                                          'displayname', ...
+                                          displayNameFromFD(s(i).fd));
+                    isColorOverride = true;
+                    overrideColor = [1 0 0];
+                else
 
-                        hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
-                                              s(i).fd.ts.Data, ...
-                                              'displayname', ...
-                                              [s(i).fd.Type '-' s(i).fd.ID]);
-                        isColorOverride = true;
-                        overrideColor = [1 0 0];
+                    if useReducePlot
+
+                        hThisPlot = LinePlotReducer(@stairs, s(i).fd.ts, ...
+                                        'displayname', ...
+                                        displayNameFromFD(s(i).fd));
+                        hDataPlot(graphNumber,subPlotNumber,i) = hThisPlot.h_plot;
+
                     else
-                        
-                        if useReducePlot
-                            
-                            hDataPlot(graphNumber,subPlotNumber,i) = reduce_plot(s(i).fd.ts, ...
-                                            'displayname', ...
-                                            [s(i).fd.Type '-' s(i).fd.ID]);
-                                        
-                        else
-                                    
-                            hDataPlot(graphNumber,subPlotNumber,i) = plot(s(i).fd.ts, ...
-                                            'displayname', ...
-                                            [s(i).fd.Type '-' s(i).fd.ID]);
-                        end
+
+                        hDataPlot(graphNumber,subPlotNumber,i) = plot(s(i).fd.ts, ...
+                                        'displayname', ...
+                                        displayNameFromFD(s(i).fd));
                     end
+                end
                                 
                 % Apply the appropriate color
                 if (isColorOverride)
-                    set(hDataPlot(graphNumber,subPlotNumber,i),'Color',overrideColor);
-                    isColorOverride = false;
+                    thisColor = overrideColor;
+                    
                 else
-                    set(hDataPlot(graphNumber,subPlotNumber,i),'Color',colors{iColor})
+                    thisColor = colors{iColor};
+                    
                 end
-                set(hDataPlot(graphNumber,subPlotNumber,i),'LineStyle',lineStyle{iStyle});
-                set(hDataPlot(graphNumber,subPlotNumber,i),'LineWidth',lineWeight);
+                
+                switch class(hDataPlot(graphNumber,subPlotNumber,i))
+                    case 'LinePlotReducer'
+                        thisPlotHandle = hDataPlot(graphNumber,subPlotNumber,i).h_plot;
+                    otherwise
+                        thisPlotHandle = hDataPlot(graphNumber,subPlotNumber,i);
+                end
+                        
+                set(thisPlotHandle,'Color',thisColor)
+                set(thisPlotHandle,'LineStyle',lineStyle{iStyle});
+                set(thisPlotHandle,'LineWidth',lineWeight);
                 hold on;
 
                 % Increment Styles as needed
-                iColor = iColor + 1;
-                if (iColor > length(colors))
-                    iStyle = iStyle + 1;
-                    iColor = 1;
-                    if (iStyle > length(lineStyle))
-                        iStyle = 1;
+                if ~isColorOverride
+                    iColor = iColor + 1;
+                    if (iColor > length(colors))
+                        iStyle = iStyle + 1;
                         iColor = 1;
-                    end
-                    % Option to adjust line weight for d
-                    switch lineStyle{iStyle}
-                        case ':'
-                            lineWeight = 0.5;
-                        otherwise
-                            lineWeight = 0.5;
+                        if (iStyle > length(lineStyle))
+                            iStyle = 1;
+                            iColor = 1;
+                        end
+                        % Option to adjust line weight for d
+                        switch lineStyle{iStyle}
+                            case ':'
+                                lineWeight = 0.5;
+                            otherwise
+                                lineWeight = 0.5;
+                        end
                     end
                 end
+                
+                isColorOverride = false;
                 
             end % Data stream plots
             
