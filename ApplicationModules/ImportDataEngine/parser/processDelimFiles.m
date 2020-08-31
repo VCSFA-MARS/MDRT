@@ -319,7 +319,7 @@ for i = 1:length(filenameCellList)
                             
                             disp('Discrete data type detected')
                             
-                        case {'CR', 'SC'}
+                        case {'CR', 'SC', 'BA'}
                             % Ignore control stuff that is non-numerical
                             % for now. System Command and Command Response
                             
