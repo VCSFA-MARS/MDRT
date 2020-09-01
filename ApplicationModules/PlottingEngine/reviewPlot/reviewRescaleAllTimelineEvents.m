@@ -10,6 +10,7 @@ function reviewRescaleAllTimelineEvents( varargin )
 
 % Set default search location to the root graphics object
 parentFigure = 0;
+calledFromButton = false;
 
 switch nargin
     case 1
@@ -106,19 +107,20 @@ end
 
 function fixOnAxisLabelVisibility(label, varargin)
 
-    if nargin == 2
-        toggleState = varargin{1};
-    else
-        toggleState = getExpectedStateForLabel(label(1));
-    end
-    
-    for i = 1:numel(label)
-        
-        % change labels inside the axis to their expected state
-        label(i).Visible = toggleState;
+    if ~ isempty(label)
+        if nargin == 2
+            toggleState = varargin{1};
+        else
+            toggleState = getExpectedStateForLabel(label(1));
+        end
 
-    end
+        for i = 1:numel(label)
 
+            % change labels inside the axis to their expected state
+            label(i).Visible = toggleState;
+
+        end
+    end
 end
 
 
