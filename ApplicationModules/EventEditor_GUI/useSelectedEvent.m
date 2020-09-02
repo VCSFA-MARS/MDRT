@@ -10,8 +10,12 @@ for val = hs.events.Value
     cctDateStamp = timeString(1:24);
     eventTime = makeMatlabTimeVector({cctDateStamp}, false, false);
     
-    fdString = hs.master.String{val};
+    fdString = hs.master.String{hs.master.Value};
     fdHumanReadable = hs.infoString.String;
+    
+    if isempty(fdHumanReadable)
+        fdHumanReadable = fdString;
+    end
     
     newMilestone  = struct(     'String',       fdHumanReadable, ...
                                 'FD',           fdString, ...
