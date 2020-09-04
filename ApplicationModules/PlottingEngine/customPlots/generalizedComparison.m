@@ -223,7 +223,7 @@ for ind = 1:size(plan, 1)
     reviewPlotAllTimelineEvents(timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
     title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
-    xlim(timeInterval);
+    setDateAxes(axPairs(ind, 1), 'XLim', timeInterval);
     ylim([ 0, 275] );
     hline(10, '--r');
     
@@ -243,7 +243,7 @@ for ind = 1:size(plan, 1)
     reviewPlotAllTimelineEvents(timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
     title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
-    xlim(timeInterval);
+    setDateAxes(axPairs(ind, 2), 'XLim', timeInterval);
     ylim([ -0.1, 2.1] );
     
     

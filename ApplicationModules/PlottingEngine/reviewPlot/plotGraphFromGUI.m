@@ -1,4 +1,4 @@
- function varargout = plotGraphFromGUI(graph, timeline)
+function varargout = plotGraphFromGUI(graph, timeline)
 %% plotGraphFromGUI is a function for the MARS data tool GUI
 % --> changes by Paige 8/1/16 -- changing secodn input from options structure to timeline structure
 % --- > make sure am passing timeline 
@@ -361,7 +361,7 @@ for graphNumber = 1:numberOfGraphs
         delta = 0.04*(timeLimits(2)-timeLimits(1));
         timeLimits = [timeLimits(1)-delta, timeLimits(2)+delta];
         
-        set(subPlotAxes(subPlotNumber),'XLim',timeLimits);
+        setDateAxes(subPlotAxes(subPlotNumber),'XLim',timeLimits);
         
         if ~graph(graphNumber).time.isStartTimeAuto && ~graph(graphNumber).time.isStopTimeAuto
             reviewRescaleAllTimelineEvents(gcf);

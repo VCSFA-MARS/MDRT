@@ -121,7 +121,7 @@ hdat = plot(had, temp.fd.ts.Time, temp.fd.ts.Data);
 tl = load(fullfile(dataPath, 'timeline.mat'));
 reviewPlotAllTimelineEvents(tl.timeline);
 
-had.XLim = [temp.fd.ts.Time(1), temp.fd.ts.Time(end)];
+setDateAxes(had, 'XLim', [temp.fd.ts.Time(1), temp.fd.ts.Time(end)]);
 % had.YLim = [0, 1200];
 % had.YLim = [-10, 60];
 
