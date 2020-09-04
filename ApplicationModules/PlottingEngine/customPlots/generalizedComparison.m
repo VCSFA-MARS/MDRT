@@ -222,7 +222,7 @@ for ind = 1:size(plan, 1)
     dynamicDateTicks; %set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
     reviewPlotAllTimelineEvents(timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
-    title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'));
+    title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
     xlim(timeInterval);
     ylim([ 0, 275] );
     hline(10, '--r');
@@ -242,7 +242,7 @@ for ind = 1:size(plan, 1)
     dynamicDateTicks; % set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
     reviewPlotAllTimelineEvents(timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
-    title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'));
+    title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
     xlim(timeInterval);
     ylim([ -0.1, 2.1] );
     
