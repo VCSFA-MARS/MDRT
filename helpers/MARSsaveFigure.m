@@ -57,34 +57,40 @@ end
 % Check the user didn't "cancel"
 if file ~= 0
     
-    progressbar('Generating PDF'); totalSteps = 13;
+    progressbar('Generating PDF'); totalSteps = 14;
     
     % Data Cursors / Tooltips
-    cursors = findall(fh, 'type', 'hggroup');	progressbar(1/totalSteps);
-    oldCursorFontSize = { cursors.FontSize }';	progressbar(2/totalSteps);
+    cursors = findall(fh, 'type', 'hggroup');       progressbar(1/totalSteps);
+    oldCursorFontSize = get(cursors, 'FontSize');	progressbar(2/totalSteps);
     
     % Plot Legends
-    legends = findall(fh, 'Type', 'Legend');    progressbar(3/totalSteps);
-    oldLegendFontSize = { legends.FontSize }';  progressbar(4/totalSteps);
+    legends = findall(fh, 'Type', 'Legend');        progressbar(3/totalSteps);
+    oldLegendFontSize = get(legends, 'FontSize');	progressbar(4/totalSteps);
     
     %% Automatically select best font size for printing
-    set(cursors, 'FontSize', 6);                progressbar(5/totalSteps);
-    set(legends, 'FontSize', 7);                progressbar(6/totalSteps);
+    set(cursors, 'FontSize', 6);                    progressbar(5/totalSteps);
+    set(legends, 'FontSize', 7);                    progressbar(6/totalSteps);
     
     % Timeline Events - fix stacking order
-    reviewEventLabelsToTop(fh);                 progressbar(7/totalSteps);
+    reviewEventLabelsToTop(fh);                     progressbar(7/totalSteps);
     
     % Timeline Label Sizes
-    labels = findall(fh,'Tag','vlinetext');  	progressbar(8/totalSteps);
-    oldLabelFontSize = { labels.FontSize }';    progressbar(9/totalSteps);
+    labels = findall(fh,'Tag','vlinetext');         progressbar(8/totalSteps);
+    
+    if ~(isempty(labels))
+        oldLabelFontSize = get(labels, 'FontSize'); progressbar(9/totalSteps);
+        set(labels, 'FontSize', 8);                 progressbar(10/totalSteps);
+    else
+        oldLabelFontSize = {};                      progressbar(10/totalSteps);
+    end
     
     % Save
-    saveas(fh, [path file],'pdf');              progressbar(10/totalSteps);
+    saveas(fh, [path file],'pdf');                  progressbar(11/totalSteps);
     
     %% Restore font sizes
-    set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(11/totalSteps);
-    set(legends, {'FontSize'}, oldLegendFontSize);  progressbar(12/totalSteps);
-    set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(13/totalSteps);
+    set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(12/totalSteps);
+    set(legends, {'FontSize'}, oldLegendFontSize);  progressbar(13/totalSteps);
+    set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
     
 else
     % Cancelled... not sure what the best behavior is... return to GUI
