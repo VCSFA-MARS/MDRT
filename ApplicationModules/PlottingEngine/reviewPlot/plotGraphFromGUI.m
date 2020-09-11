@@ -26,7 +26,7 @@ function varargout = plotGraphFromGUI(graph, timeline)
     supressWarningDialogs = false;
 
 % Number of points in FD to trigger "reduce plot" routine
-    reducePlotThresholdLength = 250000;
+    reducePlotThresholdLength = 1500000;
     
     
 % Load the project configuration (paths to data, plots and raw data)
@@ -190,7 +190,7 @@ for graphNumber = 1:numberOfGraphs
 
                     else
 
-                        hDataPlot(graphNumber,subPlotNumber,i) = plot(s(i).fd.ts, ...
+                        hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, s(i).fd.ts.Data , ...
                                         'displayname', ...
                                         displayNameFromFD(s(i).fd));
                     end
