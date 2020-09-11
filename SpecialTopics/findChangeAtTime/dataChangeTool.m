@@ -91,11 +91,16 @@ function dataChangeTool(hobj, event, varargin)
         
         xlim(ax, xl);
         
+        
     end
 
     % Cleanup: close tool when "parent" figure closes
     function callerClosed(hobj, event)
-        close(hmf);
+        if hmf.isvalid
+            close(hmf);
+        else
+            % Anything to do?
+        end
     end
 
 
