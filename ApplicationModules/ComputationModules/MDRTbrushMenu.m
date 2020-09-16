@@ -109,7 +109,7 @@ function MDRTbrushMenu(hobj, event)
 %            Event Listener Definitions
 % #################################################   
     
-    hbb = findall(1,'ToolTipString','Brush/Select Data');
+    hbb = findall(hs.parent,'ToolTipString','Brush/Select Data');
     hl = addlistener(hbb, 'State', 'PostSet', @brushToolClickCallback);
     
     
@@ -206,7 +206,9 @@ function MDRTbrushMenu(hobj, event)
 
     % Cleanup: close tool when "parent" figure closes
     function callerClosed(~, ~, varargin)
-        close(hs.fig);
+        if hs.fig.isvalid
+            close(hs.fig);
+        end
     end
 
 
