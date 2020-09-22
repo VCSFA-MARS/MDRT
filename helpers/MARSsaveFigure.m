@@ -88,6 +88,21 @@ if file ~= 0
     saveas(fh, [path file],'pdf');                  progressbar(11/totalSteps);
     
     %% Restore font sizes
+    
+        % set method requires cell as argument - fix for size 1 returns
+        
+        if ~iscell(oldCursorFontSize)
+            oldCursorFontSize = { oldCursorFontSize };
+        end
+
+        if ~iscell(oldLegendFontSize)
+            oldLegendFontSize = { oldLegendFontSize };
+        end
+
+        if ~ iscell(oldLabelFontSize)
+            oldLabelFontSize = { oldLabelFontSize };
+        end
+    
     set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(12/totalSteps);
     set(legends, {'FontSize'}, oldLegendFontSize);  progressbar(13/totalSteps);
     set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
