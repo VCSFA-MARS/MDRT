@@ -16,6 +16,8 @@
 remoteServer    = 'fcsdev3' ;
 indexFileName   = 'AvailableFDs.mat' ;
 
+PlotTitleString = 'Valve Survey Plot';
+
 
 %% Prompt user for data set - start with set selected in 'review'
 %   pth is set as the path to the data folder (contains .mat files)
@@ -96,6 +98,9 @@ i_propCmd = find(l_propCmd);
 
 FDList(l_propCmd, 1)
 
+findNumberPattern = '[A-Z]+-[0-9]+' ;
+
+
 %% Load Valve Data into Structures
 
 valveData = struct;
@@ -104,18 +109,103 @@ valveData = struct;
 for i = 1:length(i_proportional)
     load( fullfile(pth, FDList{i_proportional(i),2}) );
     valveData(i).pos = fd;
+    
+    findNum = regexp(FDList{i_proportional(i),1}, findNumberPattern, 'match');
+    cmdInd = ~cellfun('isempty',strfind(FDList(i_propCmd, 2), findNum{1}) ) ;
+    try
+        load( fullfile(pth, FDList{cmdInd, 2}) );
+        valveData(i).cmd = fd;
+    catch
+        valveData(i).cmd = [];
+    end
+    
 end
+
+%% Graphic Constants
+    graphsInFigure = 1;
+    graphsPlotGap = 0.05;
+    GraphsPlotMargin = 0.06;
+    numberOfSubplots = 2;
+
+    legendFontSize = [8];
+    spWide = 3;
+    spHigh = 2;
+    
+    fig = [];
+    subPlotAxes = [];
+    subOffset = [];
+    axPairs = [];
+    axPair = [];
+    figCount = 1;          
+    sfIndLen = 0;
+
+
+%% Generate Subplot Axes and Pages
+
+if length(valveData) > spWide * spHigh
+    remainder = length(valveData);
+    while remainder > 0
+        f = makeMDRTPlotFigure;
+        disp(sprintf('Creating figure %d', f.Number))
+        
+        fig = vertcat(fig, f);
+        
+        if remainder >= spWide
+            plotCols = spWide;
+        else
+            plotCols = remainder;
+        end
+                
+        spa = MDRTSubplot(  spHigh, plotCols, graphsPlotGap, ... 
+                            GraphsPlotMargin, GraphsPlotMargin);
+                            
+        PageTitleString = sprintf('%s - Page %d',PlotTitleString, figCount);
+        disp(sprintf('  Generating %s', PageTitleString))
+        suptitle(PageTitleString);
+        figCount = figCount + 1;
+        
+        disp(sprintf('  Adding %d subplot axes', length(spa)))
+        subPlotAxes = vertcat(subPlotAxes, spa);
+        
+        axPair = reshape(spa, plotCols, 2);
+        axPairs = vertcat(axPairs, axPair);
+        
+        remainder = remainder - spWide;
+        
+        subOffset = length(valveData);
+    end
+
+else  
+    fig = makeMDRTPlotFigure;
+    
+    subPlotAxes = MDRTSubplot(spHigh,length(valveData),graphsPlotGap, ... 
+                                GraphsPlotMargin,GraphsPlotMargin);
+	suptitle(PlotTitleString);
+end
+
+
 
 %% Plot Proportional Valves
 
 
 
-for i = 1:length(i_proportional)
+for i = 1:length(valveData)
     
+    axes(subPlotAxes(i));
     
+    fd = valveData(i).pos;
     
+    spTitle = fd.ts.Name;
+    title(spTitle);
     
+    disp(sprintf('Plotting %s', spTitle))
     
+    stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
+    
+    if ~isempty(valveData(i).cmd)
+        fd = valveData(i).cmd;
+        stairs(fd.ts.Time, fd.ts.Data, '-r', 'displayName', 'cmd');
+    end
     
     
 end
