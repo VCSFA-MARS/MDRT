@@ -657,27 +657,30 @@ et0Minute = get(handles.ui_editBox_eventMinute,     'String');
 et0Second = get(handles.ui_editBox_eventSecond,     'String');
 
 
+if handles.ui_eventListBox.Value
 
-% validate input type
-if validDateTime([et0Day et0Year et0Hour et0Minute et0Second])
-    % Update the structure
-    newDateString = [num2str(et0Month) '-' et0Day '-' et0Year ' ' et0Hour ':' et0Minute ':' et0Second];
-    
-    eventIndex = get(handles.ui_eventListBox, 'Value');
-    
-    handles.timeline.milestone(eventIndex).Time = datenum(newDateString);
-    
-    guidata(hObject,handles);
-    
+    % validate input type
+    if validDateTime([et0Day et0Year et0Hour et0Minute et0Second])
+        % Update the structure
+        newDateString = [num2str(et0Month) '-' et0Day '-' et0Year ' ' et0Hour ':' et0Minute ':' et0Second];
+
+        eventIndex = get(handles.ui_eventListBox, 'Value');
+
+        handles.timeline.milestone(eventIndex).Time = datenum(newDateString);
+
+        guidata(hObject,handles);
+
+    else
+        % Do NOT update the structure. 
+    end
+
+    % Update FD and String
+    handles.timeline.milestone(eventIndex).FD = handles.ui_editBox_eventTriggerFD.String;
+    handles.timeline.milestone(eventIndex).String = handles.ui_editBox_eventNameString.String;
+
 else
-    % Do NOT update the structure. 
+    % No event was selected in the GUI - anything we want to do here?
 end
-
-
-
-% Update FD and String
-handles.timeline.milestone(eventIndex).FD = handles.ui_editBox_eventTriggerFD.String;
-handles.timeline.milestone(eventIndex).String = handles.ui_editBox_eventNameString.String;
 
 guidata(hObject, handles);
 
