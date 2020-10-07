@@ -36,11 +36,13 @@ function [ output_args ] = splitDelimFiles( varargin )
     MAX_LINE_COUNT = 50000;
     
     DELIM_SPLIT_LINES = 2000000;
+    USE_FD_NAME_OVERRIDE = false;
     
 %% Default parameters
 
     concatinateDelimFiles = false;
     noFilenamePassed = false;
+        
     
 %% Argument parsing
 
@@ -259,11 +261,12 @@ reverseStr = '';
     
     useCustomNames = false;
     
-    if exist('processDelimFiles.cfg','file')
-        load('processDelimFiles.cfg', '-mat');
-        useCustomNames = true;
-    end 
-
+    if USE_FD_NAME_OVERRIDE
+        if exist('processDelimFiles.cfg','file')
+            load('processDelimFiles.cfg', '-mat');
+            useCustomNames = true;
+        end 
+    end
     
 %% On Mac or Linux, always split the delim file into 2,000,000 line chunks    
 % -------------------------------------------------------------------------
@@ -300,19 +303,27 @@ reverseStr = '';
 %         FDindexC = strfind(fileData, uniqueFDs{i});
 %         FDindex  = find(not(cellfun('isempty', FDindexC)));
 %         
-        
-        % max(max(strcmp('ECS C1ECU Fan Speed Setpoint', customFDnames)));
-        isCustomRule = find(strcmp(FDlistForGrep{i}, customFDnames));
-        
+	m = regexp(FDlistForGrep{i}, '\w*','match');
 
-        m = regexp(FDlistForGrep{i}, '\w*','match');
-
+        if useCustomNames
+            
+            % max(max(strcmp('ECS C1ECU Fan Speed Setpoint', customFDnames)));
+            isCustomRule = find(strcmp(FDlistForGrep{i}, customFDnames));
+        
             if isCustomRule
                 outName = strcat(customFDnames{isCustomRule, 6}, '.delim');
             else
                 % Use all tokens to guarantee a unique filename
                 outName = strcat(m{1:end},'.delim');
             end
+
+        else
+                        
+        end
+        
+        % Use all tokens to guarantee a unique filename
+            outName = strcat(m{1:end},'.delim');
+        
 
         % Handle Spaces in filenames for *nix systems
         outputFile = fullfile(delimPath, outName);

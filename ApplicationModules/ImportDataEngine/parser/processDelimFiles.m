@@ -43,6 +43,13 @@ function [ output_args ] = processDelimFiles( config, varargin )
 % TODO: Fix this ugly parameter passing!!! GROSS
 
 
+% script constants:
+% ------------------------------------------------------------------------
+    USE_FD_NAME_OVERRIDE = false;
+
+
+
+
 if isa(config, 'MDRTConfig')
     
     path = config.workingDelimPath;
@@ -430,26 +437,31 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
 
         fileName = makeFileNameForFD(info.FullString);
         
-        % Check fullstring against override list
+        if USE_FD_NAME_OVERRIDE
         
-        % TODO: Implement error checking for custom FD list file and handle it if this file doesn't exist.
-        load('processDelimFiles.cfg','-mat');
+            % Check fullstring against override list
 
-        if ismember(fd.FullString,customFDnames(:,1))
+            % TODO: Implement error checking for custom FD list file and 
+            %       handle it if this file doesn't exist.
+            load('processDelimFiles.cfg','-mat');
+
+            if ismember(fd.FullString,customFDnames(:,1))
+
+                % If match is found, update structure
+                n = find(strcmp(customFDnames(:,1),fd.FullString));
+
+                fd.System       = customFDnames{n,2};
+                fd.ID           = customFDnames{n,3};
+                fd.Type         = customFDnames{n,4};
+                fd.FullString   = customFDnames{n,5};
+
+                % If match is found, update filename
+                fileName = customFDnames{n,6};
+
+            else
+                % Don't update anything!
+            end
             
-            % If match is found, update structure
-            n = find(strcmp(customFDnames(:,1),fd.FullString));
-            
-            fd.System       = customFDnames{n,2};
-            fd.ID           = customFDnames{n,3};
-            fd.Type         = customFDnames{n,4};
-            fd.FullString   = customFDnames{n,5};
-            
-            % If match is found, update filename
-            fileName = customFDnames{n,6};
-            
-        else
-            % Don't update anything!
         end
         
         save(fullfile(savePath ,[fileName '.mat']),'fd','-mat')
