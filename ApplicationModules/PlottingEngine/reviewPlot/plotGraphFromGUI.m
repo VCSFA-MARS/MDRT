@@ -21,6 +21,7 @@ function varargout = plotGraphFromGUI(graph, timeline)
     
 % temporary hack to handle giant data sets
     useReducePlot = true;
+    ENABLE_REDUCE = false;
     
 % Flag to supress warning dialogs
     supressWarningDialogs = false;
@@ -163,7 +164,7 @@ for graphNumber = 1:numberOfGraphs
             for i = 1:length(toPlot)
                 
                 % Set useReducePlot based on FD length
-                if length(s(i).fd.ts.Time) > reducePlotThresholdLength
+                if (length(s(i).fd.ts.Time) > reducePlotThresholdLength) && ENABLE_REDUCE
                     useReducePlot = true;
                 else
                     useReducePlot = false;
