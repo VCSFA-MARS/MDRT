@@ -154,7 +154,12 @@ switch autoSaveIndex
                                  
         backupFullFile = fullfile(dataRepositoryDirectory, backupFileName_str);
         
-        copyfile(dataIndexFullFile, backupFullFile, 'f');
+        try
+            copyfile(dataIndexFullFile, backupFullFile, 'f');
+        catch
+            warning('Unable to backup data index file');
+        end
+        
         
         save(dataIndexFullFile, dataIndexVariableName, '-mat');
         
