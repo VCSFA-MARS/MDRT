@@ -68,7 +68,7 @@ dataFolders = plotConfig.path(plotConfig.use);
 
 
 dataFileName1 = '4918 Ghe PT-4918 Press Sensor Mon.mat';
-dataFileName2 = '4919 Ghe PT-4919 Press Sensor Mon.mat';
+dataFileName2 = '4934 Ghe PT-4934 Press Sensor Mon.mat';
 
 EventString = 'Charge Chilled Helium Bottles';
 EventFD = 'GHe-W Charge Cmd';
@@ -166,17 +166,30 @@ for f = 1:numel(dataFolders)
 
             axes(subPlotAxes(1)); % 4918
                 hold on; 
-                ht = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
-                    'Color',                colors{f}, ...
-                    'DisplayName',          metaData.operationName);
+%                 ht = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
+%                     'Color',                colors{f}, ...
+%                     'DisplayName',          metaData.operationName);
+                
+                ht = LinePlotReducer(@stairs, ...
+                                        fd.ts.Time + deltaT, ...
+                                        fd.ts.Data, ...
+                                        'Color',                colors{f}, ...
+                                        'DisplayName',          metaData.operationName);
+                                    fdT =fd;
 
             axes(subPlotAxes(2)); % 4919
                 hold on;
                 % load(loxdata{f});
                 load( fullfile( dataFolders{f},   dataFileName2) );
-                hb = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
-                    'Color',                colors{f}, ...
-                    'DisplayName',          metaData.operationName);
+%                 hb = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
+%                     'Color',                colors{f}, ...
+%                     'DisplayName',          metaData.operationName);
+                
+                hb = LinePlotReducer(@stairs, ...
+                                        fd.ts.Time + deltaT, ...
+                                        fd.ts.Data, ...
+                                        'Color',                colors{f}, ...
+                                        'DisplayName',          metaData.operationName);
 
                 htop = vertcat(htop, ht);
                 hbot = vertcat(hbot, hb);
@@ -195,13 +208,15 @@ end
 linkaxes(subPlotAxes, 'x')
 dynamicDateTicks;
 
+titleFormatString = '%s-%s Data for A230 Launches - Charging';
+
 axes(subPlotAxes(1));
-title('PT-4918 Data for A230 Launches - Charging');
+title(sprintf(titleFormatString, fdT.Type, fdT.ID));
 reviewPlotAllTimelineEvents(timeline)
 legend SHOW;
 
 axes(subPlotAxes(2));
-title('PT-4919 Data for A230 Launches - Charging');
+title(sprintf(titleFormatString, fd.Type, fd.ID));
 reviewPlotAllTimelineEvents(timeline)
 
 legend SHOW;
