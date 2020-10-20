@@ -14,11 +14,50 @@ function [ output_args ] = nodeSelected( hobj, event, varargin )
     end
     
     
+    metaDataFile = fullfile(npath, 'data', 'metadata.mat');
     
-    htext = findobj(hobj.Parent.Children, 'Style', 'text');
-    %setappdata(hobj.Parent, 'SelectedPathFF', npath);
+    %% Load metadata and update AppData
+    
+    if exist(metaDataFile)
+        load(metaDataFile);
+        debugout(metaData);
+        setappdata(hobj.Parent, 'SelectedDataSet', metaData);
+    else
+        % No metadata file found!
+        tempMD = newMetaDataStructure;
+        tempMD.timeSpan = [ now - 1, now ];
+        tempMD.MARSprocedureName = 'NO METADATA FOUND';
+        tempMD.fdList = {'NO METADATA', 'NO METADATA'};
+        metaData = tempMD;
+        setappdata(hobj.Parent, 'SelectedDataSet', metaData);
+    end
+    
+    
+    %% Update GUI Display ?
+    liveStrings = getappdata(hobj.Parent, 'liveStrings');
+    hlabel      = getappdata(hobj.Parent, 'hlabel');
+    
+    for n = 1:length(liveStrings)
+    
+        fieldName = liveStrings{n,1};
+        if isfield(metaData, fieldName )
+            if ~strcmp('', metaData.(fieldName))
+                newString = metaData.(fieldName);
+            else
+                newString = sprintf('NO %s', fieldName);
+            end
+            hlabel(n).String = newString;
+        else
+            switch fieldName
+                case 'dataSetPath'
+                    hlabel(n).String = npath;
+            end
+        end
+
+        
+    
     setappdata(gcf, 'SelectedPathFF', npath);
-    htext.String = npath;
+
 
 end
 

@@ -31,6 +31,7 @@ classdef MDRTConfig < handle
         % -----------------------------------------------------------------
         graphConfigFolderPath
         dataArchivePath
+        remoteArchivePath
         userSavePath
         userWorkingPath
         importDataPath
@@ -52,6 +53,7 @@ classdef MDRTConfig < handle
         validConfigKeyNames = {...
             'graphConfigFolderPath'; ...
             'dataArchivePath'; ...
+            'remoteArchivePath'; ...
             'userSavePath'; ...
             'userWorkingPath'; ...
             'importDataPath'
@@ -136,6 +138,34 @@ classdef MDRTConfig < handle
                     % Clearing object 
                     warning('MDRTConfig.dataArchivePath set to empty string');
                     obj.dataArchivePath = '';
+                end
+                
+            end
+            
+            obj.updateConfigurationFromProperties;
+            
+        end
+        
+        
+        function set.remoteArchivePath(obj,val)
+            % Only set if it is a valid path.
+            if exist( fullfile(val), 'dir' )
+                
+                obj.remoteArchivePath = fullfile(val);
+            else
+                
+                warning('Invalid path specified. MDRT_DATA_ARCHIVE_PATH not set');
+                
+                % Invalid path specified. Check if existing value is good
+                % and retain or clear
+                if exist(obj.remoteArchivePath, 'dir')
+                    % there is a valid path in the object. Do nothing?
+                    
+                else
+                    % Bad path passed and invalid directory in object.
+                    % Clearing object 
+                    warning('MDRTConfig.dataArchivePath set to empty string');
+                    obj.remoteArchivePath = '';
                 end
                 
             end
@@ -450,6 +480,7 @@ classdef MDRTConfig < handle
 
                     this.setParameterFromFileContents(keyName{1}, stuffInQuotes, i);
 
+
                 end
             end
             
@@ -614,13 +645,26 @@ classdef MDRTConfig < handle
             
             % Update fileContents from configuration structure
             keyNames = self.validConfigKeyNames;
+            nextFileLine = size(self.fileContents, 1) + 1;
+            
             for i = 1:numel(keyNames)
                 
-                value = self.configuration.(keyNames{i}).value;
+                if isempty(self.configuration.(keyNames{i}).index)
+                    % no index means no match - possibly from modified
+                    % config file or new feature rollout
+                    
+                    self.configuration.(keyNames{i}).index = nextFileLine;
+                    nextFileLine = nextFileLine + 1;
+                    
+                else
+                    
+                    value = self.configuration.(keyNames{i}).value;
+                    
+                end
+                
                 index = self.configuration.(keyNames{i}).index;
-                
                 self.fileContents{index} = [keyNames{i}, '=', '"', value, '"'];
-                
+
             end
             
             

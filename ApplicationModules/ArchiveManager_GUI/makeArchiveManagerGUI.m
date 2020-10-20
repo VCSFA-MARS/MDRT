@@ -33,6 +33,7 @@
 
 
 
+setappdata(hs.fig, 'SelectedDataSet', []);
 
 
 config = MDRTConfig.getInstance;
@@ -51,13 +52,42 @@ container.Position = [0 0 0.35 0.90];
 % Expand the root!!!
 mtree.expand(mtree.Root)
 
-hlabel = uicontrol(hs.fig, ...
+
+
+
+%% Archive Information Labels
+
+                % MetaData field        Default Text    Position
+liveStrings = { 'operationName',        'OP name',      [0.37, 0.8, 0.5, 0.1] ;
+                'MARSprocedureName',    'MARS name',    [0.37, 0.7, 0.5, 0.1] ;
+                'MARSUID',              'Schedule UID', [0.37, 0.6, 0.5, 0.1] ;
+                'dataSetPath',          'Folder Path',  [0.37, 0.5, 0.5, 0.1] };
+
+            
+hlabel = gobjects(length(liveStrings),1);
+
+for n = 1:length(liveStrings)
+    hlabel(n) = uicontrol(hs.fig, ...
                    'style',                     'text', ...
                    'units',                     'normalized', ...
-                   'position',                  [0.5 0.4, 0.5, 0.1], ...
-                   'String',                    'Default Label Test', ...
+                   'position',                  liveStrings{n,3}, ...
+                   'String',                    liveStrings{n,2}, ...
+                   'Tag',                       liveStrings{n,1}, ...
                    'horizontalalignment',       'left');
+end
 
+setappdata(hs.fig, 'hlabel', hlabel);
+setappdata(hs.fig, 'liveStrings', liveStrings);
+
+               
+               
+               
+               
+               
+               
+               
+%% Button Controls               
+               
 hs.check_saveBackup      = uicontrol(hs.fig, ...
         'style',            'checkbox',...
         'Units',            'pixels', ...
