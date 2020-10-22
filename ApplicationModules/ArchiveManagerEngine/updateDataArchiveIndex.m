@@ -1,9 +1,9 @@
-function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveIndex)
-%% updateDataArchiveIndex( dataRepositoryRootDirectory, autoSaveIndex )
+function [dataIndex] = updateDataArchiveIndex(repositoryRootDirectory, autoSaveIndex, isRemoteArchive)
+%% updateDataArchiveIndex( repositoryRootDirectory, autoSaveIndex, isRemoteArchive )
 %
 % updateDataArchiveIndex(  );
-% updateDataArchiveIndex( dataRepositoryRootDirectory );
-% updateDataArchiveIndex( dataRepositoryRootDirectory, autoSaveIndex );
+% updateDataArchiveIndex( repositoryRootDirectory );
+% updateDataArchiveIndex( repositoryRootDirectory, autoSaveIndex );
 %
 % If no parameters are passed, the function prompts for a starting
 % directory and prompts to save the resulting data archive index.
@@ -25,7 +25,7 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
 % Purpose: Creates an index of all available data that is ready to be
 % searched inside of the current data repository.
 
-% Function input (dataRepositoryDirectory) takes every value obtained by the
+% Function input (repositoryRootDirectory) takes every value obtained by the
 % dataIndexer function.
 
 % Function output dataToSearch is a file including every metadata structure
@@ -48,7 +48,7 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
  
 
 % dataIndexForSearching calls dataIndexer function with the following parameters:
-% dataRepositoryDirectory = path to data repository directory
+% repositoryRootDirectory = path to data repository root directory
 	% set this variable equal to the file path before calling the function
 % searchExpression = 'metadata'
 
@@ -56,22 +56,31 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
 % Argument Parsing
 % ------------------------------------------------------------------------
 
+config = MDRTConfig.getInstance;
 defaultDirectory = pwd;
 defaultSaveOption = 2;
 
 switch nargin
     case 0
         % Default behavior prompts for a directory
-        dataRepositoryDirectory = uigetdir(defaultDirectory);
+        repositoryRootDirectory = uigetdir(defaultDirectory);
         autoSaveIndex = defaultSaveOption;
+        indexFilePath = repositoryRootDirectory;
 
     case 1
         % Assumes looking for metadata.mat and you passed a directory
         autoSaveIndex = defaultSaveOption;
-        
+        indexFilePath = repositoryRootDirectory;
     case 2
         % Passed both arguments
-
+        indexFilePath = repositoryRootDirectory;
+    case 3
+        % Specified local or remote archive behavior
+        if isRemoteArchive
+            indexFilePath = config.pathToConfig;
+        else
+            indexFilePath = repositoryRootDirectory;
+        end
     otherwise
         %What on earth did you do?
         warning('updateDataIndex does not support these arguments');
@@ -82,7 +91,7 @@ end
 
 warningMsg = '';
 
-if ~exist(dataRepositoryDirectory, 'dir')
+if ~exist(repositoryRootDirectory, 'dir')
     % Passed an invalid directory
     warningMsg('Invalid search directory specified.');
 end
@@ -106,7 +115,7 @@ dataIndexVariableName = 'dataIndex';
 
 
 % obtain input for dataIndexForSearching from dataIndexer function
-[~, filepaths] = findFilesInDirectory(dataRepositoryDirectory, 'metadata');
+[~, filepaths] = findFilesInDirectory(repositoryRootDirectory, 'metadata');
 
 progressbar('Indexing Data Repository');
 
@@ -144,7 +153,7 @@ end % end for loop iterating over each filepath
 % save dataToSearch as file and put this file in root search path
 % ------------------------------------------------------------------------
 
-dataIndexFullFile = fullfile(dataRepositoryDirectory, dataIndexFileName);
+dataIndexFullFile = fullfile(indexFilePath, dataIndexFileName);
 
 switch autoSaveIndex
     case 0  % save automatically
@@ -152,7 +161,7 @@ switch autoSaveIndex
         backupFileName_str = sprintf('dataIndex-%s.bak', ...
                                      datestr(now, 'mmmddyyyy-HHMMSS') );
                                  
-        backupFullFile = fullfile(dataRepositoryDirectory, backupFileName_str);
+        backupFullFile = fullfile(indexFilePath, backupFileName_str);
         
         try
             copyfile(dataIndexFullFile, backupFullFile, 'f');

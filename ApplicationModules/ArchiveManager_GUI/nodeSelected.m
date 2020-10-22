@@ -1,24 +1,25 @@
 function [ output_args ] = nodeSelected( hobj, event, varargin )
 %nodeSelected 
 %   
-
-    n = event.getCurrentNode;
-%     n.setIcon(java.awt.Toolkit.getDefaultToolkit.createImage('folder-warning-16x16.png'))
+    
+    cn = event.getCurrentNode;
+    
+%     cn.setIcon(java.awt.Toolkit.getDefaultToolkit.createImage('folder-warning-16x16.png'))
 %     drawnow
     
-    path = arrayfun(@(nd) char(nd.getName), n.getPath, 'Uniform', false);
+    path = arrayfun(@(nd) char(nd.getName), cn.getPath, 'Uniform', false);
     
     npath = '';
     for i = 1:length(path)
         npath = fullfile(npath, path{i});
     end
-    
+    debugout(npath)
     
     metaDataFile = fullfile(npath, 'data', 'metadata.mat');
     
     %% Load metadata and update AppData
     
-    if exist(metaDataFile)
+    if exist(metaDataFile, 'file')
         load(metaDataFile);
         debugout(metaData);
         setappdata(hobj.Parent, 'SelectedDataSet', metaData);
