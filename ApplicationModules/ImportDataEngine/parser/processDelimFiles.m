@@ -354,8 +354,19 @@ for i = 1:length(filenameCellList)
                     end
                     
                     
+                    % Parse and assign engineering units to timeseries
+                    switch unitCell{1}
+                        case { 'F' 'deg F' '°F' }
+                            thisUnit = '°F';
+                        case { 'psi' }
+                            thisUnit = 'psig';
+                        case { 'gallons' }
+                            thisUnit = 'gal';
+                        otherwise
+                                thisUnit = unitCell{1};
+                    end
                     
-                    
+                    ts.DataInfo.Units = thisUnit;
                     
                 if skipThisFile
                     printSkipFileInfo
