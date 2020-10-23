@@ -369,6 +369,27 @@ for graphNumber = 1:numberOfGraphs
         if ~graph(graphNumber).time.isStartTimeAuto && ~graph(graphNumber).time.isStopTimeAuto
             reviewRescaleAllTimelineEvents(gcf);
         end
+        
+    % Automatic Y axis scaling:
+    % --------------------------------------------------------------------- 
+        
+        % For "discrete" values, bump the Y limits by a small amount to
+        % ensure the viewer can clearly see the data along the top and
+        % bottom of the plot.
+        
+        commonStateLimits = [1 2 3];
+        
+        for i = 1:numel(subPlotAxes)
+            y_lim = subPlotAxes(i).YLim;
+            y_lower = min(y_lim);
+            y_upper = max(y_lim);
+            
+            if ismember(y_upper, commonStateLimits) && (y_lower == 0)
+                y_upper = y_upper + 0.1;
+                y_lower = y_lower - 0.1;
+                subPlotAxes.YLim = [y_lower, y_upper];
+            end
+        end
 
     % Fix paper orientation for saving
         orient(figureHandle(graphNumber), 'landscape');
