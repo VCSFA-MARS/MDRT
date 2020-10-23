@@ -154,7 +154,7 @@ classdef MDRTConfig < handle
                 obj.remoteArchivePath = fullfile(val);
             else
                 
-                warning('Invalid path specified. MDRT_DATA_ARCHIVE_PATH not set');
+                warning('Invalid path specified. MDRT_REMOTE_ARCHIVE_PATH not set');
                 
                 % Invalid path specified. Check if existing value is good
                 % and retain or clear
