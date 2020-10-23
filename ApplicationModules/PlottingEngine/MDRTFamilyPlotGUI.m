@@ -31,6 +31,7 @@ remoteDataIndex = [];
 if ~isempty(config.remoteArchivePath)
 	% Remote data index is configured. Load the index and prepare it to be
 	% used.
+    
     allowRemote = true;
     t = load(fullfile(config.pathToConfig, 'dataIndex.mat'));
     remoteDataIndex = t.dataIndex;
@@ -116,168 +117,135 @@ end
 function generatePlot(event, obj, varargin)
 %% Plot FD configuration and logic
 
-
+% Constants
+    onehr = 1/24;
+    onemin = onehr/60;
+    onesec = onemin/60;
+    
+    
 plotConfig = cell2table(varargin{1}.Data);
 plotConfig.Properties.VariableNames = {'use', 'name', 'path'};
 
 dataFolders = plotConfig.path(plotConfig.use);
 
 
+dataFileNames = {   '1016 RP1 FM-1016 Coriolis Meter Mon.mat' ;
+                    '1017 RP1 FM-1017 Turbine Meter Mon.mat'  ;
+                    '1014 RP1 PCVNC-1014 Globe Valve Mon.mat' ;
+                    '1015 RP1 PCVNC-1015 Globe Valve Mon.mat'};
 
+EventString = 'FGSE FLS Low Flow Fill Command';
+EventFD = 'FLS LLFF Cmd';
 
-dataFileName1 = '4918 Ghe PT-4918 Press Sensor Mon.mat';
-dataFileName2 = '4934 Ghe PT-4934 Press Sensor Mon.mat';
-
-EventString = 'Charge Chilled Helium Bottles';
-EventFD = 'GHe-W Charge Cmd';
-
-% Constants
-onehr = 1/24;
-onemin = onehr/60;
-onesec = onemin/60;
-
-fig = makeMDRTPlotFigure;
 
 
 % fix color matrix based on number of plots!
 
-recentColors =  [   0.0 0.0 0.9;
-                    0.5 0.0 0.5;
-                    0.9 0.0 0.0 ];
-length(dataFolders)
-                
-for ci = 1:length(dataFolders)
-    if ci <= length(recentColors )
-        colors(ci, :) = recentColors(ci, :);
-    else
-        colors(ci, :) = [0.6 0.6 0.6];
-    end
-end
+    recentColors =  [   0.0 0.0 0.9;
+                        0.5 0.0 0.5;
+                        0.0 0.5 0.0; ];
+%                         0.9 0.0 0.0 ];
+    length(dataFolders)
 
-colors = num2cell(colors(end:-1:1,:) ,2 )
-
-% 
-% 
-% colors = {      [0.6 0.6 0.6];
-%                 [0.6 0.6 0.6];
-%                 [0.6 0.6 0.6];
-%                 [0.6 0.6 0.6];
-%                 [0.6 0.6 0.6];
-%                 [0.6 0.6 0.6];
-%                 [0.6 0.6 0.6];
-%                 [0.9 0.0 0.0];
-%                 [0.5 0.0 0.5];
-%                 [0.0 0.0 0.9]...
-%              };
-
-
-
-%	Page setup for landscape US Letter
-        graphsInFigure = 1;
-        graphsPlotGap = 0.05;
-        GraphsPlotMargin = 0.06;
-        numberOfSubplots = 2;
-
-        legendFontSize = [8];
-
-subPlotAxes = MDRTSubplot(numberOfSubplots,1,graphsPlotGap, ... 
-                                GraphsPlotMargin,GraphsPlotMargin);
-
-
-% load(timelines{1});
-load( fullfile( dataFolders{end}, 'timeline.mat') );
-
-
-% ismember({timeline.milestone.FD}, 'GHe-W Charge Cmd')
-eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
-
-tf = timeline.milestone(eventInd).Time;
-
-% tf=timeline.t0.time;
-
-
-
-htop = [];
-hbot = [];
-
-
-for f = 1:numel(dataFolders)
-
-    try
-
-        load( fullfile( dataFolders{f},  'timeline.mat') );
-        load( fullfile( dataFolders{f},   dataFileName1) );
-        load( fullfile( dataFolders{f},  'metadata.mat') );
-
-        eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
-
-        if ~ isempty(eventInd)
-
-            to = timeline.milestone(eventInd).Time;
-
-        %     deltaT = tf - timeline.t0.time;
-            deltaT = tf - to;
-
-
-            disp(sprintf('%s : DeltaT = %1.8f', metaData.operationName, deltaT))
-
-
-            axes(subPlotAxes(1)); % 4918
-                hold on; 
-%                 ht = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
-%                     'Color',                colors{f}, ...
-%                     'DisplayName',          metaData.operationName);
-                
-                ht = LinePlotReducer(@stairs, ...
-                                        fd.ts.Time + deltaT, ...
-                                        fd.ts.Data, ...
-                                        'Color',                colors{f}, ...
-                                        'DisplayName',          metaData.operationName);
-                                    fdT =fd;
-
-            axes(subPlotAxes(2)); % 4919
-                hold on;
-                % load(loxdata{f});
-                load( fullfile( dataFolders{f},   dataFileName2) );
-%                 hb = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
-%                     'Color',                colors{f}, ...
-%                     'DisplayName',          metaData.operationName);
-                
-                hb = LinePlotReducer(@stairs, ...
-                                        fd.ts.Time + deltaT, ...
-                                        fd.ts.Data, ...
-                                        'Color',                colors{f}, ...
-                                        'DisplayName',          metaData.operationName);
-
-                htop = vertcat(htop, ht);
-                hbot = vertcat(hbot, hb);
-
+    for ci = 1:length(dataFolders)
+        if ci <= length(recentColors )
+            colors(ci, :) = recentColors(ci, :);
         else
-            % No matching dude was found - skip that mission
+            colors(ci, :) = [0.6 0.6 0.6];
+        end
+    end
+
+    colors = num2cell(colors(end:-1:1,:) ,2 )
+
+    
+fig = makeMDRTPlotFigure;
+%	Page setup for landscape US Letter
+    graphsInFigure = 1;
+    graphsPlotGap = 0.05;
+    GraphsPlotMargin = 0.06;
+    numberOfSubplots = numel(dataFileNames);
+
+    legendFontSize = [8];
+
+subPlotAxes = MDRTSubplot(  numberOfSubplots, ...
+                            1,                      graphsPlotGap, ... 
+                            GraphsPlotMargin,       GraphsPlotMargin);
+
+
+                        
+%% Get final sync time - from latest mission                        
+
+    load( fullfile( dataFolders{end}, 'timeline.mat') );
+    eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
+
+    tf = timeline.milestone(eventInd).Time;
+    % If using t0 instead of a milestone you need different code!
+    % tf=timeline.t0.time;
+
+
+    for f = 1:numel(dataFolders)
+
+        try
+
+            load( fullfile( dataFolders{f},  'timeline.mat') );
+            load( fullfile( dataFolders{f},  'metadata.mat') );
+
+            eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
+            
+            if ~ isempty(eventInd)
+
+                to = timeline.milestone(eventInd).Time;
+
+            %     deltaT = tf - timeline.t0.time;
+                deltaT = tf - to;
+
+
+                disp(sprintf('%s : DeltaT = %1.8f', metaData.operationName, deltaT))
+
+                % Plot each FD in its own axes
+                for a = 1:numel(dataFileNames)
+
+                    load(fullfile(dataFolders{f}, dataFileNames{a}));
+
+                    axes(subPlotAxes(a)); % 4918
+                    hold on; 
+                        % ht = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
+                        %     'Color',                colors{f}, ...
+                        %     'DisplayName',          metaData.operationName);
+
+                    ht = LinePlotReducer(@stairs, ...
+                            fd.ts.Time + deltaT, ...
+                            fd.ts.Data, ...
+                            'Color',                colors{f}, ...
+                            'DisplayName',          metaData.operationName);
+
+                end
+
+            else
+                % No matching dude was found - skip that mission
+            end
+
+        catch
+            % Unable to load metadata - no action
         end
 
-    catch
-        % Unable to load metadata - no action
     end
-
-end
 
 
 linkaxes(subPlotAxes, 'x')
 dynamicDateTicks;
 
-titleFormatString = '%s-%s Data for A230 Launches - Charging';
+titleFormatString = '%s-%s Data for A230 Launches - %s';
 
-axes(subPlotAxes(1));
-title(sprintf(titleFormatString, fdT.Type, fdT.ID));
-reviewPlotAllTimelineEvents(timeline)
-legend SHOW;
+for a = 1:numel(dataFileNames)
 
-axes(subPlotAxes(2));
-title(sprintf(titleFormatString, fd.Type, fd.ID));
-reviewPlotAllTimelineEvents(timeline)
+    load(fullfile(dataFolders{f}, dataFileNames{a}));
+    axes(subPlotAxes(a));
+    title(sprintf(titleFormatString, fd.Type, fd.ID, EventString));
+    reviewPlotAllTimelineEvents(timeline)
+    legend SHOW;
+end
 
-legend SHOW;
 
 
     end
