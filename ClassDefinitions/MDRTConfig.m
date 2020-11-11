@@ -538,14 +538,18 @@ classdef MDRTConfig < handle
             %correctly capitalized version. This allows the configuration
             %file to be case insensitive.
 
-            matchIndex = cellfun(@(x)( ~isempty(x) ), regexpi(keyName, this.validConfigKeyNames) );
+            
+            isValid = false;
+            fixedKeyName = '';
 
-            fixedKeyName = this.validConfigKeyNames{matchIndex};
-
-            if isempty(fixedKeyName)
-                isValid = false;
-            else
-                isValid = true;
+            bMatchIndex = cellfun(@(x)( ~isempty(x) ), regexpi(keyName, this.validConfigKeyNames) );
+            
+            if any(bMatchIndex, 1)
+                matchIndex = find(bMatchIndex, 1, 'first');
+                fixedKeyName = this.validConfigKeyNames{matchIndex};
+                if ~ isempty(fixedKeyName)
+                    isValid = true;
+                end
             end
 
         end
