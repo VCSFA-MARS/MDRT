@@ -31,6 +31,7 @@ tank = struct;
     
     
 hPipe = 30 - 11.145;            % inches - height from outer shell to top of insulation. Minus space between shells
+hPipe = 18.5;                   % inches - from bottom of tank to center line of bottom-fill line
 dPipe = 2;                      % 2" line
 
 
@@ -46,7 +47,7 @@ p2raw = @(h) round(h./10 * 30000);
 raw2vol = @(h) polyval(C, h);
 
 
-figure;
+figure = makeMDRTPlotFigure;
 
 plot(tnkVol(0:tank.radius*2), 'displayname', 'True Volume');
 hold on; plot(raw2vol(p2raw(headPress( 0:tank.radius*2 ))), '-g', 'displayname', 'FCS Volume')
