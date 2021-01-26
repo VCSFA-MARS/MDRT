@@ -1,4 +1,5 @@
-dataFolder='/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data'
+dataFolder='/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
+dataFolder='/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data'
 timelineFile=fullfile(dataFolder, 'timeline.mat');
 
 
@@ -85,6 +86,7 @@ valveFiles = {'2010 LO2 DCVNO-2010 State.mat';
               '2013 LO2 PCVNO-2013 State.mat';
               '2014 LO2 PCVNO-2014 State.mat'};
           
+stateFile = { 'LOLS Stop Flow State.mat' };
 
 allFDs = [];
 for fn = 1:numel(dataFiles)
@@ -165,13 +167,14 @@ for ind = 1:length(sfInd)
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
     end
     
+    
     dynamicDateTicks; set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
     reviewPlotAllTimelineEvents(timeline)
     title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
     xlim(timeInterval);
     ylim([ 0, 275] );
     hline(10, '--r');
-    
+
     MDRTannotation('textarrow', timeToStopFlow, P1, P2);
     
     % Bottom Plot (Valve State)
@@ -181,6 +184,15 @@ for ind = 1:length(sfInd)
         fd = valveFDs(fn);
         hold on
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
+    end
+    
+    % Display Stop Flow State
+    try
+        load( fullfile( dataFolder, stateFile{1} ) );
+        hold on
+        stairs(fd.ts.Time, fd.ts.Data, 'displayName', 'Stop Flow State');
+    catch
+        disp(sprintf('\tState FD not found'))
     end
     
     dynamicDateTicks; set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
