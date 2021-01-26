@@ -377,7 +377,7 @@ for graphNumber = 1:numberOfGraphs
         % ensure the viewer can clearly see the data along the top and
         % bottom of the plot.
         
-        commonStateLimits = [1 2 3];
+        commonStateLimits = [1 2 3 100];
         
         for i = 1:numel(subPlotAxes)
             y_lim = subPlotAxes(i).YLim;
@@ -387,7 +387,7 @@ for graphNumber = 1:numberOfGraphs
             if ismember(y_upper, commonStateLimits) && (y_lower == 0)
                 y_upper = y_upper + 0.1;
                 y_lower = y_lower - 0.1;
-                subPlotAxes.YLim = [y_lower, y_upper];
+                subPlotAxes(i).YLim = [y_lower, y_upper];
             end
         end
 
