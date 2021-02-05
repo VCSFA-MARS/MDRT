@@ -52,21 +52,34 @@ function updateSearchResults(hObj, event, varargin)
 
     
 % get handle to the list of search results
-    if isempty(hObj.UserData)
-        lsr = findobj(hDataHolder,'tag', 'listSearchResults');
-    else
-        lsr = hObj.UserData;
+
+    switch hObj.Style
+        case 'popupmenu'
+            % get handle to the search box (for sure!)
+            hebox = findobj(hDataHolder, 'tag', 'searchBox');
+            % Access the Java object to get the stupid text. Why, Matlab? Why?
+            jebh = findjobj(hebox);
+            
+        case 'edit'
+            hebox = hObj;
+            jebh = findjobj(hObj);
     end
     
-    % get handle to the search box (for sure!)
+    if isempty(hebox.UserData)
+        lsr = findobj(hDataHolder,'tag', 'listSearchResults');
+    else
+        lsr = hebox.UserData;
+    end
+    
+    
 %     hebox = findobj(hDataHolder, 'tag', 'searchBox'); % Why did I search
 %     instead of using the hObj handle?
     
     
     % Access the Java object to get the stupid text. Why, Matlab? Why?
-%     ebh = findjobj(hebox);
-    ebh = findjobj(hObj);
-    searchString =  char(ebh.getText);
+%     
+    
+    searchString =  char(jebh.getText);
     
     % TODO: Modify search to allow multiple search tokens in any order.
     % Break abart using whitespace and assemble indeces for each token?

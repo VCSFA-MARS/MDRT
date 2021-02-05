@@ -258,7 +258,7 @@ debugout(allDataSetNames)
                         
 % Populate fd list
 
-    updateSearchResults(hs.edit_searchField);
+%     updateSearchResults(hs.edit_searchField);
 
     
     function doWindowResize(o, ~)
