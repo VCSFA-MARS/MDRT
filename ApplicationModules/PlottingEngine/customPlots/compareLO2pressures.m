@@ -8,17 +8,35 @@ dataFolders = {
 	'/Users/nick/data/archive/2019-11-01 - NG-12';
 	'/Users/nick/data/archive/2020-02-09_NG-13';
 	'/Users/nick/data/archive/2020-02-14_NG-13-2';
-	'/Users/nick/data/archive/2020-02-15 - NG-13 Launch'; ...
-    '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub' ; ...
+	'/Users/nick/data/archive/2020-02-15 - NG-13 Launch';
+    '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub';
+    '/Users/nick/data/archive/2020-10-02 - NG-14 Launch'; ...
 };
 
 
-dataFileName1 = '1016 RP1 FM-1016 Coriolis Meter Mon.mat';
-dataFileName2 = '1017 RP1 FM-1017 Turbine Meter Mon.mat';
+sensorFiles = { '2913 LO2 PT-2913 Press Sensor Mon.mat';
+                '2904 LO2 PT-2904 Press Sensor Mon.mat';
+                '2906 LO2 PT-2906 Press Sensor Mon.mat';
+                '2918 LO2 PT-2918 Press Sensor Mon.mat';
+                '2112 LO2 PT-2112 Press Sensor Mon.mat';
+                '2909 LO2 PT-2909 Press Sensor Mon.mat';
+                'DOZM.mat'; ...
+                };
 
-% EventString = 'Prime FLS Transfer Line';
-EventString = 'FGSE FLS High Flow Fill Command';
-EventFD = 'GHe-W Charge Cmd';
+
+dataFileName1  = '2918 LO2 PT-2918 Press Sensor Mon.mat';
+% dataFileName11 = '2112 LO2 PT-2112 Press Sensor Mon.mat';
+dataFileName2  = '2906 LO2 PT-2906 Press Sensor Mon.mat';
+
+
+dataFileName1 = '2112 LO2 PT-2112 Press Sensor Mon.mat'
+dataFileName2 = '2909 LO2 PT-2909 Press Sensor Mon.mat'
+
+EventString = 'FGSE LOLS Low Flow Fill Command';
+EventFD = 'LOLS LLFO Cmd';
+
+EventString = 'LOLS Chilldown Transfer Line Phase 1';
+EventFD = 'LOLS Chilldown Phase1 Cmd'
 
 % Constants
 onehr = 1/24;
@@ -28,6 +46,7 @@ onesec = onemin/60;
 fig = makeMDRTPlotFigure;
 
 colors = {      [0.6 0.6 0.6];
+                [0.6 0.6 0.6];
                 [0.6 0.6 0.6];
                 [0.6 0.6 0.6];
                 [0.6 0.6 0.6];
@@ -63,7 +82,7 @@ eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
 
 tf = timeline.milestone(eventInd).Time;
 
-% tf=timeline.t0.time;
+tf=timeline.t0.time;
 
 
 
@@ -86,26 +105,32 @@ for f = 1:numel(dataFolders)
           
         to = timeline.milestone(eventInd).Time;
 
-    %     deltaT = tf - timeline.t0.time;
-        deltaT = tf - to;
+        deltaT = tf - timeline.t0.time;
+%         deltaT = tf - to;
 
 
         disp(sprintf('%s : DeltaT = %1.8f', metaData.operationName, deltaT))
 
 
-        axes(subPlotAxes(1)); % 4913
+        axes(subPlotAxes(1)); % 2904
             hold on;
             ht = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
                 'Color',                colors{f}, ...
                 'DisplayName',          metaData.operationName);
+            
+            topTitle = sprintf('%s-%s Data for A230 Launches - Loading', ...
+                fd.Type, fd.ID);
 
-        axes(subPlotAxes(2)); % 4914
+        axes(subPlotAxes(2)); % 2906
             hold on;
             % load(loxdata{f});
             load( fullfile( dataFolders{f}, 'data',  dataFileName2) );
             hb = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
                 'Color',                colors{f}, ...
                 'DisplayName',          metaData.operationName);
+            
+            botTitle = sprintf('%s-%s Data for A230 Launches - Loading', ...
+                fd.Type, fd.ID);
 
             htop = vertcat(htop, ht);
             hbot = vertcat(hbot, hb);
@@ -117,19 +142,18 @@ for f = 1:numel(dataFolders)
 end
 
 reviewPlotAllTimelineEvents(timeline)
+linkaxes(subPlotAxes, 'x');
+dynamicDateTicks;
+legend SHOW;
 
 
+axes(subPlotAxes(1));
+title(topTitle);
 
+axes(subPlotAxes(2));
+title(botTitle);
 
-axes(subPlotAxes(1)); % 4901
-    title('FM-1016 (Coriolis) Data for A230 Launches - Charging');
-    legend SHOW;
-    dynamicDateTicks;
-
-axes(subPlotAxes(2)); % 4901
-    title('FM-1017 (Turbine) Data for A230 Launches - Charging');
-    legend SHOW;
-    dynamicDateTicks;
+legend SHOW;
 
 htop(1).XData = htop(1).XData - (onesec * 2.5);
 hbot(1).XData = hbot(1).XData - (onesec * 2.5);

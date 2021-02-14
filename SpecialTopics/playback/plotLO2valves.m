@@ -5,7 +5,7 @@ dataPath = '/Users/nick/data/archive/2019-11-01 - NG-12/data'
 % dataPath = '/Users/nick/data/archive/2018-11-16 - NG10 Topoff/data';
 % dataPath = '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 
-config = getConfig;
+dataPath = uigetdir(dataPath, 'Select data folder');
 
 % [x,y,button] = ginput(1)
 
@@ -101,8 +101,8 @@ end
 
 %% Plot Data Stream
 
-% flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
-flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
+flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
+% flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
 % flowData = '4919 Ghe PT-4919 Press Sensor Mon.mat';
 
 % statData = 'LO2TopOffStatus.mat';
@@ -170,9 +170,18 @@ hf.WindowButtonUpFcn = @stopDragFcn;
 combinedTimeVector = [];
  
  for i = 1:n
-     temp = load(fullfile(dataPath, links{i,1}));
-     fd.(links{i,2}) = temp.fd;
-     combinedTimeVector = vertcat(combinedTimeVector, temp.fd.ts.Time);
+     try         
+         temp = load(fullfile(dataPath, links{i,1}));
+         fd.(links{i,2}) = temp.fd;
+         combinedTimeVector = vertcat(combinedTimeVector, temp.fd.ts.Time);
+     catch
+         disp(sprintf('%s data %s not found', links{i,3}, links{i,1}))
+         blankFd = newFD;
+         blankFd.ts = timeseries([0 0], [0 now]);
+         
+         fd.(links{i,2}) = blankFd;
+         combinedTimeVector = vertcat(combinedTimeVector, blankFd.ts.Time);
+     end
  end
 
 clear temp;
