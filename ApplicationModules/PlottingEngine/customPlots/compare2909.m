@@ -8,17 +8,22 @@ dataFolders = {
 	'/Users/nick/data/archive/2019-11-01 - NG-12';
 	'/Users/nick/data/archive/2020-02-09_NG-13';
 	'/Users/nick/data/archive/2020-02-14_NG-13-2';
-	'/Users/nick/data/archive/2020-02-15 - NG-13 Launch'; ...
-    '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub' ; ...
+	'/Users/nick/data/archive/2020-02-15 - NG-13 Launch';
+    '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub';
+    '/Users/nick/data/archive/2020-10-02 - NG-14 Launch'; ...
 };
 
 
-dataFileName1 = '1016 RP1 FM-1016 Coriolis Meter Mon.mat';
-dataFileName2 = '1017 RP1 FM-1017 Turbine Meter Mon.mat';
+dataFileName1  = '2909 LO2 PT-2909 Press Sensor Mon.mat';
+dataFileName11 = '2112 LO2 PT-2112 Press Sensor Mon.mat';
+dataFileName2  = '2112 LO2 PT-2112 Press Sensor Mon.mat';
 
 % EventString = 'Prime FLS Transfer Line';
-EventString = 'FGSE FLS High Flow Fill Command';
+EventString = 'LOLS Chilldown Transfer Line Phase 3';
 EventFD = 'GHe-W Charge Cmd';
+
+Title1 = '2029 Valve Position';
+Title2 = 'LO2 Flow Rates';
 
 % Constants
 onehr = 1/24;
@@ -28,7 +33,6 @@ onesec = onemin/60;
 fig = makeMDRTPlotFigure;
 
 colors = {      [0.6 0.6 0.6];
-                [0.6 0.6 0.6];
                 [0.6 0.6 0.6];
                 [0.6 0.6 0.6];
                 [0.6 0.6 0.6];
@@ -48,9 +52,12 @@ colors = {      [0.6 0.6 0.6];
         GraphsPlotMargin = 0.06;
         numberOfSubplots = 2;
         
+        SPH = 3;
+        SPW = 4;
+        
         legendFontSize = [8];
         
-subPlotAxes = MDRTSubplot(numberOfSubplots,1,graphsPlotGap, ... 
+subPlotAxes = MDRTSubplot(SPH,SPW,graphsPlotGap, ... 
                                 GraphsPlotMargin,GraphsPlotMargin);
                             
 
@@ -93,22 +100,33 @@ for f = 1:numel(dataFolders)
         disp(sprintf('%s : DeltaT = %1.8f', metaData.operationName, deltaT))
 
 
-        axes(subPlotAxes(1)); % 4913
+        axes(subPlotAxes(f)); % 2909
             hold on;
-            ht = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
-                'Color',                colors{f}, ...
-                'DisplayName',          metaData.operationName);
-
-        axes(subPlotAxes(2)); % 4914
-            hold on;
-            % load(loxdata{f});
-            load( fullfile( dataFolders{f}, 'data',  dataFileName2) );
-            hb = plot(fd.ts.Time + deltaT, fd.ts.Data, ...
-                'Color',                colors{f}, ...
-                'DisplayName',          metaData.operationName);
+            ht = stairs(fd.ts.Time + deltaT, fd.ts.Data, ...
+                'Color',                [0 0 1], ...
+                'DisplayName',          '2909');
+        
+        try
+            load( fullfile( dataFolders{f}, 'data',  dataFileName11) );
+            stairs(fd.ts.Time + deltaT, fd.ts.Data, ...
+                'Color',                [0 0.6 0], ...
+                'DisplayName',          '2112');
+        catch
+            disp(sprintf('%s file not found', dataFileName11) )
+        end
+            
+            
+        hl = legend('show');
+        hl.Interpreter = 'none';
+        
+        htl = title(metaData.operationName);
+        htl.Interpreter = 'none';
+        
+        subPlotAxes(f).YLim = [0 150];
+        dynamicDateTicks;
 
             htop = vertcat(htop, ht);
-            hbot = vertcat(hbot, hb);
+%             hbot = vertcat(hbot, hb);
             
     else
         % No matching dude was found - skip that mission
@@ -116,21 +134,21 @@ for f = 1:numel(dataFolders)
         
 end
 
-reviewPlotAllTimelineEvents(timeline)
+reviewPlotAllTimelineEvents(timeline);
+linkTimeAxes(subPlotAxes);
 
 
 
-
-axes(subPlotAxes(1)); % 4901
-    title('FM-1016 (Coriolis) Data for A230 Launches - Charging');
-    legend SHOW;
-    dynamicDateTicks;
-
-axes(subPlotAxes(2)); % 4901
-    title('FM-1017 (Turbine) Data for A230 Launches - Charging');
-    legend SHOW;
-    dynamicDateTicks;
+% axes(subPlotAxes(1)); % 4901
+%     title(Title1);
+%     legend SHOW;
+%     dynamicDateTicks;
+% 
+% axes(subPlotAxes(2)); % 4901
+%     title(Title2);
+%     legend SHOW;
+%     dynamicDateTicks;
 
 htop(1).XData = htop(1).XData - (onesec * 2.5);
-hbot(1).XData = hbot(1).XData - (onesec * 2.5);
+% hbot(1).XData = hbot(1).XData - (onesec * 2.5);
 
