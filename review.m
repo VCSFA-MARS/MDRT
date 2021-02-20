@@ -106,7 +106,10 @@ if exist(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'file')
         % add the list to the GUI menu
         set(handles.uiPopup_FDList, 'String', FDList(:,1));
     catch
-        warning('Unable to read FD List. Check file permissions');
+        wrnMsg = sprintf('%s %s\n%s', 'Unable to read FD List.', ...
+            'Check file permissions.', ...
+            'Select "Update FD List" as a temporary workaround.');
+        warning(wrnMsg);
     end
 else
     
@@ -456,7 +459,7 @@ function writeFDListToDisk(FDList, handles)
             end
         end
         
-        msgTxt = sprintf('Unable to save updated FD List to disk.\nAvailableFDs.mat can not be written.\nFile has the following permissions: %s', msgTxt)
+        msgTxt = sprintf('Unable to save updated FD List to disk.\nAvailableFDs.mat can not be written.\nFile has the following permissions: %s', msgTxt);
         
         warning(msgTxt);
     end
