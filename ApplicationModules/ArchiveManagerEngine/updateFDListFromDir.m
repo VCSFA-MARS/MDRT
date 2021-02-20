@@ -32,3 +32,5 @@ for i = 1:numel(fileNames)
 end
 
 % TODO: Step through FDList and delete entries without corresponding files
+
+% Return FDList array
