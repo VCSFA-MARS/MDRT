@@ -97,15 +97,17 @@ handles.quickPlotFDs = cell(1);
 % AvailableFDs.mat
 
 if exist(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'file')
-   
-    load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
-    
-    % Add the loaded list to the GUI handles structure
-    handles.quickPlotFDs = FDList;
-    
-    % add the list to the GUI menu
-    set(handles.uiPopup_FDList, 'String', FDList(:,1));
-    
+	try
+        load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
+
+        % Add the loaded list to the GUI handles structure
+        handles.quickPlotFDs = FDList;
+
+        % add the list to the GUI menu
+        set(handles.uiPopup_FDList, 'String', FDList(:,1));
+    catch
+        warning('Unable to read FD List. Check file permissions');
+    end
 else
     
     % TODO: Should this do something if the file isn't there... maybe do
