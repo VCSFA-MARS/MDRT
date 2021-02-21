@@ -21,9 +21,16 @@ function [ titleString ] = parseGraphTitle( titleString )
 % Fourth column     defines what text will be inserted "if true"
 
 tags = {
-    '<operation>',  'operationName',    'str',      '';
-    '<procedure>',  'MARSprocedureName','str',      '';
-    '<vehicle>',    'isVehicleOp',      'iftrue',   'Vehicle Support'
+    '<operation>',       'operationName',    'str',      '';
+    '<operationname>',   'operationName',    'str',      '';
+    '<operation-name>',  'operationName',    'str',      '';
+    '<procedure>',       'MARSprocedureName','str',      '';
+    '<marsprocedure>',   'MARSprocedureName','str',      '';
+    '<mars-procedure>',  'MARSprocedureName','str',      '';
+    '<vehicle>',         'isVehicleOp',      'iftrue',   'Vehicle Support';
+    '<vehiclesupport>',  'isVehicleOp',      'iftrue',   'Vehicle Support';
+    '<vehicle-support>', 'isVehicleOp',      'iftrue',   'Vehicle Support';
+    '<isvehicleop>',     'isVehicleOp',      'iftrue',   'Vehicle Support';
 };
 
 
