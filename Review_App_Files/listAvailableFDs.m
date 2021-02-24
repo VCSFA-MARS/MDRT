@@ -43,16 +43,20 @@ function [ availFDs ] = listAvailableFDs( path, fileType )
 
                 % TODO: Fix error case where file is named *.mat but is NOT 
                 % a -mat file. Loader quits with an error
+                
+                try
+                    F = load(fullfile(path, filesOfType(i).name),'-mat');
+                    % disp(sprintf('%s',[fd.Type '-' fd.ID]))
 
-                F = load(fullfile(path, filesOfType(i).name),'-mat');
-                % disp(sprintf('%s',[fd.Type '-' fd.ID]))
+                    if isfield(F, 'fd')
 
-                if isfield(F, 'fd')
+            %             availFDs{i,1} = sprintf('%s     %s-%s',F.fd.ID,F.fd.Type,F.fd.ID);
+                        availFDs{i,1} = sprintf('%s     %s',F.fd.ID, F.fd.FullString);
+                        availFDs{i,2} = filesOfType(i).name;
 
-        %             availFDs{i,1} = sprintf('%s     %s-%s',F.fd.ID,F.fd.Type,F.fd.ID);
-                    availFDs{i,1} = sprintf('%s     %s',F.fd.ID, F.fd.FullString);
-                    availFDs{i,2} = filesOfType(i).name;
-
+                    end
+                catch
+                    % Nothing to do at this time - silently ignore malformed files
                 end
                 
             end

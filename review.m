@@ -97,15 +97,20 @@ handles.quickPlotFDs = cell(1);
 % AvailableFDs.mat
 
 if exist(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'file')
-   
-    load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
-    
-    % Add the loaded list to the GUI handles structure
-    handles.quickPlotFDs = FDList;
-    
-    % add the list to the GUI menu
-    set(handles.uiPopup_FDList, 'String', FDList(:,1));
-    
+	try
+        load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
+
+        % Add the loaded list to the GUI handles structure
+        handles.quickPlotFDs = FDList;
+
+        % add the list to the GUI menu
+        set(handles.uiPopup_FDList, 'String', FDList(:,1));
+    catch
+        wrnMsg = sprintf('%s %s\n%s', 'Unable to read FD List.', ...
+            'Check file permissions.', ...
+            'Select "Update FD List" as a temporary workaround.');
+        warning(wrnMsg);
+    end
 else
     
     % TODO: Should this do something if the file isn't there... maybe do
@@ -388,8 +393,6 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
 % Calls helper function to list the FDs
     FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
     
-    
-    
     if ~isempty(FDList)
 
         % adds to the GUI handles and
@@ -412,7 +415,7 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
             handles.uiPopup_FDList.Value = v;
 
         % Write the new list to disk
-            save(fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat'),'FDList');
+            writeFDListToDisk(FDList, handles);
             
     else
         
@@ -430,13 +433,36 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
             debugout('Old AvailableFDs.mat does not match current directory');
             debugout(setdiff(T.FDList, FDList));
             debugout('Saving new AvailableFDs.mat');
-            save(fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat'),'FDList');
+            writeFDListToDisk(FDList, handles);
         end
             
     end
         
 
 guidata(hObject, handles);
+
+
+% - used to write FDList / FDIndex to disk. Checks for permissions and
+% fails gracefully with a warning message to the user.
+function writeFDListToDisk(FDList, handles)
+
+    fullFileName = fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat');
+    try
+        save(fullFileName,'FDList');
+    catch
+        [status,values] = fileattrib(fullFileName);
+        fields={'UserRead','UserWrite','UserExecute','GroupRead','GroupWrite','GroupExecute'};
+        msgTxt = '';
+        for i = 1:numel(fields)
+            if values.(fields{i})
+                msgTxt = sprintf('%s %s', msgTxt, fields{i});
+            end
+        end
+        
+        msgTxt = sprintf('Unable to save updated FD List to disk.\nAvailableFDs.mat can not be written.\nFile has the following permissions: %s', msgTxt);
+        
+        warning(msgTxt);
+    end
 
 
 % --- Executes on button press in uiButton_refreshTimelineEvents.
