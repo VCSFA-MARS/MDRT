@@ -33,6 +33,7 @@ dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is fro
     iRowsToRemove=true(length(FDList), 1);
     newFDListEntries={};
     workingFDList=FDList;
+    numEntriesUpdated = 0;
     
 % Step through each file that has changed
 for i = 1:numel(fileNames)
@@ -57,6 +58,7 @@ for i = 1:numel(fileNames)
             if isprop(mf, 'fd') % update the appropriate row
                 fd = mf.fd; % Actually loads file
                 workingFDList(iThisFileInDir,:) = { fd.FullString, fileNames{i} };
+                numEntriesUpdated = numEntriesUpdated + 1;
             end
             
         else % ---------------------------------------------- File is older
@@ -72,11 +74,20 @@ for i = 1:numel(fileNames)
     
 end
 
-% Rmove invalid FDList Entries
+% Report on updated entries
+    if numEntriesUpdated
+        debugout( sprintf('Updated %n rows ', numEntriesUpdated ));
+    else
+        debugout( 'Nothing to update')
+    end
 
+
+% Remove invalid FDList Entries
     if any(iRowsToRemove)
         debugout( sprintf('Found %n rows to remove', sum(iRowsToRemove) ));
         debugout( workingFDList(iRowsToRemove, :) );
+    else
+        debugout( 'Nothing to remove')
     end
     workingFDList(iRowsToRemove, :) = [];
     
@@ -84,6 +95,8 @@ end
     if numel(newFDListEntries)
         debugout( sprintf('Found %n rows to add', size(newFDListEntries,1) ));
         debugout( newFDListEntries );
+    else
+        debugout( 'Nothing to add')
     end
     workingFDList = vertcat(workingFDList, newFDListEntries);
 
