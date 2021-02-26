@@ -13,7 +13,7 @@ dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is fro
     fileNames = {files.name}';
 
 % Find index of AvailableFDs.mat and last modified time
-    AFDIDX = find(strcmp([fileNames], 'AvailableFDs.mat'));
+    AFDIDX = find(strcmp([fileNames], dataSetIndexFileName));
     timeHack = fileDates(AFDIDX);
     
     debugout(sprintf('Found %s : updated at %s', ...
