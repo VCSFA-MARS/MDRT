@@ -15,6 +15,10 @@ dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is fro
 % Find index of AvailableFDs.mat and last modified time
     AFDIDX = find(strcmp([fileNames], 'AvailableFDs.mat'));
     timeHack = fileDates(AFDIDX);
+    
+    debugout(sprintf('Found %s : updated at %s', ...
+                        dataSetIndexFileName, ...
+                        datestr(timeHack) ))
 
 % Remove AvailableFDs from file list
     files(AFDIDX)=[];
@@ -69,8 +73,18 @@ for i = 1:numel(fileNames)
 end
 
 % Rmove invalid FDList Entries
+
+    if any(iRowsToRemove)
+        debugout( sprintf('Found %n rows to remove', sum(iRowsToRemove) ));
+        debugout( workingFDList(iRowsToRemove, :) );
+    end
     workingFDList(iRowsToRemove, :) = [];
+    
 % Append new FDList Entries
+    if numel(newFDListEntries)
+        debugout( sprintf('Found %n rows to add', size(newFDListEntries,1) ));
+        debugout( newFDListEntries );
+    end
     workingFDList = vertcat(workingFDList, newFDListEntries);
 
 FDList = workingFDList
