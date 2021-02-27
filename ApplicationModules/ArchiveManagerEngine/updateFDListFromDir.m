@@ -121,10 +121,12 @@ progressbar( sprintf('Processing %s', dataSetPath) );
 for i = 1:numel(fileNames)
     
     iThisFileInDir = ismember(FDList(:,2), fileNames{i});
-    % % mf = matfile(fullfile(dataSetPath, fileNames{i} ));
-    c  = who( '-file', fullfile(dataSetPath, fileNames{i} ) );
+    
         
     if ~any(iThisFileInDir) % ---------------- Filename not found in FDList
+        
+        % % mf = matfile(fullfile(dataSetPath, fileNames{i} ));
+        c  = who( '-file', fullfile(dataSetPath, fileNames{i} ) ); % Do this in the conditional to avoid unnecessary loading
 
         % Add info to "newFDListEntries" for merging later
         % % if isprop(mf, 'fd')
@@ -139,6 +141,9 @@ for i = 1:numel(fileNames)
         iRowsToRemove(i) = false; % In FDList and Dir. 
         
         if fileDates(i) > timeHack % ------------------------ File is newer
+            
+            % % mf = matfile(fullfile(dataSetPath, fileNames{i} ));
+            c  = who( '-file', fullfile(dataSetPath, fileNames{i} ) ); % Do this in the conditional to avoid unnecessary loading
         
             % % if isprop(mf, 'fd') % update the appropriate row
             if ismember(c, 'fd')
