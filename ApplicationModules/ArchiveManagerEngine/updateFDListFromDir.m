@@ -12,23 +12,34 @@ function FDList = updateFDListFromDir( varargin )
 %
 %   'save'      - write to default is 'yes'
 %   'filename'  - user may specify data index filename
-%   'path'
-
-
+%   'prompt'    - prompt user before overwriting an existing index file
+%
+% Valid 'Yes' Values:
+%   {'yes','true',  'on'}
+%
+% Valid 'No' Values:
+%   {'no', 'false', 'off'}
+%
 
 config = MDRTConfig.getInstance;
 
+
+
 %% Set up function options/arguments/parameters
 
+YES = {'yes','true', 'on'};
+NO = {'no', 'false','off'};
+
 % Parameter for index file name
-defaultIndexFileName = 'AvailableFDs.mat';
+    defaultIndexFileName = 'AvailableFDs.mat';
 
 % Parameter to write index file to disk
-defaultSave = 'no';
-    validSaveYES = {'yes','true', 'on'};
-    validSaveNO  = {'no', 'false','off'};
-    isValidSaveValue = @(x) any(ismember([validSaveNO validSaveYES],x));
-
+    defaultSave = 'no';
+    isValidSaveValue = @(x) any(ismember([YES NO],x));
+   
+% Parameter to prompt when overwriting an existing index file
+    defaultPrompt = 'no';
+    isVaidPromptValue = @(x) any(ismember([YES NO],x));
 % Optional argument to override path    
 defaultDataPath = config.workingDataPath;
 
@@ -36,19 +47,37 @@ p = inputParser;
     p.addOptional('path',       defaultDataPath,        @isdir);
     p.addParameter('save',      defaultSave,            isValidSaveValue);
     p.addParameter('filename',  defaultIndexFileName);
+    p.addParameter('prompt',    defaultPrompt,          isVaidPromptValue);
 
 
 
 %% Parse function options
 
-parse(p,varargin{:})
-p.Results.filename
+parse(p,varargin{:});
+debugout(p.Results);
 
-dataSetPath = p.Results.path;               debugout(dataSetPath);
-dataSetIndexFileName = p.Results.filename;  debugout(dataSetIndexFileName);
-shouldSaveIndex = p.Results.save;           debugout(shouldSaveIndex);
+dataSetPath = p.Results.path;
+dataSetIndexFileName = p.Results.filename;
+                                           
+shouldSaveIndex = false;
+switch p.Results.save
+    case YES
+        shouldSaveIndex = true;
+    case NO
+        shouldSaveIndex = false;
+    otherwise
+        shouldSaveIndex = false;
+end
 
-
+shouldPromptOverwrite = false;
+switch p.Results.prompt
+    case YES
+        shouldPromptOverwrite = true;
+    case NO
+        shouldPromptOverwrite = false;
+    otherwise
+        shouldPromptOverwrite = false;
+end
 
 %% Get directory and index info
 
@@ -72,9 +101,11 @@ shouldSaveIndex = p.Results.save;           debugout(shouldSaveIndex);
     files(AFDIDX)=[];
     fileDates(AFDIDX)=[];
     fileNames(AFDIDX)=[];
-
+    debugout(sprintf('%d files in %s', length(files), dataSetPath))
+    
 % Load existing FD List
     load(fullfile(dataSetPath, dataSetIndexFileName))
+    debugout(sprintf('%d rows in FDList()', size(FDList, 1)))
 
 % Index initialization
     iFilesToAdd=false(numel(fileNames), 1);
@@ -84,17 +115,23 @@ shouldSaveIndex = p.Results.save;           debugout(shouldSaveIndex);
     numEntriesUpdated = 0;
     
 % Step through each file that has changed
+
+progressbar( sprintf('Processing %s', dataSetPath) );
+
 for i = 1:numel(fileNames)
     
     iThisFileInDir = ismember(FDList(:,2), fileNames{i});
-    mf = matfile(fullfile(dataSetPath, fileNames{i} ));
+    % % mf = matfile(fullfile(dataSetPath, fileNames{i} ));
+    c  = who( '-file', fullfile(dataSetPath, fileNames{i} ) );
         
     if ~any(iThisFileInDir) % ---------------- Filename not found in FDList
 
         % Add info to "newFDListEntries" for merging later
-        if isprop(mf, 'fd')
-            fd = mf.fd; % Actually loads file
-            newFDListEntries = vertcat(newFDListEntries, { fd.FullString, fileNames{i} });
+        % % if isprop(mf, 'fd')
+        if ismember(c, 'fd')
+            % % fd = mf.fd; % Actually loads file
+            s = load( fullfile(dataSetPath, fileNames{i}), '-mat' );
+            newFDListEntries = vertcat(newFDListEntries, { s.fd.FullString, fileNames{i} });
         end
 
     else % --------------------------------------- Filename found in FDList
@@ -103,9 +140,12 @@ for i = 1:numel(fileNames)
         
         if fileDates(i) > timeHack % ------------------------ File is newer
         
-            if isprop(mf, 'fd') % update the appropriate row
-                fd = mf.fd; % Actually loads file
-                workingFDList(iThisFileInDir,:) = { fd.FullString, fileNames{i} };
+            % % if isprop(mf, 'fd') % update the appropriate row
+            if ismember(c, 'fd')
+                % % fd = mf.fd; % Actually loads file
+                s = load( fullfile(dataSetPath, fileNames{i}), '-mat' );
+                % % workingFDList(iThisFileInDir,:) = { fd.FullString, fileNames{i} };
+                workingFDList(iThisFileInDir,:) = { s.fd.FullString, fileNames{i} };
                 numEntriesUpdated = numEntriesUpdated + 1;
             end
             
@@ -120,11 +160,15 @@ for i = 1:numel(fileNames)
     
     end
     
+    progressbar( i/numel(fileNames) )
+    
 end
+
+progressbar(1)
 
 % Report on updated entries
     if numEntriesUpdated
-        debugout( sprintf('Updated %n rows ', numEntriesUpdated ));
+        debugout( sprintf('Updated %d rows ', numEntriesUpdated ));
     else
         debugout( 'Nothing to update')
     end
@@ -132,21 +176,58 @@ end
 
 % Remove invalid FDList Entries
     if any(iRowsToRemove)
-        debugout( sprintf('Found %n rows to remove', sum(iRowsToRemove) ));
+        debugout( sprintf('Found %d rows to remove', sum(iRowsToRemove) ));
         debugout( workingFDList(iRowsToRemove, :) );
+        debugout( length(workingFDList) )
+        workingFDList(iRowsToRemove, :) = [];
+        debugout( length(workingFDList) )
     else
         debugout( 'Nothing to remove')
     end
-    workingFDList(iRowsToRemove, :) = [];
+    
     
 % Append new FDList Entries
     if numel(newFDListEntries)
-        debugout( sprintf('Found %n rows to add', size(newFDListEntries,1) ));
+        debugout( sprintf('Found %d rows to add', size(newFDListEntries,1) ));
         debugout( newFDListEntries );
     else
         debugout( 'Nothing to add')
     end
+    
+    debugout( length(workingFDList) )
     workingFDList = vertcat(workingFDList, newFDListEntries);
-
+    debugout( length(workingFDList) )
+    
 FDList = workingFDList;
 
+%% Save index to file
+
+
+if shouldSaveIndex
+    debugout( sprintf('Saving index to %s', dataSetIndexFileName) );
+    
+    if exist( fullfile(dataSetPath, dataSetIndexFileName) , 'file' )
+        debugout('Prompting user to overwrite existing file' );
+        
+        if shouldPromptOverwrite
+            question = sprintf('Do you want to overwrite the existing %s', ...
+                                    dataSetIndexFileName );
+            dlgtitle = 'Overwrite file?';
+            
+            result = questdlg(question, dlgtitle);
+            
+            switch lower(result)
+                case YES
+                    % proceed
+                    debugout('User selected YES - overwriting')
+                otherwise
+                    debugout('User selected NO - returning without writing')
+                    % Skip writing file
+                    return
+            end 
+        end
+    end
+    
+    save(fullfile(dataSetPath, dataSetIndexFileName), 'FDList')
+    
+end
