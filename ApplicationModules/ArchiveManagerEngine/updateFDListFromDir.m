@@ -113,6 +113,7 @@ end
     newFDListEntries={};
     workingFDList=FDList;
     numEntriesUpdated = 0;
+    isFDListModified = false;
     
 % Step through each file that has changed
 
@@ -174,6 +175,7 @@ progressbar(1)
 % Report on updated entries
     if numEntriesUpdated
         debugout( sprintf('Updated %d rows ', numEntriesUpdated ));
+        isFDListModified = true;
     else
         debugout( 'Nothing to update')
     end
@@ -186,6 +188,7 @@ progressbar(1)
         debugout( length(workingFDList) )
         workingFDList(iRowsToRemove, :) = [];
         debugout( length(workingFDList) )
+        isFDListModified = true;
     else
         debugout( 'Nothing to remove')
     end
@@ -195,6 +198,7 @@ progressbar(1)
     if numel(newFDListEntries)
         debugout( sprintf('Found %d rows to add', size(newFDListEntries,1) ));
         debugout( newFDListEntries );
+        isFDListModified = true;
     else
         debugout( 'Nothing to add')
     end
@@ -208,7 +212,7 @@ FDList = workingFDList;
 %% Save index to file
 
 
-if shouldSaveIndex
+if shouldSaveIndex && isFDListModified
     debugout( sprintf('Saving index to %s', dataSetIndexFileName) );
     
     if exist( fullfile(dataSetPath, dataSetIndexFileName) , 'file' )
