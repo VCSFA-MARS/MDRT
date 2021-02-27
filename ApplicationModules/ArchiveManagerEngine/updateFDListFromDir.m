@@ -18,6 +18,7 @@ function FDList = updateFDListFromDir( varargin )
 
 config = MDRTConfig.getInstance;
 
+%% Set up function options/arguments/parameters
 
 % Parameter for index file name
 defaultIndexFileName = 'AvailableFDs.mat';
@@ -31,19 +32,28 @@ defaultSave = 'no';
 % Optional argument to override path    
 defaultDataPath = config.workingDataPath;
 
-
-
 p = inputParser;
-p.addOptional('path',defaultDataPath, @isdir)
-p.addParameter('save',defaultSave, isValidSaveValue)
-p.addParameter('filename', defaultIndexFileName)
+    p.addOptional('path',       defaultDataPath,        @isdir);
+    p.addParameter('save',      defaultSave,            isValidSaveValue);
+    p.addParameter('filename',  defaultIndexFileName);
 
 
-dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is from a config file
 
+%% Parse function options
+
+parse(p,varargin{:})
+p.Results.filename
+
+dataSetPath = p.Results.path;               debugout(dataSetPath);
+dataSetIndexFileName = p.Results.filename;  debugout(dataSetIndexFileName);
+shouldSaveIndex = p.Results.save;           debugout(shouldSaveIndex);
+
+
+
+%% Get directory and index info
 
 % Get directory listing and discard obvious junk
-    files = dir(config.workingDataPath);
+    files = dir(dataSetPath);
     files(ismember({files.name}, {'.', '..', 'metadata.mat'} )) = [];
 
 % Make matrix of dates and array of filenames
@@ -64,7 +74,7 @@ dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is fro
     fileNames(AFDIDX)=[];
 
 % Load existing FD List
-    load(fullfile(config.workingDataPath, dataSetIndexFileName))
+    load(fullfile(dataSetPath, dataSetIndexFileName))
 
 % Index initialization
     iFilesToAdd=false(numel(fileNames), 1);
@@ -77,7 +87,7 @@ dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is fro
 for i = 1:numel(fileNames)
     
     iThisFileInDir = ismember(FDList(:,2), fileNames{i});
-    mf = matfile(fullfile(config.workingDataPath, fileNames{i} ));
+    mf = matfile(fullfile(dataSetPath, fileNames{i} ));
         
     if ~any(iThisFileInDir) % ---------------- Filename not found in FDList
 
