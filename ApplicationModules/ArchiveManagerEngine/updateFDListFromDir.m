@@ -1,8 +1,46 @@
+function FDList = updateFDListFromDir( varargin )
+% updateFDListFromDir( [path], 'name', 'value')
+%
+% Checks the data index file in a directory and updates if any files are
+% new, missing, or updated. Reduces time user spends waiting when switching
+% data sets.
+%
+% [path] is an optional argument. If nothing is specified, the function
+% will use the MDRTConfig working data path as the target directory
+%
+% Name/Value Pairs:
+%
+%   'save'      - write to default is 'yes'
+%   'filename'  - user may specify data index filename
+%   'path'
 
-% TODO: Add inputParser to handle forced re-indexing and other fun options
+
 
 config = MDRTConfig.getInstance;
+
+
+% Parameter for index file name
+defaultIndexFileName = 'AvailableFDs.mat';
+
+% Parameter to write index file to disk
+defaultSave = 'no';
+    validSaveYES = {'yes','true', 'on'};
+    validSaveNO  = {'no', 'false','off'};
+    isValidSaveValue = @(x) any(ismember([validSaveNO validSaveYES],x));
+
+% Optional argument to override path    
+defaultDataPath = config.workingDataPath;
+
+
+
+p = inputParser;
+p.addOptional('path',defaultDataPath, @isdir)
+p.addParameter('save',defaultSave, isValidSaveValue)
+p.addParameter('filename', defaultIndexFileName)
+
+
 dataSetIndexFileName = 'AvailableFDs.mat'; % For future release when this is from a config file
+
 
 % Get directory listing and discard obvious junk
     files = dir(config.workingDataPath);
@@ -100,5 +138,5 @@ end
     end
     workingFDList = vertcat(workingFDList, newFDListEntries);
 
-FDList = workingFDList
+FDList = workingFDList;
 
