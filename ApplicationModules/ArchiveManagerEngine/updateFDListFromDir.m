@@ -22,7 +22,7 @@ function FDList = updateFDListFromDir( varargin )
 %
 
 config = MDRTConfig.getInstance;
-
+debugout(varargin)
 
 
 %% Set up function options/arguments/parameters
@@ -56,8 +56,8 @@ p = inputParser;
 parse(p,varargin{:});
 debugout(p.Results);
 
-dataSetPath = p.Results.path;
-dataSetIndexFileName = p.Results.filename;
+dataSetPath             = p.Results.path;
+dataSetIndexFileName    = p.Results.filename;
                                            
 shouldSaveIndex = false;
 switch p.Results.save
@@ -82,26 +82,25 @@ end
 %% Get directory and index info
 
 % Get directory listing and discard obvious junk
-    files = dir(dataSetPath);
-    files(ismember({files.name}, {'.', '..', 'metadata.mat'} )) = [];
-
-% Make matrix of dates and array of filenames
-    fileDates = [files.datenum]';
-    fileNames = {files.name}';
+    files = dir(fullfile(dataSetPath, '*.mat'));
+    files(ismember({files.name}, {'metadata.mat' '.' '..'} )) = [];
+    files([files.isdir]) = [];
 
 % Find index of AvailableFDs.mat and last modified time
-    AFDIDX = find(strcmp([fileNames], dataSetIndexFileName));
-    timeHack = fileDates(AFDIDX);
+    iAFDs = find(strcmp({files.name}, dataSetIndexFileName));
+    timeHack = files(iAFDs).datenum;
     
     debugout(sprintf('Found %s : updated at %s', ...
                         dataSetIndexFileName, ...
                         datestr(timeHack) ))
 
-% Remove AvailableFDs from file list
-    files(AFDIDX)=[];
-    fileDates(AFDIDX)=[];
-    fileNames(AFDIDX)=[];
+% Remove AvailableFDs from file lis
+    files(iAFDs)=[];
     debugout(sprintf('%d files in %s', length(files), dataSetPath))
+    
+% Make matrix of dates and array of filenames
+    fileDates = [files.datenum]';
+    fileNames = {files.name}';
     
 % Load existing FD List
     load(fullfile(dataSetPath, dataSetIndexFileName))
@@ -119,39 +118,40 @@ end
 
 progressbar( sprintf('Processing %s', dataSetPath) );
 
-for i = 1:numel(fileNames)
+for nFile = 1:numel(fileNames)
     
-    iThisFileInDir = ismember(FDList(:,2), fileNames{i});
+    iThisFileInDir = ismember(FDList(:,2), fileNames{nFile});
     
         
     if ~any(iThisFileInDir) % ---------------- Filename not found in FDList
         
+        
         % % mf = matfile(fullfile(dataSetPath, fileNames{i} ));
-        c  = who( '-file', fullfile(dataSetPath, fileNames{i} ) ); % Do this in the conditional to avoid unnecessary loading
+        c  = who( '-file', fullfile(dataSetPath, fileNames{nFile} ) ); % Do this in the conditional to avoid unnecessary loading
 
         % Add info to "newFDListEntries" for merging later
         % % if isprop(mf, 'fd')
         if ismember(c, 'fd')
             % % fd = mf.fd; % Actually loads file
-            s = load( fullfile(dataSetPath, fileNames{i}), '-mat' );
-            newFDListEntries = vertcat(newFDListEntries, { s.fd.FullString, fileNames{i} });
+            s = load( fullfile(dataSetPath, fileNames{nFile}), '-mat' );
+            newFDListEntries = vertcat(newFDListEntries, { s.fd.FullString, fileNames{nFile} });
         end
 
     else % --------------------------------------- Filename found in FDList
     
-        iRowsToRemove(i) = false; % In FDList and Dir. 
+        iRowsToRemove(iThisFileInDir) = false; % In FDList and Dir. 
         
-        if fileDates(i) > timeHack % ------------------------ File is newer
+        if fileDates(nFile) > timeHack % ------------------------ File is newer
             
             % % mf = matfile(fullfile(dataSetPath, fileNames{i} ));
-            c  = who( '-file', fullfile(dataSetPath, fileNames{i} ) ); % Do this in the conditional to avoid unnecessary loading
+            c  = who( '-file', fullfile(dataSetPath, fileNames{nFile} ) ); % Do this in the conditional to avoid unnecessary loading
         
             % % if isprop(mf, 'fd') % update the appropriate row
             if ismember(c, 'fd')
                 % % fd = mf.fd; % Actually loads file
-                s = load( fullfile(dataSetPath, fileNames{i}), '-mat' );
+                s = load( fullfile(dataSetPath, fileNames{nFile}), '-mat' );
                 % % workingFDList(iThisFileInDir,:) = { fd.FullString, fileNames{i} };
-                workingFDList(iThisFileInDir,:) = { s.fd.FullString, fileNames{i} };
+                workingFDList(iThisFileInDir,:) = { s.fd.FullString, fileNames{nFile} };
                 numEntriesUpdated = numEntriesUpdated + 1;
             end
             
@@ -166,7 +166,7 @@ for i = 1:numel(fileNames)
     
     end
     
-    progressbar( i/numel(fileNames) )
+    progressbar( nFile/numel(fileNames) )
     
 end
 
