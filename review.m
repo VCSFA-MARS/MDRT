@@ -72,7 +72,8 @@ end
 % This is where I put my initialization code
 % -------------------------------------------------------------------------
 config = getConfig;
-    
+Config = MDRTConfig.getInstance;
+
     % Add configuration struct to the handles struct
     handles.configuration = config;
 
@@ -99,6 +100,7 @@ handles.quickPlotFDs = cell(1);
 if exist(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'file')
    
     load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
+    FDList = updateFDListFromDir(config.dataFolderPath, 'save', 'no', 'prompt', 'no');
     
     % Add the loaded list to the GUI handles structure
     handles.quickPlotFDs = FDList;
@@ -291,7 +293,18 @@ if isdeployed
     save('review.cfg','config');
 else
     save(fullfile(pwd,'review.cfg'),'config');
+    
+    [filepath,name,~] = fileparts(config.dataFolderPath);
+    if strcmp(name, 'data')
+        [filepath,~,~] = fileparts(filepath);
+        Config = MDRTConfig.getInstance;
+        Config.userWorkingPath = filepath;
+        Config.userSavePath = fullfile(filepath, 'plots');
+    end
+    
 end
+
+% TODO: add an MDRTConfig call to "updateWorkingDirFromDataFolder"
 
 
 % --- Executes on button press in uiButton_processDelimFiles.
@@ -386,7 +399,10 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Calls helper function to list the FDs
-    FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
+%     FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
+    FDList = updateFDListFromDir(handles.configuration.dataFolderPath, ...
+                                    'save',         'yes', ...
+                                    'prompt',       'yes');
     
     
     
@@ -568,7 +584,10 @@ function populateFDlistFromDataFolder(hObject, handles, folder)
 
     if exist(fullfile(folder, 'AvailableFDs.mat'),'file')
 
-        load(fullfile(folder, 'AvailableFDs.mat'),'-mat');
+        FDList = updateFDListFromDir(folder, 'save', 'no', 'prompt', 'no');
+        
+        % load(fullfile(folder, 'AvailableFDs.mat'),'-mat'); % REMOVED TO
+        % TEST FASTER FDLIST UPDATING
 
         % Add the loaded list to the GUI handles structure
         handles.quickPlotFDs = FDList;
@@ -644,6 +663,9 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
 
     % Refresh the FD list
     uiButton_updateFDList_Callback(hObject, eventdata, handles);
+    
+    % Update the configuration automatically
+    uiButton_saveProjectConfig_Callback([],[],handles);
     
 
 
