@@ -387,7 +387,7 @@ for graphNumber = 1:numberOfGraphs
             if ismember(y_upper, commonStateLimits) && (y_lower == 0)
                 y_upper = y_upper + 0.1;
                 y_lower = y_lower - 0.1;
-                subPlotAxes.YLim = [y_lower, y_upper];
+                subPlotAxes(i).YLim = [y_lower, y_upper];
             end
         end
 
