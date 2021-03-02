@@ -69,6 +69,19 @@ v.position = v.mon.fd.ts.resample(newTime);
 
 abserr = v.position-v.command;
 
+tolerance = 0.5; % half-a-percent of full scale;
+st = v.position.Time(2);
+latency = timeseries;
+
+for i = 2:length(v.position.Time)
+    
+    d = v.position.Data(i);
+    t = v.position.Time(i);
+    
+    n = v.command.getsampleuingtime(
+    
+    
+end
 
 
 %% Plot
@@ -85,17 +98,22 @@ fig = makeMDRTPlotFigure;
 hax = MDRTSubplot(numberOfSubplots, 1, graphsPlotGap, ... 
                   GraphsPlotMargin, GraphsPlotMargin);
                             
-
+% Top Plot - Command and Position
 axes(hax(1));
 stairs(v.cmd.fd.ts.Time, v.cmd.fd.ts.Data, 'r', 'DisplayName', 'Command');
 hold on
 stairs(v.mon.fd.ts.Time, v.mon.fd.ts.Data, 'b', 'DisplayName', 'Position');
 legend('show')
 
+% Middle Plot - Position Error
 axes(hax(2));
 area(abserr.Time, abs(abserr.Data), 'displayname', 'Position Error');
 legend('show')
 
+% Bottom Plot - Latency
+
+% Grids and timestamps
+dynamicDateTicks(hax, 'link');
 plotStyle;
 
 

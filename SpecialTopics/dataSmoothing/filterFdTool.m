@@ -1,4 +1,4 @@
-% filterFD  Launches a GUI tool for data smoothing and filtering
+filterFD  Launches a GUI tool for data smoothing and filtering
      %         filterFD() Launches the tool in demo mode with dummy data.
      %         filterFD(fullFile) launches the tool and loads the contents
      %         of fullFile.

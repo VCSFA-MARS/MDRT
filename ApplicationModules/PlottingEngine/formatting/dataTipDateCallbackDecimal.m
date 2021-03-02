@@ -19,7 +19,7 @@ elseif (pos(2)) < 500;
 elseif (pos(2)) < 10;
     xFormatString = '%2.2f';
 end
-
+xFormatString = '%3.2f';
 output_txt = {['X: ', datestr(pos(1),'HH:MM:SS.FFF') ],...
     ['Y: ',num2str( pos(2), xFormatString )]};
 
