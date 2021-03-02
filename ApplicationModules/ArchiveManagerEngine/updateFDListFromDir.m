@@ -264,3 +264,32 @@ if shouldSaveIndex && isFDListModified
     save(fullfile(dataSetPath, dataSetIndexFileName), 'FDList')
     
 end
+
+
+
+%% Update metadata file - currently no overwrite prompting
+
+metaDataFile = fullfile(dataSetPath, 'metadata.mat'); 
+
+if shouldSaveIndex && exist(metaDataFile, 'file')
+    debugout(sprintf('Attempting to update %s', metaDataFile))
+    try
+        % Open the metadata file 
+        m = load(metaDataFile);
+        if isfield(m, 'metaData') 
+            metaData = m.metaData; 
+        else 
+            debugout('No metaData available. Doing nothing') 
+            return 
+        end 
+        metaData.fdList = FDList; 
+        save(metaDataFile, 'metaData')
+        debugout('Finished updating metadata file')
+    catch
+        debugout('Unable to update metadata file')
+        % In future, generate a blank metaData file with the index?
+    end
+end 
+     
+
+ 
