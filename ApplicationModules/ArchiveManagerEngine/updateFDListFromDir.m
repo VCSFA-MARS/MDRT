@@ -13,6 +13,7 @@ function FDList = updateFDListFromDir( varargin )
 %   'save'      - write to default is 'yes'
 %   'filename'  - user may specify data index filename
 %   'prompt'    - prompt user before overwriting an existing index file
+%   'force'     - forces a reindex of all data files regardless of age
 %
 % Valid 'Yes' Values:
 %   {'yes','true',  'on'}
@@ -30,6 +31,10 @@ debugout(varargin)
 YES = {'yes','true', 'on'};
 NO = {'no', 'false','off'};
 
+% Parameter to force total reindex
+    defaultForceReindex = false;
+    isValidForce = @(x) any(ismember([YES NO],x));
+
 % Parameter for index file name
     defaultIndexFileName = 'AvailableFDs.mat';
 
@@ -40,14 +45,16 @@ NO = {'no', 'false','off'};
 % Parameter to prompt when overwriting an existing index file
     defaultPrompt = 'no';
     isVaidPromptValue = @(x) any(ismember([YES NO],x));
+    
 % Optional argument to override path    
-defaultDataPath = config.workingDataPath;
+    defaultDataPath = config.workingDataPath;
 
 p = inputParser;
     p.addOptional('path',       defaultDataPath,        @isdir);
     p.addParameter('save',      defaultSave,            isValidSaveValue);
     p.addParameter('filename',  defaultIndexFileName);
     p.addParameter('prompt',    defaultPrompt,          isVaidPromptValue);
+    p.addParameter('force',     defaultForceReindex,	isValidForce);
 
 
 
@@ -59,25 +66,28 @@ debugout(p.Results);
 dataSetPath             = p.Results.path;
 dataSetIndexFileName    = p.Results.filename;
                                            
-shouldSaveIndex = false;
 switch p.Results.save
     case YES
         shouldSaveIndex = true;
-    case NO
-        shouldSaveIndex = false;
     otherwise
         shouldSaveIndex = false;
 end
 
-shouldPromptOverwrite = false;
 switch p.Results.prompt
     case YES
         shouldPromptOverwrite = true;
-    case NO
-        shouldPromptOverwrite = false;
     otherwise
         shouldPromptOverwrite = false;
 end
+
+switch p.Results.force
+    case YES
+        shouldForceIndexAll = true;
+    otherwise
+        shouldForceIndexAll = false;
+end
+
+
 
 %% Get directory and index info
 
@@ -88,11 +98,27 @@ end
 
 % Find index of AvailableFDs.mat and last modified time
     iAFDs = find(strcmp({files.name}, dataSetIndexFileName));
-    timeHack = files(iAFDs).datenum;
-    
-    debugout(sprintf('Found %s : updated at %s', ...
+    try
+        timeHack = files(iAFDs).datenum;
+        debugout(sprintf('Found %s : updated at %s', ...
                         dataSetIndexFileName, ...
                         datestr(timeHack) ))
+                    
+        % Load existing FD List
+            load(fullfile(dataSetPath, dataSetIndexFileName))
+            debugout(sprintf('%d rows in FDList()', size(FDList, 1)))
+    catch
+        shouldForceIndexAll = true;
+        debugout(sprintf('%s not found loaded.', dataSetIndexFileName) );
+        debugout('Proceeding with force reindex enabled')
+    end
+    
+    
+    if shouldForceIndexAll
+        timeHack = 0;
+        FDList = cell(0,2);
+    end
+    
 
 % Remove AvailableFDs from file lis
     files(iAFDs)=[];
@@ -102,9 +128,7 @@ end
     fileDates = [files.datenum]';
     fileNames = {files.name}';
     
-% Load existing FD List
-    load(fullfile(dataSetPath, dataSetIndexFileName))
-    debugout(sprintf('%d rows in FDList()', size(FDList, 1)))
+
 
 % Index initialization
     iFilesToAdd=false(numel(fileNames), 1);
