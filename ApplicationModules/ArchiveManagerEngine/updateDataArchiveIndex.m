@@ -115,7 +115,7 @@ dataIndexVariableName = 'dataIndex';
 
 
 % obtain input for dataIndexForSearching from dataIndexer function
-[~, filepaths] = findFilesInDirectory(repositoryRootDirectory, 'metadata');
+[~, filepaths] = findFilesInDirectory(repositoryRootDirectory, 'metadata.mat');
 
 progressbar('Indexing Data Repository');
 
