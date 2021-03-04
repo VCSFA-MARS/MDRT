@@ -46,9 +46,9 @@ end
 % -------------------------------------------------------------------------
 
     config = getConfig;
-    %path = config.dataFolderPath;
+    dataPath = config.dataFolderPath;
     
-    savePath = path;
+%     savePath = path;
     saveFile = timelineFile;
     
     milestones = getappdata(hObj.Parent, 'milestones');
@@ -57,8 +57,9 @@ end
 
 %% Check for existing timeline.mat in the data directory and load if exists
 % -------------------------------------------------------------------------
-    if exist(fullfile(path, timelineFile),'file')
-        load([path timelineFile]);
+    if exist(fullfile(dataPath, timelineFile),'file')
+        load([dataPath timelineFile]);
+        pathname=dataPath;
     else
         % timeline file not found
         % -----------------------------------------------------------------
@@ -74,7 +75,7 @@ end
         % Handle response
         switch choice
             case 'Choose a file'
-                [file, pathname] = uigetfile(fullfile(path, timelineFile),'Open a timeline file');
+                [file, pathname] = uigetfile(fullfile(dataPath, timelineFile),'Open a timeline file');
     
                 if file
                     % User did not hit cancel
@@ -140,11 +141,11 @@ end
         
         % UI Save File Dialog
         % -----------------------------------------------------------------
-        [filename, pathname, filterindex] = uiputfile( ...
+        [filename, pathname, ~] = uiputfile( ...
             {'*.mat', 'MDRT Data Files (*.mat)';
              '*.*',  'All Files (*.*)'},...
-             'Save as');
-         
+             'Save as', fullfile(dataPath, timelineFile) );
+          
         % Handle user cancel case
         % -----------------------------------------------------------------
         if isequal(filename,0) || isequal(pathname,0)

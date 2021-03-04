@@ -29,15 +29,17 @@ classdef MDRTConfig < handle
 
         % THESE PROPERTIES MUST MATCH validConfigKeyNames!
         % -----------------------------------------------------------------
-        graphConfigFolderPath
-        dataArchivePath
-        userSavePath
-        userWorkingPath
-        importDataPath
+        
+        graphConfigFolderPath   % Directory that contains .gcf files. Plot tool will default to load/save here
+        dataArchivePath         % Directory that holds all locally stored, indexed data sets. Comparison tool looks here
+        userSavePath            % Target directory for output (graphs, text files, etc) from active data set
+        userWorkingPath         % Directory that contains the active data folders (data, delim, plots)
+        importDataPath          % Directory that holds all imported data sets. Import tool will create folders here.
         
         % These are normal object properties
         % -----------------------------------------------------------------
-        configuration
+        
+        configuration           % Meant to emulate the original config struct
         
         % This is a test object to check singleton/handle behavior!
         % -----------------------------------------------------------------
@@ -49,6 +51,10 @@ classdef MDRTConfig < handle
         prototypeConfigFilePath = 'ClassDefinitions';
         
         % UPDATE THESE from the list above!
+        % -----------------------------------------------------------------
+        
+        % Returns a cell array of the valid public properties of the MDRTConfig class.
+        % Used to read/write config files and for other validation tasks. 
         validConfigKeyNames = {...
             'graphConfigFolderPath'; ...
             'dataArchivePath'; ...
@@ -60,8 +66,8 @@ classdef MDRTConfig < handle
 
     properties (Dependent)
         
-        workingDataPath
-        workingDelimPath
+        workingDataPath         % folder containing the .mat data files, metadata, timeline, and archive index.
+        workingDelimPath        % folder where .delim files are copied, processed, and parsed.
 
     end
     
@@ -219,7 +225,7 @@ classdef MDRTConfig < handle
                 else
                     % Bad path passed and invalid directory in object.
                     % Clearing object 
-                    warning('MDRTConfig.userSavePath set to empty string');
+                    warning('MDRTConfig.userWorkingPath set to empty string');
                     obj.userWorkingPath = '';
                 end
                 
@@ -538,14 +544,18 @@ classdef MDRTConfig < handle
             %correctly capitalized version. This allows the configuration
             %file to be case insensitive.
 
-            matchIndex = cellfun(@(x)( ~isempty(x) ), regexpi(keyName, this.validConfigKeyNames) );
+            
+            isValid = false;
+            fixedKeyName = '';
 
-            fixedKeyName = this.validConfigKeyNames{matchIndex};
-
-            if isempty(fixedKeyName)
-                isValid = false;
-            else
-                isValid = true;
+            bMatchIndex = cellfun(@(x)( ~isempty(x) ), regexpi(keyName, this.validConfigKeyNames) );
+            
+            if any(bMatchIndex, 1)
+                matchIndex = find(bMatchIndex, 1, 'first');
+                fixedKeyName = this.validConfigKeyNames{matchIndex};
+                if ~ isempty(fixedKeyName)
+                    isValid = true;
+                end
             end
 
         end
@@ -642,6 +652,10 @@ classdef MDRTConfig < handle
         
         % Must call this function to instantiate the object
         function inst = getInstance()
+            % Instantiates an MDRTConfig instance or returns a handle to the existing object. 
+            % MDRTConfig.getInstance is used to get a handle to the 
+            % configuration object's singleton instance. To be used in 
+            % place of the traditional constructor. 
             persistent singletonObj
             if isempty(singletonObj) || ~isvalid(singletonObj)
                 singletonObj = MDRTConfig();

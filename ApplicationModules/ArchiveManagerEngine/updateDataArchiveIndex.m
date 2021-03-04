@@ -14,7 +14,7 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
 %         1 = false     - do not save data index
 %         2 = prompt    - prompt user for a filename and path
 %
-% Based on the finction dataIndexForSearching written for VCSFA by Staten
+% Based on the function dataIndexForSearching written for VCSFA by Staten
 % Longo in Aug 2016.
 
 % autoSaveIndex:
@@ -108,6 +108,8 @@ dataIndexVariableName = 'dataIndex';
 % obtain input for dataIndexForSearching from dataIndexer function
 [~, filepaths] = findFilesInDirectory(dataRepositoryDirectory, 'metadata');
 
+progressbar('Indexing Data Repository');
+
 % index each file found by dataIndexer function
 for i = 1:numel(filepaths);
     
@@ -133,21 +135,39 @@ for i = 1:numel(filepaths);
             % creates array structure of FDLists
             dataIndex(i).FDList = metaData.fdList;
 
+    end
 
-    end % end if loop checking structure type  
-
+    progressbar(i/numel(filepaths));
+    
 end % end for loop iterating over each filepath
 
 % save dataToSearch as file and put this file in root search path
 % ------------------------------------------------------------------------
+
+dataIndexFullFile = fullfile(dataRepositoryDirectory, dataIndexFileName);
+
 switch autoSaveIndex
-    case 0
-
-    case 1
-        save( fullfile(dataRepositoryDirectory, dataIndexFileName) , dataIndexVariableName);
-
-    case 2
-        [filename, pathname] = uiputfile(dataIndexFileName, 'Save Archive Index as');
+    case 0  % save automatically
+        
+        backupFileName_str = sprintf('dataIndex-%s.bak', ...
+                                     datestr(now, 'mmmddyyyy-HHMMSS') );
+                                 
+        backupFullFile = fullfile(dataRepositoryDirectory, backupFileName_str);
+        
+        try
+            copyfile(dataIndexFullFile, backupFullFile, 'f');
+        catch
+            warning('Unable to backup data index file');
+        end
+        
+        
+        save(dataIndexFullFile, dataIndexVariableName, '-mat');
+        
+    case 1  % do not save data index
+        
+    case 2  % prompt user for a filename and path
+        % Start saveas dialog in archive directory with correct filename
+        [filename, pathname] = uiputfile(dataIndexFullFile, 'Save Archive Index as');
         if ~ filename
             % User cancelled
             return

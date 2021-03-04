@@ -21,14 +21,24 @@ lh = addlistener(fh, 'Close', @graphWindowClosed);
     eventStrings = {labels.String}';
     [eventStrings, sortIndex] = sort(eventStrings);
 
-    
+% Get name of calling figure
+fName = fh.Name;
+fNum  = fh.Number;
+if isempty(fName)
+    fName = sprintf('(Figure %d)', fNum);
+else
+    fName = sprintf('%s (Figure %d)', fName, fNum);
+end
+
+windowName = sprintf('Event Marker Visibility Tool : %s', fName);
+
 % Create tool window
 %TODO: Make this a singleton instance - look for existing GUI
 
     hs.fig = figure;
             guiSize = [672 387];
             hs.fig.Position = [hs.fig.Position(1:2) guiSize];
-            hs.fig.Name = 'Event Marker Visibility Tool';
+            hs.fig.Name = windowName;
             hs.fig.NumberTitle = 'off';
             hs.fig.MenuBar = 'none';
             hs.fig.ToolBar = 'none';
@@ -137,10 +147,9 @@ jScrollPane = com.mathworks.mwswing.MJScrollPane(jCBList);
         
     end
 
-    function graphWindowClosed(hobj, event, varargin)
-        
+    % Cleanup: close tool when "parent" figure closes
+    function graphWindowClosed(~, ~, varargin)
         close(hs.fig);
-
     end
 
 end

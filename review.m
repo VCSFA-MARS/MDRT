@@ -72,7 +72,8 @@ end
 % This is where I put my initialization code
 % -------------------------------------------------------------------------
 config = getConfig;
-    
+Config = MDRTConfig.getInstance;
+
     % Add configuration struct to the handles struct
     handles.configuration = config;
 
@@ -97,15 +98,20 @@ handles.quickPlotFDs = cell(1);
 % AvailableFDs.mat
 
 if exist(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'file')
-   
-    load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
-    
-    % Add the loaded list to the GUI handles structure
-    handles.quickPlotFDs = FDList;
-    
-    % add the list to the GUI menu
-    set(handles.uiPopup_FDList, 'String', FDList(:,1));
-    
+	try
+        load(fullfile(config.dataFolderPath, 'AvailableFDs.mat'),'-mat');
+
+        % Add the loaded list to the GUI handles structure
+        handles.quickPlotFDs = FDList;
+
+        % add the list to the GUI menu
+        set(handles.uiPopup_FDList, 'String', FDList(:,1));
+    catch
+        wrnMsg = sprintf('%s %s\n%s', 'Unable to read FD List.', ...
+            'Check file permissions.', ...
+            'Select "Update FD List" as a temporary workaround.');
+        warning(wrnMsg);
+    end
 else
     
     % TODO: Should this do something if the file isn't there... maybe do
@@ -291,7 +297,18 @@ if isdeployed
     save('review.cfg','config');
 else
     save(fullfile(pwd,'review.cfg'),'config');
+    
+    [filepath,name,~] = fileparts(config.dataFolderPath);
+    if strcmp(name, 'data')
+        [filepath,~,~] = fileparts(filepath);
+        Config = MDRTConfig.getInstance;
+        Config.userWorkingPath = filepath;
+        Config.userSavePath = fullfile(filepath, 'plots');
+    end
+    
 end
+
+% TODO: add an MDRTConfig call to "updateWorkingDirFromDataFolder"
 
 
 % --- Executes on button press in uiButton_processDelimFiles.
@@ -386,9 +403,10 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Calls helper function to list the FDs
-    FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
-    
-    
+%     FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
+    FDList = updateFDListFromDir(handles.configuration.dataFolderPath, ...
+                                    'save',         'yes', ...
+                                    'prompt',       'yes');
     
     if ~isempty(FDList)
 
@@ -412,17 +430,54 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
             handles.uiPopup_FDList.Value = v;
 
         % Write the new list to disk
-            save(fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat'),'FDList');
+            writeFDListToDisk(FDList, handles);
             
     else
         
         % updates the dropdown.
             set(handles.uiPopup_FDList, 'String', ' ');
             set(handles.uiPopup_FDList, 'Value', 1);
+            
+        % Save updated index IF new is different from old
+        T = load(handles.configuration.dataFolderPath, 'AvailableFDs.mat');
+        
+        if isequal(T.FDList, FDList)
+            debugout('FDList is unchanged');
+            % No change, no save!
+        else
+            debugout('Old AvailableFDs.mat does not match current directory');
+            debugout(setdiff(T.FDList, FDList));
+            debugout('Saving new AvailableFDs.mat');
+            writeFDListToDisk(FDList, handles);
+        end
+            
     end
         
 
 guidata(hObject, handles);
+
+
+% - used to write FDList / FDIndex to disk. Checks for permissions and
+% fails gracefully with a warning message to the user.
+function writeFDListToDisk(FDList, handles)
+
+    fullFileName = fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat');
+    try
+        save(fullFileName,'FDList');
+    catch
+        [status,values] = fileattrib(fullFileName);
+        fields={'UserRead','UserWrite','UserExecute','GroupRead','GroupWrite','GroupExecute'};
+        msgTxt = '';
+        for i = 1:numel(fields)
+            if values.(fields{i})
+                msgTxt = sprintf('%s %s', msgTxt, fields{i});
+            end
+        end
+        
+        msgTxt = sprintf('Unable to save updated FD List to disk.\nAvailableFDs.mat can not be written.\nFile has the following permissions: %s', msgTxt);
+        
+        warning(msgTxt);
+    end
 
 
 % --- Executes on button press in uiButton_refreshTimelineEvents.
@@ -545,18 +600,19 @@ end
 
 
 % --- Executes on button press in uiButton_importData.
-function uiButton_importData_Callback(~, ~, handles)
-% hObject    handle to uiButton_importData (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function uiButton_importData_Callback(~, ~, ~)
+    makeDataImportGUI;
 
-makeDataImportGUI;
+
 
 function populateFDlistFromDataFolder(hObject, handles, folder)
 
     if exist(fullfile(folder, 'AvailableFDs.mat'),'file')
 
-        load(fullfile(folder, 'AvailableFDs.mat'),'-mat');
+        FDList = updateFDListFromDir(folder, 'save', 'no', 'prompt', 'no');
+        
+        % load(fullfile(folder, 'AvailableFDs.mat'),'-mat'); % REMOVED TO
+        % TEST FASTER FDLIST UPDATING
 
         % Add the loaded list to the GUI handles structure
         handles.quickPlotFDs = FDList;
@@ -606,12 +662,17 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
     newDelimPath = fullfile(rootFolder, 'delim', filesep);
     newPlotPath  = fullfile(rootFolder, 'plots', filesep);
 
-    % Create new directory structure    
+    % Create new directory structure
+    
+    warning('off', 'MATLAB:MKDIR:DirectoryExists');
+    
     mkdir(newDataPath);
     mkdir(newDelimPath);
     mkdir(fullfile(newDelimPath, 'original'));
     mkdir(fullfile(newDelimPath, 'ignore'));
     mkdir(newPlotPath);
+    
+    warning('on', 'MATLAB:MKDIR:DirectoryExists');
     
     % Update the handles structure
     handles.configuration.dataFolderPath    = newDataPath;
@@ -628,6 +689,9 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
     % Refresh the FD list
     uiButton_updateFDList_Callback(hObject, eventdata, handles);
     
+    % Update the configuration automatically
+    uiButton_saveProjectConfig_Callback([],[],handles);
+    
 
 
 % --- Executes on button press in compareDataButton.
@@ -636,7 +700,7 @@ function compareDataButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-compareData
+makeDataComparisonGUI
 
 
 % --- Executes on button press in PIDButton.

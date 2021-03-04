@@ -8,13 +8,26 @@ function [ output_args ] = splitDelimFiles( varargin )
 %   splitDelimFiles( filename, configStruct )
 %   splitDelimFiles( filename, configStruct )
 %
+%   splitDelimFiles( filename, configStruct, combineDelims )
+%
+%       filename        the full filename and path to a .delim file to be
+%                       processed. Can be a string or a cell string.
+%
+%       configStruct    an MDRT Config structure, as returned by the
+%                       configuration property of the MDRTConfig object
+%
+%       combineDelims   true/false - use when combining multiple .delim
+%                       files into one data set. Useful for retrievals that 
+%                       span multiple TAM files
+%
 %   This tool has been updated to support Windows as well as *nix systems.
 %   getFileLineCount.m and countlines.pl are required
 %   
 %   Counts, Spaceport Support Services. 2014
 
-%   Updated 2016, Counts, VCSFA - Better delim naming convention, should
-%   eliminate overloaded filenames.
+%   Updated 2018, Counts, VCSFA - Better delim naming convention, should
+%   eliminate overloaded filenames. Added support for concatination of
+%   .delim files during the split process.
 
 
 %% Constant definitions
@@ -23,7 +36,13 @@ function [ output_args ] = splitDelimFiles( varargin )
     MAX_LINE_COUNT = 50000;
     
     DELIM_SPLIT_LINES = 2000000;
+    USE_FD_NAME_OVERRIDE = false;
     
+%% Default parameters
+
+    concatinateDelimFiles = false;
+    noFilenamePassed = false;
+        
     
 %% Argument parsing
 
@@ -34,7 +53,13 @@ switch nargin
     case 2
         fileName = varargin{1};
         configVar = varargin{2};
-        noFilenamePassed = false;
+    case 3
+        fileName = varargin{1};
+        configVar = varargin{2};
+        concatinateDelimFiles = varargin{3};
+        if concatinateDelimFiles
+            debugout('Combining .delim files from multiple TAM files');
+        end
     otherwise
         error('Invalid arguments for function splitDelimFiles');
         
@@ -67,7 +92,7 @@ end
 
         if isnumeric(fileName)
             % User cancelled .delim pre-parse
-            disp('User cancelled .delim pre-parse');
+            debugout('User cancelled .delim pre-parse');
             return
         end
         
@@ -192,12 +217,9 @@ debugout(fileName);
     
     debugout(FDlistForGrep)
     
-    % Append a , to the end of each FD to make GREP string better.
-    % Hopefully this will protect the "valve group" without breaking other
-    % retrievals where the FDs share a common root. In the future, perhaps
-    % do away with the valve blocks and move this trick to the actual grep
-    % command assembly.
-    FDlistForGrep = cellfun(@(c)[c ','], FDlistForGrep, 'uni', false);
+    % Wrap each unique FD String in commas to prevent accidentally
+    % combining FDs that share the same ending.
+    FDlistForGrep = cellfun(@(c)[',' c ','], FDlistForGrep, 'uni', false);
 
 % % make cell array of strings containing all unique valve identifiers
 % % -------------------------------------------------------------------------
@@ -239,11 +261,12 @@ reverseStr = '';
     
     useCustomNames = false;
     
-    if exist('processDelimFiles.cfg','file')
-        load('processDelimFiles.cfg', '-mat');
-        useCustomNames = true;
-    end 
-
+    if USE_FD_NAME_OVERRIDE
+        if exist('processDelimFiles.cfg','file')
+            load('processDelimFiles.cfg', '-mat');
+            useCustomNames = true;
+        end 
+    end
     
 %% On Mac or Linux, always split the delim file into 2,000,000 line chunks    
 % -------------------------------------------------------------------------
@@ -280,13 +303,13 @@ reverseStr = '';
 %         FDindexC = strfind(fileData, uniqueFDs{i});
 %         FDindex  = find(not(cellfun('isempty', FDindexC)));
 %         
-        
-        % max(max(strcmp('ECS C1ECU Fan Speed Setpoint', customFDnames)));
-        isCustomRule = find(strcmp(FDlistForGrep{i}, customFDnames));
-        
+	m = regexp(FDlistForGrep{i}, '\w*','match');
 
-        m = regexp(FDlistForGrep{i}, '\w*','match');
-
+        if useCustomNames
+            
+            % max(max(strcmp('ECS C1ECU Fan Speed Setpoint', customFDnames)));
+            isCustomRule = find(strcmp(FDlistForGrep{i}, customFDnames));
+        
             if isCustomRule
                 outName = strcat(customFDnames{isCustomRule, 6}, '.delim');
             else
@@ -294,31 +317,42 @@ reverseStr = '';
                 outName = strcat(m{1:end},'.delim');
             end
 
+        else
+                        
+        end
+        
+        % Use all tokens to guarantee a unique filename
+            outName = strcat(m{1:end},'.delim');
+        
+
         % Handle Spaces in filenames for *nix systems
         outputFile = fullfile(delimPath, outName);
-        outputFile = regexprep(outputFile, '\s','\\ ');
-        
-        grepFilename = regexprep(fileName, '\s','\\ ');
+                
+        % Filter out accidental RAW value retrievals
+        grepFilterRAW = '-v ,RAW ';
                 
         % Generate grep command to split delim into parseable files
         % time LC_ALL=C grep -F "TELHS_SYS1 PT33  Mon" ../original/TEL-mon-s.delim > test.delim
         
         % Check for faster grep binary
         if exist('/usr/local/bin/grep', 'file')
-            grepExecutable = '/usr/local/bin/grep -F "';
+            grepExecutable = '/usr/local/bin/grep -F ';
         elseif exist('/usr/local/bin/ggrep', 'file')
-            grepExecutable = '/usr/local/bin/ggrep -F "';
+            grepExecutable = '/usr/local/bin/ggrep -F ';
         else
-            grepExecutable = 'grep -F "';
+            grepExecutable = 'grep -F ';
         end
         
-        egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' > ', outputFile];
+        if concatinateDelimFiles
+            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',fileName, '" | ' , grepExecutable , grepFilterRAW , ' >> "', outputFile , '"'];
+        else
+            egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',fileName, '" | ' , grepExecutable , grepFilterRAW , ' > "', outputFile , '"'];
+        end
         
         debugout(egrepCommand)
         
-        system(egrepCommand);
+        [status,result] = system(egrepCommand);
         
-                
         progressbar(i/length(FDlistForGrep));
         
         
@@ -334,7 +368,6 @@ reverseStr = '';
     fprintf('\n');
         
     %% Cleanup any split files
-    % keyboard
     
 
 end

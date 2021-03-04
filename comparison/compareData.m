@@ -17,11 +17,13 @@
     dataIndexName = 'dataIndex.mat';
     dataIndexPath = config.dataArchivePath;
     
+    dataIndex = [];
     
     % Load the data index using the environment variable and the specified
     % filename.
     if exist(fullfile(dataIndexPath, dataIndexName), 'file')
-        load(fullfile(dataIndexPath, dataIndexName) );
+        s = load(fullfile(dataIndexPath, dataIndexName) );
+        dataIndex = s.dataIndex;
     else
         warning(['Data Repository Index file not found.' ,...
                  'Check MDRTdataRepositoryPath environment variable. ', ...
