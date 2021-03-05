@@ -61,6 +61,10 @@ classdef MDRTFigure < handle
             for i = 1:numPlots
                 self.subplots(i).setPosition( self.axesPositionForNumberOfSubplots(numPlots, i) );
             end
+
+            if ~ isempty ( self.subplots )
+                linkaxes([self.subplots.hAx], 'x' );
+            end
             
         end
         

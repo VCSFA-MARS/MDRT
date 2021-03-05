@@ -70,6 +70,8 @@ classdef MDRTAxes < handle
                 end
                 
             end
+
+            dynamicDateTicks(self.hAx, 'linked');
                        
         end
         
