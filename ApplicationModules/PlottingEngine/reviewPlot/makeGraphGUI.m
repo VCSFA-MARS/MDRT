@@ -1021,15 +1021,15 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
     fileFilters = {	'*.jgcf',   'MDRT JSON Graph Config (*.jgcf) '; ...
                     '*.gcf',    'Legacy MDRT Graph Config (*.gcf)'};
 
-    [file,path] = uiputfile( fileFilters, ...
+    [file,path, fFilter] = uiputfile( fileFilters, ...
                              'Save Graph Configuration as:', ...
                              fullfile(lookInPath, defaultName) );
 
     % Check the user didn't "cancel"
     if file ~= 0
-        switch fileFilters(filter)
+        switch fileFilters{fFilter}
             case {'*.json', '*.jgcf'}
-                savejson('graph', graph, fullfile(path, file) );
+                MDWriteJSON('graph', graph, fullfile(path, file) );
             case {'*.gcf'}
                 save(fullfile(path, file), 'graph', '-mat');
         end
