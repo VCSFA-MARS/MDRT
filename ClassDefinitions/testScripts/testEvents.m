@@ -6,9 +6,10 @@
 load('timeline.mat');
 load('2013 LO2 PCVNO-2013 Globe Valve Mon.mat');
 
-MFig = MDRTFigure;
+MFig = MDRTFigure( MDRTAxes('test axes') );
+MFig.addSubplot(MDRTAxes('test axes 2') );
 
-MFig.subplots.addFDfromFile('2013 LO2 PCVNO-2013 Globe Valve Mon.mat')
+MFig.subplots(1).addFDfromFile('2013 LO2 PCVNO-2013 Globe Valve Mon.mat')
 
 %% Event 
 %
