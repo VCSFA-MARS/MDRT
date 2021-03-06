@@ -1016,11 +1016,23 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
     end    
     
     % Open UI for save name and path
-    [file,path] = uiputfile('*.gcf','Save Graph Configuration as:',fullfile(lookInPath, defaultName));
+%     [file,path] = uiputfile({'*.json', '*.gcf'},'Save Graph Configuration as:',fullfile(lookInPath, defaultName));
+
+    fileFilters = {	'*.jgcf',   'MDRT JSON Graph Config (*.jgcf) '; ...
+                    '*.gcf',    'Legacy MDRT Graph Config (*.gcf)'};
+
+    [file,path] = uiputfile( fileFilters, ...
+                             'Save Graph Configuration as:', ...
+                             fullfile(lookInPath, defaultName) );
 
     % Check the user didn't "cancel"
     if file ~= 0
-        save(fullfile(path, file), 'graph', '-mat');
+        switch fileFilters(filter)
+            case {'*.json', '*.jgcf'}
+                savejson('graph', graph, fullfile(path, file) );
+            case {'*.gcf'}
+                save(fullfile(path, file), 'graph', '-mat');
+        end
     else
         % Cancelled... not sure what the best behavior is... return to GUI
     end
@@ -1046,7 +1058,8 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
 
     % Open UI Window to Choolse Graph Config File
     [filename, pathname, filterindex] = uigetfile( ...
-            {  '*.gcf',         'Graph Config File (*.gcf)'; ...
+            {  '*.jgcf',        'MDRT JSON Graph Config (*.jgcf)'; ...
+               '*.gcf',         'Legacy Graph Config File (*.gcf)'; ...
                '*.xlsx',        'Excel file (*.xlsx)'; ...
                '*.xls',         'Excel file (*.xls)'; ...
                '*.*',           'All Files (*.*)'}, ...
@@ -1055,13 +1068,17 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
   
     switch filterindex
         case 1
+            % selected a *.jgcf file
+            savedConfig = MDReadJSON(fullfile(pathname, filename) );
+            
+        case 2
             % selected a *.gcf file
             % graph = load(fullfile(pathname, filename),'-mat');
             savedConfig = load(fullfile(pathname, filename),'-mat');
-        case 2,3
+        case {3 4}
             % selected an excel file
             % TODO: Implement excel file parsing
-        case 4
+        case 5
             % it could be anything, oh no!
             % TODO: Implement file type checking...
             % graph = load(fullfile(pathname, filename),'-mat');
