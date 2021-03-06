@@ -24,10 +24,19 @@ classdef MDRTFigure < handle
         % removeData - remove an existing FD from the plot
 
         % Constructor
-        function self = MDRTFigure()
+        function self = MDRTFigure( hMDRTAx )
+            % MDRTFigure takes an optional argument hMDRTAx - which creates the 
+            % MDRTFigure object using the MDRT Axis passed. Otherwise a default
+            % blank MDRTAxes will be created.
             
             self.hfig = figure;
-            self.addSubplot(MDRTAxes('Title', 'Subplot 1'));
+
+            if ( nargin && isa(hMDRTAx, 'MDRTAxes') )
+                self.addSubplot( hMDRTAx );
+            else
+                self.addSubplot(MDRTAxes('Title', 'Subplot 1'));
+            end
+
             self.hGraphTitle = suptitle('MDRT Plot');
             
             orient(self.hfig, 'landscape');
