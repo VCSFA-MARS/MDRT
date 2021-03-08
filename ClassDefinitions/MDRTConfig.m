@@ -30,7 +30,7 @@ classdef MDRTConfig < handle
         % THESE PROPERTIES MUST MATCH validConfigKeyNames!
         % -----------------------------------------------------------------
         
-        graphConfigFolderPath   % Directory that contains .gcf files. Plot tool will default to load/save here
+        graphConfigFolderPath   % Directory that contains .jgcf or .gcf files. Plot tool will default to load/save here
         dataArchivePath         % Directory that holds all locally stored, indexed data sets. Comparison tool looks here
         userSavePath            % Target directory for output (graphs, text files, etc) from active data set
         userWorkingPath         % Directory that contains the active data folders (data, delim, plots)
