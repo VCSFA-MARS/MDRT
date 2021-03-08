@@ -797,11 +797,23 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
     end    
     
     % Open UI for save name and path
-    [file,path] = uiputfile('*.gcf','Save Graph Configuration as:',fullfile(lookInPath, defaultName));
+%     [file,path] = uiputfile({'*.json', '*.gcf'},'Save Graph Configuration as:',fullfile(lookInPath, defaultName));
+
+    fileFilters = {	'*.jgcf',   'MDRT JSON Graph Config (*.jgcf) '; ...
+                    '*.gcf',    'Legacy MDRT Graph Config (*.gcf)'};
+
+    [file,path, fFilter] = uiputfile( fileFilters, ...
+                             'Save Graph Configuration as:', ...
+                             fullfile(lookInPath, defaultName) );
 
     % Check the user didn't "cancel"
     if file ~= 0
-        save(fullfile(path, file), 'graph', '-mat');
+        switch fileFilters{fFilter}
+            case {'*.json', '*.jgcf'}
+                MDWriteJSON('graph', graph, fullfile(path, file) );
+            case {'*.gcf'}
+                save(fullfile(path, file), 'graph', '-mat');
+        end
     else
         % Cancelled... not sure what the best behavior is... return to GUI
     end
