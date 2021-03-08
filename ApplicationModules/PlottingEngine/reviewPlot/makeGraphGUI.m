@@ -1004,7 +1004,6 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
             defaultName = defaultName{1};
         end
         
-        
     % Attempt to autopopulate the path
     if isfield(handles.configuration, 'graphConfigFolderPath')
         % Loads path from configuration
