@@ -1,26 +1,64 @@
 missions = {
+    '/Users/nick/data/imported/2020-08-28 - NC-1145/data';
+    '/Users/nick/data/imported/2020-08-11 - NC-1145/data';
+    '/Users/nick/data/imported/2020-02-12 - LO2 Testing/data';
     '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
+    '/Users/nick/data/archive/2020-02-09_NG-13/data';
     '/Users/nick/data/archive/2019-11-01 - NG-12/data';
 	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data';
 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
 	'/Users/nick/data/archive/2016-20-17 OA-5 LA1/data';
-    '/Users/nick/data/imported/2020-08-28 - NC-1145/data'...
 };
 
 
 %% FDs to plot
 dataFiles = { '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
               '2016 LO2 FM-2016 Coriolis Meter Mon.mat' };
+          
+pressFiles = {  '2904 LO2 PT-2904 Press Sensor Mon.mat';
+                '2906 LO2 PT-2906 Press Sensor Mon.mat';
+                '2918 LO2 PT-2918 Press Sensor Mon.mat';
+                '2112 LO2 PT-2112 Press Sensor Mon.mat';
+                };
 
 valveFiles = {'2010 LO2 DCVNO-2010 State.mat';
               '2013 LO2 PCVNO-2013 State.mat';
               '2014 LO2 PCVNO-2014 State.mat';
               '2029 LO2 PCVNO-2029 State.mat'};
+          
+          
+          
+% valveFiles = {	'2010 LO2 DCVNO-2010 State.mat';
+%                 '2013 LO2 PCVNO-2013 State.mat';
+%                 '2013 LO2 PCVNO-2013 Globe Valve Mon.mat';
+%                 '2014 LO2 PCVNO-2014 State.mat';
+%                 '2014 LO2 PCVNO-2014 Globe Valve Mon.mat';
+%                 '2027 LO2 DCVNO-2027 State.mat';
+%                 '2029 LO2 PCVNO-2029 State.mat';
+%                 '2029 LO2 PCVNO-2029 Globe Valve Mon.mat';
+%                 '2031 LO2 DCVNC-2031 State.mat';
+%                 '2032 LO2 DCVNO-2032 State.mat';
+%                 '2035 LO2 DCVNO-2035 State.mat';
+%                 '2056 LO2 DCVNC-2056 State.mat';
+%                 '2059 LO2 PCVNC-2059 State.mat';
+%                 '2059 LO2 PCVNC-2059 Globe Valve Mon.mat';
+%                 '2067 LO2 DCVNO-2067 State.mat';
+%                 '2069 LO2 PCVNC-2069 State.mat';
+%                 '2069 LO2 PCVNC-2069 Globe Valve Mon.mat';
+%                 '2093 LO2 DCVNC-2093 State.mat';
+%                 '2096 LO2 DCVNC-2096 State.mat';
+%                 '2097 LO2 DCVNC-2097 State.mat';
+%                 '2099 LO2 DCVNO-2099 State.mat';
+%                 '2220 LO2 PCVNO-2220 State.mat';
+%                 '2220 LO2 PCVNO-2220 Globe Valve Mon.mat';
+%                 '2221 LO2 PCVNC-2221 State.mat';
+%                 '2221 LO2 PCVNC-2221 Globe Valve Mon.mat';
+%             };
 
 %% Plot info
-PlotTitleString = '2010 Mission Comparison';
+PlotTitleString = 'All Stop Flow Comparisons - Pressure';
 searchMilestoneFD='LOLS Stop Flow Cmd';
           
 %% Constants
@@ -51,7 +89,7 @@ sfIndLen = 0;
 
 %% Load Data
 
-set = [];
+data = [];
 plan = [];
 
 for m = 1:length(missions)
@@ -66,9 +104,9 @@ for m = 1:length(missions)
     if sfInd
         disp(datestr( [timeline.milestone(sfInd).Time] ) )
         
-        set(m).timeline = timeline;
-        set(m).metaData = metaData;
-        set(m).sfInd = sfInd;
+        data(m).timeline = timeline;
+        data(m).metaData = metaData;
+        data(m).sfInd = sfInd;
         
         sfIndLen = sfIndLen + length(sfInd); % might be redundant
         
@@ -79,13 +117,35 @@ for m = 1:length(missions)
         
         for d = 1:length(dataFiles)
             load( fullfile( missions{m}, dataFiles{d} ) );
-            set(m).dataFiles(d) = fd;
+            data(m).dataFiles(d) = fd;
         end
         
         for d = 1:length(valveFiles)
-            load( fullfile( missions{m}, valveFiles{d} ) );
-            set(m).valveFiles(d) = fd;
+            try
+                load( fullfile( missions{m}, valveFiles{d} ) );
+                data(m).valveFiles(d) = fd;
+            catch
+                tempFd = newFD;
+                tempFd.FullString = valveFiles{d}(6:end-4);
+                tempFd.ts = timeseries;
+                tempFd.ts.Name = tempFd.FullString;
+                data(m).valveFiles(d) = tempFd;
+            end
         end
+        
+        for d = 1:length(pressFiles)
+            try
+                load( fullfile( missions{m}, pressFiles{d} ) );
+                data(m).pressFiles(d) = fd;
+            catch
+                tempFd = newFD;
+                tempFd.FullString = pressFiles{d}(6:end-4);
+                tempFd.ts = timeseries;
+                tempFd.ts.Name = tempFd.FullString;
+                data(m).pressFiles(d) = tempFd;
+            end
+        end
+        
         
     end
 
@@ -140,29 +200,30 @@ end
 
 
 
-%% Plot 
+%% Calculate and Plot 
 
 for ind = 1:size(plan, 1)
+    
+    isThresholdFound = false;
+    
     thisMission = plan(ind,1);
     thisMilestoneIndex = plan(ind, 2);
     
-    milestone = set(thisMission).timeline.milestone(thisMilestoneIndex);    % timeline.milestone(sfInd(ind));
-    t0 = milestone.Time - 2*onesec ;
-    tf = milestone.Time + 10*onesec ;
+    milestone = data(thisMission).timeline.milestone(thisMilestoneIndex);    % timeline.milestone(sfInd(ind));
+    t0 = milestone.Time - 2*onesec ;        % time axis t0
+    tf = milestone.Time + 10*onesec ;       % time axis tf
     tc = milestone.Time;                    % command time
     timeInterval = [t0, tf];
     
-    % Numerical Analysis
+    %% Numerical Analysis
     
-    fd1file = fullfile(missions(thisMission), set(thisMission).dataFiles(1).FullString );
-    fd2file = fullfile(missions(thisMission), set(thisMission).dataFiles(2).FullString );
+    fd1file = fullfile(missions(thisMission), data(thisMission).dataFiles(1).FullString );
+    fd2file = fullfile(missions(thisMission), data(thisMission).dataFiles(2).FullString );
     
-    f1ts = set(thisMission).dataFiles(1).ts.getsampleusingtime(t0, tf + onesec*2);
-    f2ts = set(thisMission).dataFiles(2).ts.getsampleusingtime(t0, tf + onesec*2);
+    f1ts = data(thisMission).dataFiles(1).ts.getsampleusingtime(t0, tf + onesec*2);
+    f2ts = data(thisMission).dataFiles(2).ts.getsampleusingtime(t0, tf + onesec*2);
     
-%     f1ts = allFDs(1).ts.getsampleusingtime(t0, tf + onesec*2); % Search up to 2 seconds after the plot window
-%     f2ts = allFDs(2).ts.getsampleusingtime(t0, tf + onesec*2);
-    
+    % Find indeces for data matching condition
     f1idx = f1ts.Data < 10;
     f2idx = f2ts.Data < 10;
     
@@ -176,7 +237,7 @@ for ind = 1:size(plan, 1)
 
         newTime = [f1ts.Time; f2ts.Time];
         newTime = sort(newTime);
-        newTime = newTime((newTime >= startTime) & (newTime <= endTime));
+        newTime = newTime( (newTime >= startTime) & (newTime <= endTime) );
 
         B1ts=b1ts.resample(newTime);
         B2ts=b2ts.resample(newTime);
@@ -193,11 +254,13 @@ for ind = 1:size(plan, 1)
 
         timeToStopFlow = {datestr(newTime(matches) - tc, 'SS.FFF')};
 
-        disp(sprintf('\nResults for Stop Flow test %d', ind))
+        disp(sprintf('\nResults for Stop Flow test %d : %s', ind, data(thisMission).metaData.operationName))
         for tempInd = 1:length(matches)
             disp(sprintf('\tCondition met in %s seconds', ...
                 datestr(newTime(matches(tempInd)) - tc, 'SS.FFF')))
         end
+        
+        isThresholdFound = true;
 
     else
         disp(sprintf('\nResults for Stop Flow test %d', ind))
@@ -205,51 +268,84 @@ for ind = 1:size(plan, 1)
     end
     
 	
+    %% Valve State Calculation and reporting
     
-    
+    for vind = 1:length(data(thisMission).valveFiles)
+        vstate = data(thisMission).valveFiles(vind).ts.getsampleusingtime(0, t0);
+        try
+            s1 = vstate.Data(end);
+        catch
+            s1 = nan;
+        end
         
+        vstate = data(thisMission).valveFiles(vind).ts.getsampleusingtime(0, tf);
+        try
+            s2 = vstate.Data(end);
+        catch
+            s2 = nan;
+        end
+        
+        disp(sprintf('%s\t%d\t%d',data(thisMission).valveFiles(vind).ts.Name, s1, s2))
+    end
     
+    
+
+    %% Plot Data
     % Top Plot (Flow Rate)
     axes(axPairs(ind,1));
     
     for fn = 1:numel(dataFiles)
-        fd = set(thisMission).dataFiles(fn);
+        fd = data(thisMission).dataFiles(fn);
 %         fd = allFDs(fn);
         hold on
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
     end
     
-    dynamicDateTicks; %set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
-    reviewPlotAllTimelineEvents(timeline)
+    reviewPlotAllTimelineEvents(data(thisMission).timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
-    title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    title(sprintf('%s %s', data(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
     setDateAxes(axPairs(ind, 1), 'XLim', timeInterval);
     ylim([ 0, 275] );
     hline(10, '--r');
     
-    MDRTannotation('textarrow', timeToStopFlow, P1, P2);
+    if isThresholdFound
+        MDRTannotation('textarrow', timeToStopFlow, P1, P2);
+    end
     
     % Bottom Plot (Valve State)
     axes(axPairs(ind,2));
     
-    for fn = 1:numel(valveFiles)
-        fd = set(thisMission).valveFiles(fn);
+    for fn = 1:numel(pressFiles)
+        fd = data(thisMission).pressFiles(fn);
 %         fd = valveFDs(fn);
         hold on
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
     end
     
-    dynamicDateTicks; % set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
-    reviewPlotAllTimelineEvents(timeline)
+    
+    reviewPlotAllTimelineEvents(data(thisMission).timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
-    title(sprintf('%s %s', set(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    title(sprintf('%s %s', data(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    
+    linkaxes(axPairs(ind,:),'x');
+    dynamicDateTicks(axPairs(ind,:), 'link');
     setDateAxes(axPairs(ind, 2), 'XLim', timeInterval);
-    ylim([ -0.1, 2.1] );
+    
+    ylim([ 0, 200] );
+%     ylim([ -0.1, 2.1] );
     
     
     
 end
 
-reviewRescaleAllTimelineEvents
 
+%% Add hline annotations to bottom plot
+for q = 1:length(axPairs)
+    axes(axPairs(q,2))
+    hline(165, '--r', 'RV setpoint');
+    hline(165*0.9, '--r', '- 10%');
+end
+
+
+reviewRescaleAllTimelineEvents
 

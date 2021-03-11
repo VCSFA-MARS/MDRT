@@ -13,13 +13,13 @@ if (pos(2) < 99999)
 elseif (pos(2)) < 9999
     xFormatString = '%5f';
 elseif (pos(2)) < 999
-    xFormatString = '%4f';
+    xFormatString = '%4.2f';
 elseif (pos(2)) < 500;
     xFormatString = '%3.1f';
 elseif (pos(2)) < 10;
     xFormatString = '%2.2f';
 end
-
+xFormatString = '%3.2f';
 output_txt = {['X: ', datestr(pos(1),'HH:MM:SS.FFF') ],...
     ['Y: ',num2str( pos(2), xFormatString )]};
 

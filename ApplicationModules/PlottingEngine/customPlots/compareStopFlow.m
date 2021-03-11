@@ -70,11 +70,14 @@ if length(sfInd) > spWide
 %         if mod(length(sfInd),spWide)
 %             subOffset(end) = mod(length(sfInd),spWide);
 %         end
-else  
+else
+    % NOTE: This code DOES NOT WORK for 2 stop flow events! Must correctly
+    % implement the generation of the axPairs array
     fig = makeMDRTPlotFigure;
     
     subPlotAxes = MDRTSubplot(spHigh,length(sfInd),graphsPlotGap, ... 
                                 GraphsPlotMargin,GraphsPlotMargin);
+    axPairs = reshape(subPlotAxes, length(sfInd), 2);
 	suptitle(PlotTitleString);
 end
     
@@ -84,7 +87,8 @@ dataFiles = { '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
 
 valveFiles = {'2010 LO2 DCVNO-2010 State.mat';
               '2013 LO2 PCVNO-2013 State.mat';
-              '2014 LO2 PCVNO-2014 State.mat'};
+              '2014 LO2 PCVNO-2014 State.mat';
+              '2029 LO2 PCVNO-2029 State.mat'};
           
 stateFile = { 'LOLS Stop Flow State.mat' };
 

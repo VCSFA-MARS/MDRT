@@ -131,7 +131,7 @@ progressbar(3/7);
 fd.ID = '8030 Open';
 fd.Type = 'DCVNC';
 fd.System = 'HSS';
-fd.FullString = 'DCVNC-8030 Close Switch'
+fd.FullString = 'DCVNC-8030 Open Switch'
 
 ts.Name = 'DCVNO-8030 Open Switch';
 ts.Time = time;
@@ -142,7 +142,7 @@ fd.ts = ts;
 save(fullfile(dataFolderPath,['MARDAQ ', fd.ID, '.mat']),'fd','-mat');
 progressbar(4/7);
 
-% DCVNO-8020
+% DCVNO-8030
 fd.ID = '8030 Close';
 fd.Type = 'DCVNC';
 fd.System = 'HSS';
