@@ -1,4 +1,4 @@
-function updateSearchResults(hObj, ~, varargin)
+function updateSearchResults(hObj, event, varargin)
 
 %updateSearchResults 
 %
@@ -8,9 +8,39 @@ function updateSearchResults(hObj, ~, varargin)
 %   Expects one uilistbox with a tag 'listSearchResults'
 %   Expects appdata from the calling app/gui called 'fdMasterList'
 %
+%   If using more than one searchBox/list in a GUI, set the UserData
+%   property in the searchBox object to the handle of the listbox. 
+%
+%   NOTE: Tag-based object cooperation is deprecated. Use the UserData
+%   property from now on.
+%
+%   Controls the uilist box as a "pop-up" when results are found if called
+%   with the parameter 'popup'
+%
+%   Example:
+%         hs.searchbar = uicontrol(       hs.fig,...
+%                 'Style',                'edit',...
+%                 'String',               '',...
+%                 'HorizontalAlignment',  'left',...
+%                 'KeyReleaseFcn',        {@updateSearchResults, 'popup'},...
+%                 'Units',                'normalized', ...
+%                 'Position',             [ 0.05 0.8 0.9 0.1 ],...
+%                 'tag',                  'searchBox');
+%
+%       hs.searchbar.UserData = 'hs.handleToListBox';
+%         
 %   Counts, VCSFA 2016
     
-
+    % Turn on "popup" behavior ?
+    shouldHideEmptyListbox = false;
+    if ~ isempty(varargin)
+        switch lower(varargin{1})
+            case {'popup'}
+                shouldHideEmptyListbox = true;
+            otherwise
+        end
+    end
+    
     hDataHolder = hObj;
     
     while ~isappdata(hDataHolder, 'fdMasterList')
@@ -20,15 +50,36 @@ function updateSearchResults(hObj, ~, varargin)
     masterList = getappdata(hDataHolder, 'fdMasterList');
     masterList = masterList(:,1);
 
-    % get handle to the list of search results
-    lsr = findobj(hDataHolder,'tag', 'listSearchResults');
     
-    % get handle to the search box (for sure!)
-    hebox = findobj(hDataHolder, 'tag', 'searchBox');
+% get handle to the list of search results
+
+    switch hObj.Style
+        case 'popupmenu'
+            % get handle to the search box (for sure!)
+            hebox = findobj(hDataHolder, 'tag', 'searchBox');
+            % Access the Java object to get the stupid text. Why, Matlab? Why?
+            jebh = findjobj(hebox);
+            
+        case 'edit'
+            hebox = hObj;
+            jebh = findjobj(hObj);
+    end
+    
+    if isempty(hebox.UserData)
+        lsr = findobj(hDataHolder,'tag', 'listSearchResults');
+    else
+        lsr = hebox.UserData;
+    end
+    
+    
+%     hebox = findobj(hDataHolder, 'tag', 'searchBox'); % Why did I search
+%     instead of using the hObj handle?
+    
     
     % Access the Java object to get the stupid text. Why, Matlab? Why?
-    ebh = findjobj(hebox);
-    searchString =  char(ebh.getText);    
+%     
+    
+    searchString =  char(jebh.getText);
     
     % TODO: Modify search to allow multiple search tokens in any order.
     % Break abart using whitespace and assemble indeces for each token?
@@ -54,10 +105,11 @@ function updateSearchResults(hObj, ~, varargin)
         ind = logical(prod(ind,2));
 
   
-    
-   length(searchString);
    
-   if length(searchString)
+   if ~isempty(searchString)
+       % Make sure lsr is visible whenever there is a match
+       lsr.Visible = 'on';
+       uistack(lsr, 'top');
        
        % A non-empty search string means search!
        if length(masterList(ind)) >= lsr.Value
@@ -74,8 +126,33 @@ function updateSearchResults(hObj, ~, varargin)
        
            lsr.String = masterList(ind);
    else
-       % No search string means return everything
-       lsr.String = masterList;
+       if shouldHideEmptyListbox
+           % No search string means return nothing and hide!
+           lsr.String = '';
+           lsr.Visible = 'off';
+       else
+           % No search string means return everything
+           lsr.String = masterList;
+       end
    end
+   
+   % Handle arrow keys to navigate hits if using "popup" option
+   
+   if shouldHideEmptyListbox && numel(lsr.String)
+       % Using popup behavio and there are search hits displayed
+        switch lower(event.Key)
+            case 'downarrow'
+                % Set focus on popup list if results are present!
+                if ~isempty(lsr.String)
+                    uicontrol(lsr);
+                end
+            case 'uparrow'
+            case 'return'
+            otherwise
+                % disp(event.Key)
+        end
+   end
+   
+   
    
 end

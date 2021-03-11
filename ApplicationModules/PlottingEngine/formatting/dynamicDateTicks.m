@@ -59,6 +59,7 @@ for i = 1:length(axH)
     end
     axesInfo.mdformat = mdformat; % Remember mm/dd format for each axes
     set(axH(i), 'UserData', axesInfo); % Store the fact that this is a date axes and its link & mm/dd information in userdata
+    % addlistener(axH(i), 'XLim', 'PostSet', @updateDateLabel);
     updateDateLabel('', struct('Axes', axH(i)), 0); % Call once to ensure proper formatting
 end
 
@@ -98,8 +99,18 @@ set(d,'UpdateFcn',@dateTip);
     end
 
     function updateDateLabel(obj, ev, varargin)
-        ax1 = ev.Axes; % On which axes has the zoom/pan occurred
-        axesInfo = get(ev.Axes, 'UserData');
+        switch class(ev)
+            case 'Axes'
+                ax1 = ev.Axes; % On which axes has the zoom/pan occurred
+                axesInfo = get(ev.Axes, 'UserData');
+            case 'event.PropertyEvent'
+                ax1 = ev.AffectedObject;
+            case 'struct'
+                ax1 = ev.Axes;
+        end
+        
+        axesInfo = get(ax1, 'UserData');
+        
         % Check if this axes is a date axes. If not, do nothing more (return)
         try
             if ~strcmp(axesInfo.Type, 'dateaxes')

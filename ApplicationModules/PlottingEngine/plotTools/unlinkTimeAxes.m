@@ -1,15 +1,45 @@
 function unlinkTimeAxes( varargin )
+% unlinkTimeAxes() links x axis (time) on multiple axes in a given figure
+%
+%   This function is called from MDRTFigures with the "Advanced" menu. When
+%   called from the menu, two arguments are passed:
+%   
+%       varargin{1} : matlab.ui.container.Menu
+%       varargin{2} : matlab.ui.eventdata.ActionData
+%
+%   This function will filter out any suptitle handles, which are axes
+%   objects at root. 
+%
+%     unlinkTimeAxes(menuHandle)
+%     unlinkTimeAxes(figureHandle)
+%     unlinkTimeAxes(axesArray)
 
+% Counts - updated 2020
 
-%This works if called from the figure's menu
-figureHandle = varargin{1}.Parent.Parent;
+if nargin
+    switch class(varargin{1})
+        case 'matlab.ui.container.Menu'           
+            figureHandle = varargin{1}.Parent.Parent;
+            rawAxesArray = findobj( figureHandle, 'Type', 'Axes');
+                
+        case 'matlab.ui.Figure'
+            figureHandle = varargin{1};
+            rawAxesArray = findobj( figureHandle, 'Type', 'Axes');
+            
+        case 'matlab.graphics.axis.Axes'
+            rawAxesArray = varargin{1};
+            
+        otherwise
+            warning('unsupported argument data type');
+            return
+    end
+end
+    
 
-% fig = 1;
+% remove 'suptitle' from the array of axes
 
-hgo = findobj( figureHandle, 'Type', 'Axes');
+axesArray = rawAxesArray(arrayfun(@(e) ...
+                            ~isequal(e.Tag,'suptitle'), ...
+                            rawAxesArray));
 
-% remove 'suptitle'
-axesElements = hgo(arrayfun(@(e) ~isequal(e.Tag,'suptitle'), hgo));
-
-
-linkaxes( axesElements, 'off')
+linkaxes(axesArray, 'off')
