@@ -1,4 +1,4 @@
-function [ output_args ] = splitDelimFiles( varargin )
+function [ output_args ] = NEWsplitDelimFiles( varargin )
 %splitDelimFiles reads a .delim file and splits it into discrete .delim
 %files for parsing by the MARS Review Tool
 %
@@ -170,25 +170,18 @@ debugout(fileName);
     
     debugout(uniqueFDs)
 
-% %% Legacy code that handled valves as a combined entity
-% % -----------------------------------------------------------------------
 % find all FDs that are valve related - returns cell array of cells of
 % strings
 % -------------------------------------------------------------------------
 %     valveFDs = regexp(uniqueFDs, '[DP]CVN[CO]-[0-9]{4}','match');
 
-
-% % Include System ID String
-%     valveFDs = regexp(uniqueFDs, '\w* [DP]CVN[CO]-[0-9]{4}','match');
-%     
-%     debugout('Valve FDs for combined processing:')
-%     debugout(valveFDs)
-% 
-%     % Make FD List for grep without any valve data
-%     FDlistForGrep = uniqueFDs(cellfun('isempty',valveFDs));
+% Include System ID String
+    valveFDs = regexp(uniqueFDs, '\w* [DP]CVN[CO]-[0-9]{4}','match');
     
-    % Patch to stop combining valve data
-    FDlistForGrep = uniqueFDs;
+    debugout(valveFDs)
+
+    % Make FD List for grep without any valve data
+    FDlistForGrep = uniqueFDs(cellfun('isempty',valveFDs));
     
     debugout(FDlistForGrep)
     
@@ -199,11 +192,11 @@ debugout(fileName);
     % command assembly.
     FDlistForGrep = cellfun(@(c)[c ','], FDlistForGrep, 'uni', false);
 
-% % make cell array of strings containing all unique valve identifiers
-% % -------------------------------------------------------------------------
-%     uniqueValves = unique(cat(1,valveFDs{:}));
-%     
-%     debugout(uniqueValves)
+% make cell array of strings containing all unique valve identifiers
+% -------------------------------------------------------------------------
+    uniqueValves = unique(cat(1,valveFDs{:}));
+    
+    debugout(uniqueValves)
     
 % % % Generate cell array of cell array of strings (listing FDs for each valve)
 % % % -------------------------------------------------------------------------
@@ -220,8 +213,8 @@ debugout(fileName);
     
 % Combine Valve FDs with uniqueFDs for .delim grep
 % -------------------------------------------------------------------------
-%     % Disabling combined valve processing
-%     FDlistForGrep = cat(1,FDlistForGrep, uniqueValves);
+    
+    FDlistForGrep = cat(1,FDlistForGrep, uniqueValves);
     
 % Remove FDs with leading underscores
     FDlistForGrep(~cellfun('isempty',regexp(FDlistForGrep,'^_'))) = [];
@@ -247,22 +240,22 @@ reverseStr = '';
     
 %% On Mac or Linux, always split the delim file into 2,000,000 line chunks    
 % -------------------------------------------------------------------------
-%     
-% if ispc
-%     disp('MS Windows OS does not have naitive file splitting tools and large .delim files may parse very slowly.') 
-% else
-%     % split by lines, not by size
-%     splitCommand = ['split -l ', ...
-%                     num2str(DELIM_SPLIT_LINES), ' "', fileName, '" "',...
-%                     fullfile(delimPath, 'dataSplit.delim'), '"'];
-%                 
-% 	fileToGrep = fullfile(delimPath, 'dataSplit.delim*');
-%     fileName = fileToGrep;
-%     
-%     % Split the file no matter what!!
-%     system(splitCommand);
-%     
-% end
+    
+if ispc
+    disp('MS Windows OS does not have naitive file splitting tools and large .delim files may parse very slowly.') 
+else
+    % split by lines, not by size
+    splitCommand = ['split -l ', ...
+                    num2str(DELIM_SPLIT_LINES), ' "', fileName, '" "',...
+                    fullfile(delimPath, 'dataSplit.delim'), '"'];
+                
+	fileToGrep = fullfile(delimPath, 'dataSplit.delim*');
+    fileName = fileToGrep;
+    
+    % Split the file no matter what!!
+    system(splitCommand);
+    
+end
 
     
     
@@ -300,22 +293,8 @@ reverseStr = '';
         
         grepFilename = regexprep(fileName, '\s','\\ ');
                 
-        % Generate grep command to split delim into parseable files
-        % time LC_ALL=C grep -F "TELHS_SYS1 PT33  Mon" ../original/TEL-mon-s.delim > test.delim
-        
-        % Check for faster grep binary
-        if exist('/usr/local/bin/grep', 'file')
-            grepExecutable = '/usr/local/bin/grep -F "';
-        elseif exist('/usr/local/bin/ggrep', 'file')
-            grepExecutable = '/usr/local/bin/ggrep -F "';
-        else
-            grepExecutable = 'grep -F "';
-        end
-        
-        egrepCommand = [grepExecutable , FDlistForGrep{i}, '" ',grepFilename, ' > ', outputFile];
-        
-        debugout(egrepCommand)
-        
+        % Generate egrep command to split delim into parseable files
+        egrepCommand = ['grep -F "', FDlistForGrep{i}, '" ',grepFilename, ' > ', outputFile];
         system(egrepCommand);
         
                 
@@ -334,7 +313,7 @@ reverseStr = '';
     fprintf('\n');
         
     %% Cleanup any split files
-    % keyboard
+    keyboard
     
 
 end

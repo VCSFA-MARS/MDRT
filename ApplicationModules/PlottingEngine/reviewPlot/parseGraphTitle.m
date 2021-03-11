@@ -1,75 +1,33 @@
-function [ titleString ] = parseGraphTitle( titleString )
-%parseGraphTitle substitutes meta data into graph title strings
-%   MDRT's parseGraphTitle(str) looks for markup tags in the argument and
-%   replaces those tags with data taken from the metadata file located in
-%   each data set's 'data' folder.
-%
-%   Valid metadata markup tags are:
-%
-%   <operation>     inserts operation name
-%   <procedure>     inserts MARS procedure name
-%   <vehicle>       inserts "Vehicle Support" if true
-%
-%   Additional tags will be added in future releases
-%
-
-
-%% Markup Definition
-% First column      defines the markup tag
-% Second column     defines the metaData field
-% Third column      defines kind of tag replacement
-% Fourth column     defines what text will be inserted "if true"
-
-tags = {
-    '<operation>',  'operationName',    'str',      '';
-    '<procedure>',  'MARSprocedureName','str',      '';
-    '<vehicle>',    'isVehicleOp',      'iftrue',   'Vehicle Support'
-};
-
+function [ output_args ] = parseGraphTitle( graphName )
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
 
 
 %% Constant definition
 
-metaDataFileName = 'metadata.mat';
+metaDataFileName = 'dataMetaData.mat';
 
 
-%% Load configuration struct and metaData
-
-% config = MDRTConfig.getInstance;
-% metaDataFile = fullfile(config.workingDataPath, metaDataFileName);
+%% Function code
 
 config = getConfig;
-metaDataFile = fullfile(config.dataFolderPath, metaDataFileName);
 
-    if exist(metaDataFile, 'file')
+    if exist(fullfile(config.dataFolderPath, metaDataFileName))
 
-        load(metaDataFile);
+        load(fullfile(config.dataFolderPath, metaDataFileName));
 
     else
 
         % Fuck me, there isn't anything to load!?
-        return
 
     end
 
-%% Replace tags in titleString
 
-for i = 1:size(tags,1)
-    repStr = '';
-    
-    switch tags{i,3}
-        case 'str'
-            repStr = metaData.(tags{i, 2});
-        case 'iftrue'
-            if metaData.(tags{i,2})
-                repStr = tags{i,4};
-            end
-        otherwise
-    end
-    
-    titleString = regexprep(titleString, tags(i,1), repStr, 'ignorecase');
-    
-end
+testString = 'ECS GN2 Purge Performance [metaData=opName]';
+commands = regexp(testString,'\[(.*?)\]','tokens');
+commands = lower(commands);
+
+strfind(commands{1}, 'metadata')
 
 
 end

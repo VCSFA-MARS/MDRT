@@ -419,20 +419,6 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
         % updates the dropdown.
             set(handles.uiPopup_FDList, 'String', ' ');
             set(handles.uiPopup_FDList, 'Value', 1);
-            
-        % Save updated index IF new is different from old
-        T = load(handles.configuration.dataFolderPath, 'AvailableFDs.mat');
-        
-        if isequal(T.FDList, FDList)
-            debugout('FDList is unchanged');
-            % No change, no save!
-        else
-            debugout('Old AvailableFDs.mat does not match current directory');
-            debugout(setdiff(T.FDList, FDList));
-            debugout('Saving new AvailableFDs.mat');
-            save(fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat'),'FDList');
-        end
-            
     end
         
 
@@ -559,10 +545,12 @@ end
 
 
 % --- Executes on button press in uiButton_importData.
-function uiButton_importData_Callback(~, ~, ~)
-    makeDataImportGUI;
+function uiButton_importData_Callback(~, ~, handles)
+% hObject    handle to uiButton_importData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
-
+makeDataImportGUI;
 
 function populateFDlistFromDataFolder(hObject, handles, folder)
 
@@ -618,17 +606,12 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
     newDelimPath = fullfile(rootFolder, 'delim', filesep);
     newPlotPath  = fullfile(rootFolder, 'plots', filesep);
 
-    % Create new directory structure
-    
-    warning('off', 'MATLAB:MKDIR:DirectoryExists');
-    
+    % Create new directory structure    
     mkdir(newDataPath);
     mkdir(newDelimPath);
     mkdir(fullfile(newDelimPath, 'original'));
     mkdir(fullfile(newDelimPath, 'ignore'));
     mkdir(newPlotPath);
-    
-    warning('on', 'MATLAB:MKDIR:DirectoryExists');
     
     % Update the handles structure
     handles.configuration.dataFolderPath    = newDataPath;
@@ -653,7 +636,7 @@ function compareDataButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-makeDataComparisonGUI
+compareData
 
 
 % --- Executes on button press in PIDButton.

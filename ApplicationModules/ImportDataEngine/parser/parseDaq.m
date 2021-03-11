@@ -33,60 +33,20 @@ fid = fopen(fullfile(processPath,fileName));
 % Quickly Dump headers
 % Q = textscan(fid, '%s*[^\n]', 3, 'Delimiter', '\n');
 % Q = textscan(fid, '%s', 3);
-
-
-linesOfPreview = 5;
-
-    Q = textscan(fid, '%s', linesOfPreview, 'Delimiter', '\n');
-
-for i = 1:length(Q{1})
-    disp(Q{1,1}{i});
-end
-
-
-frewind(fid);
-
-
-linesToSkip = input('How many header lines to skip: ');
-    Q = textscan(fid, '%s', linesToSkip, 'Delimiter', '\n');
-
-
+Q = textscan(fid, '%s', 3, 'Delimiter', '\n');
 
 % Grab numbers!
 % R = textscan(fid, '%n %n %n *s', 'Delimiter', ',');
-    R = textscan(fid, '%n,%n,%n,%n,%n,%n,%n,%n');
+R = textscan(fid, '%n,%n,%n');
 
 fclose(fid);
 
 % create variables
-    t = R{1};
-    a1 = R{2};
-    a2 = R{3};
-    a3 = R{4};
-    a4 = R{5};
-    a5 = R{6};
-    a6 = R{7};
-    a7 = R{8};
+t = R{1};
+a1 = R{2};
+a2 = R{3};
+
 % clear Q R;
 
-
-
-
-disp('Data parsing is complete')
-disp('Creating FDs for MARS Review Tool')
-disp('Specify path to save data')
-disp('')
-
-dataFolderPath = uigetdir();
-
-% Make sure the user selected something!
-if dataFolderPath ~= 0
-    % We got a path selection. Now append the trailing / for linux
-    % Note, we are not implementing OS checking at this time (isunix, ispc)
-    
-    dataFolderPath = [dataFolderPath '/'];
-else
-    dataFolderPath = '.'
-end
 
 

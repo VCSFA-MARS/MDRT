@@ -64,8 +64,6 @@ function [ availFDs ] = listAvailableFDs( path, fileType )
         availFDs = availFDs(~cellfun('isempty',availFDs));
 
         availFDs = reshape(availFDs,length(availFDs)/2,2);
-        
-        updateMetaDataFile(path, availFDs);
     
     else % no files are found
         % return an empty cell
@@ -74,24 +72,4 @@ function [ availFDs ] = listAvailableFDs( path, fileType )
     
         
 end
-
-
-function updateMetaDataFile(path, availFDs)
-    fullFileName = fullfile(path, 'metadata.mat');
-    
-    if exist(fullFileName, 'file')
-        % Open the metadata file
-        m = load(fullFileName);
-        if isfield(m, 'metaData')
-            metaData = m.metaData;
-        else
-            debugout('No metaData available. Doing nothing')
-            return
-        end
-        metaData.fdList = availFDs;
-        save(fullFileName, 'metaData')
-    end
-    
-end
-
 

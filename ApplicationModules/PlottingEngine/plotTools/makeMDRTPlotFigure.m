@@ -22,7 +22,7 @@ end
 
 
 % -------------------------------------------------------------------------
-% Generate new figure and handle. Set up for printing
+% Generate new figure and handle. Set up for priting
 % -------------------------------------------------------------------------
     
     figureHandle = figure();
@@ -36,7 +36,7 @@ end
     
     saveButtonHandle = findall(figureHandle,'ToolTipString','Save Figure');
     
-    set(saveButtonHandle, 'ClickedCallback', {@MARSsaveFigure, figureHandle} );
+    set(saveButtonHandle, 'ClickedCallback', 'MARSsaveFigure');
     
     % Add label size toggle and timeline refresh buttons
     addToolButtonsToPlot(figureHandle);
@@ -52,7 +52,7 @@ end
     
     % Override File/Save(as)
     hMenuSave   = findall(gcf,'tag','figMenuFileSave');
-    set(hMenuSave, 'Callback', @MARSsaveFigure);
+    set(hMenuSave, 'Callback', 'MARSsaveFigure');
     
     debugout('Overridden default Save and added Advanced menu')
     

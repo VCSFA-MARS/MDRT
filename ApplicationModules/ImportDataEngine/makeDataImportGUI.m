@@ -85,8 +85,7 @@ checkboxPositions       = { [300 339 117 23];
                             [14 81 111 23];
                             [14 48 111 23];
                             [14 15 111 23];
-                            [300 100 200 23];
-                            [300  70 200 23]
+                            [300 100 200 23]
                             };
 
                         
@@ -95,8 +94,7 @@ checkboxTags            = { 'checkbox_autoName';
                             'checkbox_isMARS';
                             'checkbox_hasUID';
                             'checkbox_vehicleSupport';
-                            'checkbox_autoSkipErrors';
-                            'checkbox_combineDelims'
+                            'checkbox_autoSkipErrors'
                             };
                             
 
@@ -105,8 +103,7 @@ checkboxStrings         = { 'Auto-name folder';
                             'MARS Procedure';
                             'Has MARS UID';
                             'Vehicle support';
-                            'Auto-skip parsing errors';
-                            '.delims are from different TAMs'
+                            'Auto-skip parsing errors'
                             };
 
 
@@ -115,7 +112,6 @@ checkboxParents         =   {   'fig';
                                 'panel_metaData';
                                 'panel_metaData';
                                 'panel_metaData';
-                                'fig';
                                 'fig'
                             };
                         
@@ -124,7 +120,6 @@ checkboxValue           =   {   true;
                                 false;
                                 false;
                                 false;
-                                true;
                                 false
                             };
                         
@@ -344,76 +339,46 @@ initialValues =    ...
         
         
         files = flbManager.getFileCellArray;
-        guessFile = cell(numel(files), 1);
+        guessFile = {};
 
         for j = 1:numel(files)
-            finfo = dir(files{j});
-            [~, ~, ext] = fileparts(finfo.name);
-            if strcmpi('.delim',ext) && (finfo.bytes > 0) % if delim and not empty
-                guessFile{j} = files{j}; % fullfile path
+            [~, ~, ext] = fileparts(files{j});
+            if strcmpi('.delim',ext)
+                guessFile = files{j};
+                break
             end           
         end
         
-        if isCellArrayEmpty(guessFile)
+        if isempty(guessFile)
             % No suitable file was found
             return
         end
         
-        % Read the first line of each .delim file and keep the timestamp.
-        guessFile = nonEmptyCellContents(guessFile);
-        startTime = zeros(numel(guessFile), 1);
-
-        for j = 1:numel(guessFile)
         
-            % Open guess file to read a few lines
-            fid = fopen(guessFile{j});
-            finfo = dir(guessFile{j});
-            [~, ~, ext] = fileparts(finfo.name);
+        % Open guess file to read a few lines
+        fid = fopen(guessFile);
+        
+        % Make sure to handle the file type. and EXIT if bad filetype
+        % -----------------------------------------------------------------
 
-            % Make sure to handle the file type. and EXIT if bad filetype
-            % -----------------------------------------------------------------
+        switch lower(ext)
+            case '.delim'
+                disp('Pre-processing .delim file')
+                textParseString = '%s %*s %*s %*s %*s %*s %*[^\n]';
+                rawTime = textscan(fid,textParseString,5,'Delimiter',',');
+                startTime = makeMatlabTimeVector(rawTime{1}, false, false);
+            case '.csv'
+                warning('.csv files are not currently supported for automatic import');
+                fclose(fid);
+                return
 
-            switch lower(ext)
-                case '.delim'
-                    debugout('Pre-processing .delim file')
-                    textParseString = '%s %*s %*s %*s %*s %*s %*[^\n]';
-                    try
-                        rawTime = textscan(fid,textParseString,1,'Delimiter',',');
-                    catch
-                        % If you're here, then the file was called .delim,
-                        % it had a non-zero size, and the text-parse still
-                        % failed. File must be malformed.
-                        warning(['delim file ' finfo.name ' was malformed.']);
-                        fclose(fid);
-                    end
-                    
-                    fclose(fid); % cleanup your mess!
-                    
-                    % Keep the timestamp we found for later
-                    try
-                        startTime(j,1) = makeMatlabTimeVector(rawTime{1}, false, false);
-                    catch
-                        % If you're here, then the file was called .delim,
-                        % it had a non-zero size, but the contents didn't
-                        % contain data the way we expected. The file must
-                        % be malformed.
-                        warning(['delim file ' finfo.name ' was malformed.']);
-                    end
-                    
-                case '.csv'
-                    warning('.csv files are not currently supported for automatic import');
-                    fclose(fid);
-                    return
-
-                otherwise
-                    warning(['The file ' finfo.name ' is of a type not currently supported for automatic import']);
-                    fclose(fid);
-                    return
-            end
-
+            otherwise
+                warning('This file type is not currently supported for automatic import');
+                fclose(fid);
+                return
         end
-        
-        startTime = min(startTime(startTime ~= 0));
+
+        fclose(fid);
 
         % Build Folder Name String
         % -----------------------------------------------------------------
@@ -421,45 +386,35 @@ initialValues =    ...
         nameParts = {   metaData.operationName;
                         metaData.MARSprocedureName
                     };
-        
-        if isempty(startTime)
-            return
-        end
-        
-        guessName = strjoin( {  datestr(startTime, 'YYYY-mm-dd');
+
+        guessName = strjoin( {  datestr(startTime(1), 'YYYY-mm-dd');
                                 '-';
                                 strjoin(nameParts);
                                 });
 
         guessName = strtrim(guessName);
 
-        % Listener triggers on this update. Disabling/enabling around the
-        % programatic update. In a class, this should be a set method to
-        % handle it. Ugly workaround to clean up console output.
-
-        el(1).Enabled = false; 
-            if hs.checkbox_autoName.Value
-                hs.edit_folderName.String = guessName;
-            end
-        el(1).Enabled = true;
+        if hs.checkbox_autoName.Value
+            hs.edit_folderName.String = guessName;
+        end
+        
         
     end
 
 
-    function startImport(~, ~, varargin)
+    function startImport(src, event, varargin)
         
         updateFolderGuess;
         
         ImportFromGUI(  flbManager.getFileCellArray, ... 
                         metaData, ...
                         hs.edit_folderName.String, ...
-                        hs.checkbox_autoSkipErrors.Value, ...
-                        hs.checkbox_combineDelims.Value);
+                        hs.checkbox_autoSkipErrors.Value );
         
     end
 
 
-    function selectFiles(~, ~, varargin)
+    function selectFiles(src, event, varargin)
         
         [filename, pathname, filterindex] = uigetfile( ...
                        {'*.delim','FCS Retrievals (*.delim)'; ...
@@ -531,32 +486,16 @@ initialValues =    ...
        
     function windowCloseCleanup(varargin)
 
-        debugout('Closing window')
+        disp('Closing window')
 
         delete(flbManager)
 
     end
 
 
-    function outCell = nonEmptyCellContents(inCell)
-        if iscell(inCell)
-            outCell = inCell(~cellfun('isempty',inCell));
-        else
-            % not a cell as input!
-            outCell = cell(1,1);
-        end
-    end
 
-    function result = isCellArrayEmpty(inCell)
-        if iscell(inCell)
-            result = ~max(~cellfun('isempty', inCell));
-            if isempty(result)
-                result = true;
-            end
-        else
-            result = [];
-        end
-    end
+
+
 
 
 

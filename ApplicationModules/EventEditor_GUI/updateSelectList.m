@@ -7,10 +7,11 @@ uc1 = getappdata(hobj.Parent, 'uc1');
 uc2 = getappdata(hobj.Parent, 'uc2');
 
 
-searchToks = uc1(hobj.Value);
+% keyboard
 
-% ind = cellfun(@(x)( ~isempty(x) ), regexpi(c1, searchToks));
-ind = find(strcmpi(c1, searchToks));
+searchToks = uc1(hobj.Value)
+
+ind = cellfun(@(x)( ~isempty(x) ), regexpi(c1, searchToks))
 
 times = t(ind)
 fdstings = c1(ind)
@@ -23,8 +24,6 @@ for i = 1:length(times)
    selectedEvents = vertcat(selectedEvents,  {sprintf('%s    %s', times{i}, fdstings{i}) } );
     
 end
-
-selectedEvents = unique(selectedEvents);
 
 hs = getappdata(gcf, 'hs');
 

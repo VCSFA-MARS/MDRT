@@ -12,9 +12,6 @@ disp('<a href="horizontalLineToolHelpScript.html">Horizontal Line Tool</a>')
 
 figureHandle = varargin{1}.Parent.Parent; % calls the handle of the original plot
 
-% Add listener to close this tool if the calling window closes
-lh = addlistener(figureHandle, 'Close', @graphWindowClosed);
-
 %% GUI Setup
 
     hl.fig = figure; % creates handle for the GUI window
@@ -393,11 +390,6 @@ guidata(hl.fig,handles); % Creates structure of guidata based on tags
         data.text(delTextIndex) = [];
        
 
-    end
-
-    % Cleanup: close tool when "parent" figure closes
-    function graphWindowClosed(~, ~, varargin)
-        close(hl.fig);
     end
 
 end

@@ -26,8 +26,7 @@ end
 
 if exist('review.cfg','file')   
     % Config file exists. Load and populate missing items
-    s = load('review.cfg','-mat', 'config');
-    config = s.config;
+    load('review.cfg','-mat');
     config = populateMissingConfigFields(config);
 else
     % No config file, oh noes!!!

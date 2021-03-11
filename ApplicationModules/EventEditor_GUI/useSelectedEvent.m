@@ -2,53 +2,31 @@ function useSelectedEvent( hobj, event )
 
 hs = getappdata(gcf, 'hs');
 
-newMilestones = [];
+timeString = hs.events.String{hs.events.Value};
+cctDateStamp = timeString(1:24);
+eventTime = makeMatlabTimeVector({cctDateStamp}, false, false);
 
-for val = hs.events.Value
-    
-    timeString = hs.events.String{val};
-    cctDateStamp = timeString(1:24);
-    eventTime = makeMatlabTimeVector({cctDateStamp}, false, false);
-    
-    fdString = hs.master.String{hs.master.Value};
-    fdHumanReadable = hs.infoString.String;
-    
-    if isempty(fdHumanReadable)
-        fdHumanReadable = fdString;
-    end
-    
-    newMilestone  = struct(     'String',       fdHumanReadable, ...
-                                'FD',           fdString, ...
-                                'Time',         eventTime);
-    
-	if numel(newMilestones)                        
-        newMilestones = vertcat(newMilestones, newMilestone);
-    else
-        newMilestones = newMilestone; 
-    end
-	
-	
-end
+fdString = hs.master.String{hs.master.Value};
+fdHumanReadable = hs.infoString.String;
 
 % Instantiate a default milestone struct
 % -------------------------------------------------------------------------
-
+    milestone = struct(     'String',       fdHumanReadable, ...
+                            'FD',           fdString, ...
+                            'Time',         eventTime);
 
                         
 milestones = getappdata(gcf, 'milestones');
 
 if numel(milestones)                        
-    milestones = vertcat(milestones, newMilestones);
+    milestones = vertcat(milestones, milestone);
     
 else
-    milestones = newMilestones; 
+    milestones = milestone; 
 end
 
                        
 
 setappdata(gcf, 'milestones', milestones);
-
-hs.milestones.String = {milestones.String}';
-
 end
 

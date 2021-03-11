@@ -19,7 +19,7 @@
 
 %% Translate 1-5 Volt signal to 0 to 100%
 % 
-    PTmaxRange = 500;
+    PTmaxRange = 5000;
     psi = (a7 - 1)/4 * PTmaxRange;
 
     
@@ -29,8 +29,7 @@
 % look at 8020 Ctl
 
 %     reduce_plot(time, a6, 'DisplayName', '8030 Command');
-    figure;
-    reduce_plot(time, psi, 'DisplayName', 'STE Pressure');
+    reduce_plot(time, a5, 'DisplayName', 'STE Pressure');
     dynamicDateTicks;
     plotStyle;
     
@@ -75,7 +74,7 @@ ts = timeseries();
     
     
     
-
+keyboard
 
 progressbar('Saving DAQ Data as FDs');
     
