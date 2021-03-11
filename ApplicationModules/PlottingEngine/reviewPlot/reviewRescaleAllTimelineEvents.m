@@ -10,6 +10,7 @@ function reviewRescaleAllTimelineEvents( varargin )
 
 % Set default search location to the root graphics object
 parentFigure = 0;
+calledFromButton = false;
 
 switch nargin
     case 1
@@ -26,7 +27,7 @@ switch nargin
             % We were passed an ActionData object
             
             % Extract figure number
-            parentFigure = varargin{2}.Source.Parent.Parent.Number;
+            parentFigure = varargin{2}.Source.Parent.Parent;
             
             c = varargin{1}.Parent.Children;
             
@@ -82,8 +83,13 @@ end
         
         % Toggle visibility using rules for each case:
         fixOffAxisLabelVisibility(labelsOutsideAxis);
-        fixOnAxisLabelVisibility(labelsOnAxis);
-
+        
+        if calledFromButton
+            fixOnAxisLabelVisibility(labelsOnAxis, expectedVisible);
+        else
+            fixOnAxisLabelVisibility(labelsOnAxis);
+        end
+        
     end
     
 end
@@ -99,17 +105,22 @@ end
 
 
 
-function fixOnAxisLabelVisibility(label)
-    for i = 1:numel(label)
-        
-        % get expected label state based on toggle button
-        state = getExpectedStateForLabel(label(i)); 
-        
-        % change labels inside the axis to their expected state
-        label(i).Visible = state;
+function fixOnAxisLabelVisibility(label, varargin)
 
+    if ~ isempty(label)
+        if nargin == 2
+            toggleState = varargin{1};
+        else
+            toggleState = getExpectedStateForLabel(label(1));
+        end
+
+        for i = 1:numel(label)
+
+            % change labels inside the axis to their expected state
+            label(i).Visible = toggleState;
+
+        end
     end
-
 end
 
 

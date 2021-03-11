@@ -125,7 +125,6 @@ end
 
 
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = makeGraphGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -157,8 +156,11 @@ set(objs, 'Parent', tab1)
     % Do this here so Trisha's GUI rearranging doesn't change the UI
     % Parent/Child heigherarchy out from under us.
     setappdata(hObject, 'fdMasterList', handles.quickPlotFDs);
-    updateSearchResults(hObject);
+%     updateSearchResults(hObject);
 
+
+
+feval(handles.searchBox.KeyReleaseFcn, handles.searchBox)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
@@ -284,6 +286,10 @@ function ui_editBox_subplot1Title_Callback(hObject, eventdata, handles)
 %     % Contents are a string -> directly assign contents as cell
 %     handles.graph.subplots(1) = {get(hObject, 'String')};
 %     guidata(hObject, handles);
+    
+    graph = returnGraphStructureFromGUI(handles);
+    handles.graph = graph;
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function ui_editBox_subplot1Title_CreateFcn(hObject, eventdata, handles)
@@ -675,7 +681,7 @@ function ui_button_generateGraph_Callback(hObject, eventdata, handles)
 
     end
 
-disp('Still in the GRAPH function')
+debugout('Still in the GRAPH function')
 
 % Step 2: Validate graph structure
 % -------------------------------------------------------------------------
@@ -800,15 +806,15 @@ setActiveListSelection(handles, list, index)
 
 function ui_listbox_streams3_ButtonDownFcn(hObject, eventdata, handles)
     handles.activeList = 3;
-    disp('inside 3')
+    debugout('inside 3')
 
 function ui_listbox_streams2_ButtonDownFcn(hObject, eventdata, handles)
     handles.activeList = 2;
-    disp('inside 2')
+    debugout('inside 2')
 
 function ui_listbox_streams1_ButtonDownFcn(hObject, eventdata, handles)
     handles.activeList = 1;
-    disp('inside 1')
+    debugout('inside 1')
 
 
 
@@ -1005,7 +1011,7 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
     if isfield(handles.configuration, 'graphConfigFolderPath')
         % Loads path from configuration
         lookInPath = handles.configuration.graphConfigFolderPath;
-        disp(lookInPath)
+        debugout(lookInPath)
     else
         % Set default path... to graph
         lookInPath = handles.configuration.dataFolderPath;
@@ -1031,7 +1037,7 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
     if isfield(handles.configuration, 'graphConfigFolderPath')
         % Loads path from configuration
         lookInPath = handles.configuration.graphConfigFolderPath;
-        disp(lookInPath)
+        debugout(lookInPath)
     else
         % Set default path... to graph
         lookInPath = handles.configuration.dataFolderPath;
@@ -1268,6 +1274,7 @@ function searchBox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
 
 
 
