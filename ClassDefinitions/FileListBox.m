@@ -177,7 +177,7 @@ classdef (CaseInsensitiveProperties) FileListBox < handle
         
         function obj = addDroppedFilesToList(obj, event, varargin)
             
-           
+           tempFileList = obj.fileList;
            
            for i = 1:numel(event)
                switch event.DropType
@@ -187,7 +187,7 @@ classdef (CaseInsensitiveProperties) FileListBox < handle
                        
                        if exist(tryFile) && ~isdir(tryFile)
                            % Just a regular old file
-                           obj.fileList = vertcat(obj.fileList, event(i).Data);
+                           tempFileList = vertcat(tempFileList, event(i).Data);
                        else
                            % TODO: Handle importing folder contents
                            % someday?
@@ -200,7 +200,7 @@ classdef (CaseInsensitiveProperties) FileListBox < handle
                end
            end
            
-           obj.fileList = unique(obj.fileList);
+           obj.fileList = unique(tempFileList);
            
         end
         

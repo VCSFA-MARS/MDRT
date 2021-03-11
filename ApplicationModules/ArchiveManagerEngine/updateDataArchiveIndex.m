@@ -1,9 +1,9 @@
-function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveIndex)
-%% updateDataArchiveIndex( dataRepositoryRootDirectory, autoSaveIndex )
+function [dataIndex] = updateDataArchiveIndex(repositoryRootDirectory, autoSaveIndex, isRemoteArchive)
+%% updateDataArchiveIndex( repositoryRootDirectory, autoSaveIndex, isRemoteArchive )
 %
 % updateDataArchiveIndex(  );
-% updateDataArchiveIndex( dataRepositoryRootDirectory );
-% updateDataArchiveIndex( dataRepositoryRootDirectory, autoSaveIndex );
+% updateDataArchiveIndex( repositoryRootDirectory );
+% updateDataArchiveIndex( repositoryRootDirectory, autoSaveIndex );
 %
 % If no parameters are passed, the function prompts for a starting
 % directory and prompts to save the resulting data archive index.
@@ -14,7 +14,7 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
 %         1 = false     - do not save data index
 %         2 = prompt    - prompt user for a filename and path
 %
-% Based on the finction dataIndexForSearching written for VCSFA by Staten
+% Based on the function dataIndexForSearching written for VCSFA by Staten
 % Longo in Aug 2016.
 
 % autoSaveIndex:
@@ -25,7 +25,7 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
 % Purpose: Creates an index of all available data that is ready to be
 % searched inside of the current data repository.
 
-% Function input (dataRepositoryDirectory) takes every value obtained by the
+% Function input (repositoryRootDirectory) takes every value obtained by the
 % dataIndexer function.
 
 % Function output dataToSearch is a file including every metadata structure
@@ -48,7 +48,7 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
  
 
 % dataIndexForSearching calls dataIndexer function with the following parameters:
-% dataRepositoryDirectory = path to data repository directory
+% repositoryRootDirectory = path to data repository root directory
 	% set this variable equal to the file path before calling the function
 % searchExpression = 'metadata'
 
@@ -56,22 +56,31 @@ function [dataIndex] = updateDataArchiveIndex(dataRepositoryDirectory, autoSaveI
 % Argument Parsing
 % ------------------------------------------------------------------------
 
+config = MDRTConfig.getInstance;
 defaultDirectory = pwd;
 defaultSaveOption = 2;
 
 switch nargin
     case 0
         % Default behavior prompts for a directory
-        dataRepositoryDirectory = uigetdir(defaultDirectory);
+        repositoryRootDirectory = uigetdir(defaultDirectory);
         autoSaveIndex = defaultSaveOption;
+        indexFilePath = repositoryRootDirectory;
 
     case 1
         % Assumes looking for metadata.mat and you passed a directory
         autoSaveIndex = defaultSaveOption;
-        
+        indexFilePath = repositoryRootDirectory;
     case 2
         % Passed both arguments
-
+        indexFilePath = repositoryRootDirectory;
+    case 3
+        % Specified local or remote archive behavior
+        if isRemoteArchive
+            indexFilePath = config.pathToConfig;
+        else
+            indexFilePath = repositoryRootDirectory;
+        end
     otherwise
         %What on earth did you do?
         warning('updateDataIndex does not support these arguments');
@@ -82,7 +91,7 @@ end
 
 warningMsg = '';
 
-if ~exist(dataRepositoryDirectory, 'dir')
+if ~exist(repositoryRootDirectory, 'dir')
     % Passed an invalid directory
     warningMsg('Invalid search directory specified.');
 end
@@ -106,7 +115,9 @@ dataIndexVariableName = 'dataIndex';
 
 
 % obtain input for dataIndexForSearching from dataIndexer function
-[~, filepaths] = findFilesInDirectory(dataRepositoryDirectory, 'metadata');
+[~, filepaths] = findFilesInDirectory(repositoryRootDirectory, 'metadata.mat');
+
+progressbar('Indexing Data Repository');
 
 % index each file found by dataIndexer function
 for i = 1:numel(filepaths);
@@ -133,21 +144,39 @@ for i = 1:numel(filepaths);
             % creates array structure of FDLists
             dataIndex(i).FDList = metaData.fdList;
 
+    end
 
-    end % end if loop checking structure type  
-
+    progressbar(i/numel(filepaths));
+    
 end % end for loop iterating over each filepath
 
 % save dataToSearch as file and put this file in root search path
 % ------------------------------------------------------------------------
+
+dataIndexFullFile = fullfile(indexFilePath, dataIndexFileName);
+
 switch autoSaveIndex
-    case 0
-
-    case 1
-        save( fullfile(dataRepositoryDirectory, dataIndexFileName) , dataIndexVariableName);
-
-    case 2
-        [filename, pathname] = uiputfile(dataIndexFileName, 'Save Archive Index as');
+    case 0  % save automatically
+        
+        backupFileName_str = sprintf('dataIndex-%s.bak', ...
+                                     datestr(now, 'mmmddyyyy-HHMMSS') );
+                                 
+        backupFullFile = fullfile(indexFilePath, backupFileName_str);
+        
+        try
+            copyfile(dataIndexFullFile, backupFullFile, 'f');
+        catch
+            warning('Unable to backup data index file');
+        end
+        
+        
+        save(dataIndexFullFile, dataIndexVariableName, '-mat');
+        
+    case 1  % do not save data index
+        
+    case 2  % prompt user for a filename and path
+        % Start saveas dialog in archive directory with correct filename
+        [filename, pathname] = uiputfile(dataIndexFullFile, 'Save Archive Index as');
         if ~ filename
             % User cancelled
             return

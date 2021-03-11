@@ -3,8 +3,14 @@ function updateRepositoryDataSet(varargin)
 %
 %   updateRepositoryDataSet()
 %   updateRepositoryDataSet(varargin)
+%   updateRepositoryDataSet(rootArchivePath)
+%   updateRepositoryDataSet(rootArchivePath, indexFilePath)
 %
 %   Called without an argument, opens a UI to select a directory
+%   If called with an empty argument, no action is taken (assumes no folder
+%   specified from calling function).
+%
+%       updateRepositoryDataSet([])
 %
 %
 % Counts, VCSFA 2017
@@ -35,7 +41,7 @@ DATA_FOLDER_NAME = 'data';
 METADATA_FILE_NAME_STR = 'metadata.mat';
 DATAINDEX_FILE_NAME_STR = 'dataIndex.mat';
 DATA_FOLDERS_LEVELS_DEEP_IN_ARCHIVE = 2;
-    
+user_specified_index_location = [];    
 
 %% STEP 0: Select data directory to update/refresh
 
@@ -54,6 +60,21 @@ switch nargin
             % TODO: Check if I am in a data folder and use the current path
             return
         end
+    case 2
+        if exist(varargin{2}, 'dir')
+            user_specified_index_location = varargin{2};
+        else
+            error('Invalid indexFilePath');
+            return
+        end
+        
+        if exist(fullfile(varargin{1}, DATA_FOLDER_NAME), 'dir')
+            rootDir_path = fullfile(varargin{1}, DATA_FOLDER_NAME);
+        else
+            error('Invalid rootArchivePath');
+            return
+        end
+        
     otherwise
         % TODO: Add better argument parsing. For now, fail with too many
         % arguments passed
@@ -64,7 +85,6 @@ end
 
 %% STEP 1: rename all files in data set
 
-% Temporarily disabled
 updateDataFileNamesInDirectory(rootDir_path);
 
 
@@ -94,6 +114,7 @@ if ~exist(fullfile(rootDir_path, FD_INDEX_FILE_NAME_STR), 'file')
 end
 
 if bWriteFdFile
+    debugout(sprintf('Saving %s file as %s', 'FDList', fullfile(rootDir_path, FD_INDEX_FILE_NAME_STR)) )
 	save( fullfile(rootDir_path, FD_INDEX_FILE_NAME_STR), 'FDList');
 end
 
@@ -144,21 +165,26 @@ metaData.timeSpan = timespan;
 
 
 if bWriteMetadataFile
-    debugout(sprintf('Saving %s file', METADATA_FILE_NAME_STR))
+    debugout(sprintf('Saving %s file as %', METADATA_FILE_NAME_STR, fullfile(rootDir_path, METADATA_FILE_NAME_STR) ) )
 	save( fullfile(rootDir_path, METADATA_FILE_NAME_STR), 'metaData');
 end
 
 
 %% STEP 5: Find and update dataIndex.mat
 
-higherLevels = rootDir_path;
+% Search for data index file in expected location if path not specified
+if isempty(user_specified_index_location)
+    higherLevels = rootDir_path;
 
-% get path 2 directories 'up'
-for i = 1:DATA_FOLDERS_LEVELS_DEEP_IN_ARCHIVE
-	[higherLevels, currentDirectory, ~] = fileparts(higherLevels);
+    % get path 2 directories 'up'
+    for i = 1:DATA_FOLDERS_LEVELS_DEEP_IN_ARCHIVE
+        [higherLevels, ~, ~] = fileparts(higherLevels);
+    end
+
+    archiveRootPath = higherLevels;
+else
+    archiveRootPath = user_specified_index_location;
 end
-
-archiveRootPath = higherLevels;
 
 dataIndexFullFile = fullfile(archiveRootPath, DATAINDEX_FILE_NAME_STR);
 
@@ -229,6 +255,7 @@ if exist(dataIndexFullFile, 'file')
         
         copyfile(dataIndexFullFile, backupFullFile, 'f');
         
+        debugout(sprintf('Saving %s as %s', 'dataIndex', dataIndexFullFile))
         save(dataIndexFullFile, 'dataIndex', '-mat');
                                  
     end
@@ -265,6 +292,7 @@ else
         dataIndex.FDList = metaData.fdList;
         dataIndex.pathToData = rootDir_path;
         
+        debugout(sprintf('Saving %s as %s', 'dataIndex', dataIndexFullFile))
         save(dataIndexFullFile, 'dataIndex', '-mat');
                                  
     end
