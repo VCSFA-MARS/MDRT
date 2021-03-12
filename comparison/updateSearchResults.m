@@ -108,8 +108,10 @@ function updateSearchResults(hObj, event, varargin)
    
    if ~isempty(searchString)
        % Make sure lsr is visible whenever there is a match
-       lsr.Visible = 'on';
-       uistack(lsr, 'top');
+       if shouldHideEmptyListbox
+           lsr.Visible = 'on';
+           uistack(lsr, 'top');
+       end
        
        % A non-empty search string means search!
        if length(masterList(ind)) >= lsr.Value
