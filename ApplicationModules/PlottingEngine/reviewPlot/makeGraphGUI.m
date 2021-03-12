@@ -1057,22 +1057,10 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
   
     switch filterindex
         case 1
-<<<<<<< Updated upstream
             % selected a *.gcf file
             % graph = load(fullfile(pathname, filename),'-mat');
             savedConfig = load(fullfile(pathname, filename),'-mat');
         case 2,3
-=======
-            % selected a *.jgcf file
-            loadedGraph = MDReadJSON(fullfile(pathname, filename) );
-            
-        case 2
-            % selected a *.gcf file
-            % graph = load(fullfile(pathname, filename),'-mat');
-            savedConfig = load(fullfile(pathname, filename),'-mat');
-            loadedGraph = savedConfig.graph;
-        case {3 4}
->>>>>>> Stashed changes
             % selected an excel file
             % TODO: Implement excel file parsing
         case 4
@@ -1088,7 +1076,7 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
    
     
     % Store new graph structure
-    handles.graph = loadedGraph;
+    handles.graph = savedConfig.graph;
     
     % Update the GUI data for visibility in other functions
     guidata(hObject, handles);
