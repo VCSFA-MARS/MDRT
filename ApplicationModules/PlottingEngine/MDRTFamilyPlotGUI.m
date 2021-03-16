@@ -328,7 +328,7 @@ function generatePlot(event, obj, varargin)
 
     
     % Get selected event info
-    if ~isempty(apd.selectedTimeline);
+    if ~isempty(apd.selectedTimeline) && ~useT0;
         eventInd = apd.hs.EventListbox.Value;
         EventString =   apd.selectedTimeline.milestone(eventInd).String;
         EventFD =       apd.selectedTimeline.milestone(eventInd).FD;
@@ -371,12 +371,13 @@ function generatePlot(event, obj, varargin)
     %% Get final sync time - from latest mission                        
 
         load( fullfile( dataFolders{end}, 'timeline.mat') );
-        eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
-
+        
         % Select the "Final Time" to calculate the time offsets
         if useT0
             tf = timeline.t0.time;
+            EventString = 'T0';
         else
+            eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
             tf = timeline.milestone(eventInd).Time;
         end
 
@@ -389,17 +390,17 @@ function generatePlot(event, obj, varargin)
 
                 eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
                 
-                if isempty(eventInd)
+                if isempty(eventInd) && ~useT0
                     % Use milestone.FD to attempt to recover
                     fprintf('Unable to match event String "%s"\nAttempting to proceed with event FD "%s"\n', ...
                         EventString, EventFD)
                     eventInd = find(ismember( {timeline.milestone.FD}', EventFD), 1, 'first');
                 end
 
-                if ~ isempty(eventInd) || useT0
+                if ~isempty(eventInd) || useT0
 
                     if useT0
-                        t0 = timeline.t0.time;
+                        to = timeline.t0.time;
                     else
                         to = timeline.milestone(eventInd).Time;
                     end
