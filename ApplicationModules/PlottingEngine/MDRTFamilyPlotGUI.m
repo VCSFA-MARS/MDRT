@@ -40,12 +40,15 @@ end
 setappdata(hs.fig, 'remoteDataIndex', remoteDataIndex); % Retain remote data index
 
 
+initTimelineData;
+
 
 % ht = uitable('Data', availableDataSets, ...
 hs.ht = uitable( ...
             'ColumnEdit',       [true, false, false], ...
             'Units',            'normalized', ...
-            'Position',         [0.05 0.15 0.5 0.85] );
+            'Position',         [0.05 0.15 0.5 0.85], ...
+            'CellEditCallback', @updateEventListbox);
         
 setappdata(gcf, 'hs', hs);
 populateDataSetList(localDataIndex)        
@@ -119,6 +122,137 @@ for n = 1:size(ebPos, 1)
     
 end
 
+
+%% Event Marker Selection List
+
+    hs.EventListbox = uicontrol(hs.fig, ...
+        'style',                'listbox', ...
+        'units',                'normalized', ...
+        'Position',             [0.594 0.25 0.374 0.257]) ;
+
+
+%% Use T0 Checkbox
+
+    hs.T0Checkbox = uicontrol(hs.fig, ...
+        'style',                'checkbox', ... 
+        'units',                'normalized', ...
+        'position',             [0.594 0.15  0.37 0.057], ...
+        'String',               'Synchronize at T0', ...
+        'Enable',               'off');
+
+    
+    
+setappdata(gcf, 'hs', hs);
+
+updateEventListbox;
+
+end
+
+
+function updateEventListbox(~, ~)
+% Re-populate the event selection box
+
+    apd = getappdata(gcf);
+
+    thisSetIndex = [apd.hs.ht.Data{:,1}]' ;
+
+    if ~any(thisSetIndex)
+        % Nothing selected, set list to blank
+        apd.hs.EventListbox.String = '';
+        apd.hs.T0Checkbox.Enable = 'off';
+        return
+    end
+
+    if apd.isRemoteArchive
+        thisTimelineCollection = apd.RemoteTimelines;
+    else
+        thisTimelineCollection = apd.LocalTimelines;
+    end
+    
+    
+
+    newList = '';
+    for n = numel(thisSetIndex):-1:1
+        if thisSetIndex(n)
+            try
+                newList = {thisTimelineCollection{n}.milestone.String}';
+                setappdata(gcf, 'selectedTimeline', thisTimelineCollection{n});
+            catch
+                setappdata(gcf, 'selectedTimeline', []);
+            end
+            break
+        else
+            % Nothinkg
+        end
+    end
+
+    % Update Event List Contents
+    apd.hs.EventListbox.String = newList;
+    thisValue = apd.hs.EventListbox.Value;
+    
+    if thisValue > numel(newList);
+        apd.hs.EventListbox.Value = numel(newList);
+    elseif ~thisValue
+       apd.hs.EventListbox.Value = 1;
+    end
+
+    
+    % Toggle T0 Checkbox Enable
+    try 
+        useT0 = thisTimelineCollection{n}.uset0;
+    catch
+        useT0 = false;
+    end
+
+    if useT0
+        apd.hs.T0Checkbox.Enable = 'on';
+    else
+        apd.hs.T0Checkbox.Enable = 'off';
+    end
+
+end
+
+
+function initTimelineData()
+    % Loops through timeline files in archive data folders, attempts to
+    % load and store in an array. This creates appdata variables called
+    % LocalTimelines and RemoteTimelines
+
+    apd = getappdata(gcf);
+    
+    % LoadLocalTimelines
+    localTimelineFiles = fullfile({apd.localDataIndex.pathToData}', 'timeline.mat');
+    LocalTimelines = {};
+    for f = 1:numel(localTimelineFiles)
+
+        try
+            tempTL = load(localTimelineFiles{f} );
+            LocalTimelines{f} = tempTL.timeline;
+        catch
+            % LocalTimelines(f) = []; % Not needed since assigning to index
+            thisSet = apd.localDataIndex(f).metaData.operationName;
+            fprintf('No timeline data loaded for local data: %d: %s\n', f, thisSet);
+        end
+    end
+
+    % LoadRemoteTimelines
+    remoteTimelineFiles = fullfile({apd.remoteDataIndex.pathToData}', 'timeline.mat');
+    RemoteTimelines = {};
+    for f = 1:numel(remoteTimelineFiles)
+
+        try
+            tempTL = load(remoteTimelineFiles{f} );
+            RemoteTimelines{f} = tempTL.timeline;
+        catch
+            % LocalTimelines(f) = []; % Not needed since assigning to index
+            thisSet = apd.remoteDataIndex(f).metaData.operationName;
+            fprintf('No timeline data loaded for remote data set %d: %s\n', f, thisSet);
+        end
+    end
+
+    setappdata(gcf, 'LocalTimelines',  LocalTimelines);
+    setappdata(gcf, 'RemoteTimelines', RemoteTimelines);
+
 end
 
 
@@ -137,6 +271,7 @@ function archiveButtonChanged(hobj, event)
     end
 
 end
+
 
 function populateDataSetList(dataIndex)
     hs = getappdata(gcf, 'hs');
@@ -173,59 +308,49 @@ function generatePlot(event, obj, varargin)
 
     dataFolders = plotConfig.path(plotConfig.use);
 
+    apd = getappdata(gcf);
 
-    dataFileNames = {   '1909 RP1 PT-1909 Press Sensor Mon.mat' ;
-                        '1021 RP1 DCVNC-1021 State.mat';
-                        '1913 RP1 LS-1913 Liquid Lvl Mon.mat';
-                        '1914 RP1 LS-1914 Liquid Lvl Empty Ind.mat'
-    };
+    % Get Use T0 Flag
+    useT0 = false;
+    if strcmpi(apd.hs.T0Checkbox.Enable, 'on')
+        useT0 = apd.hs.T0Checkbox.Value;
+    end
+    
+    % Get selected FD strings
+    dataFileNames = {};
+    dataFileNames = vertcat(dataFileNames, apd.hs.searchBox1.String);
+    dataFileNames = vertcat(dataFileNames, apd.hs.searchBox2.String);
+%     dataFileNames = strcat(dataFileNames, '.mat'); % Works on cell array of strings!
 
-    dataFileNames = {   '1909 RP1 PT-1909 Press Sensor Mon.mat' ;
-                        '1913 RP1 LS-1913 Liquid Lvl Mon.mat';
-                        '1914 RP1 LS-1914 Liquid Lvl Empty Ind.mat';
-                        '1906 RP1 PT-1906 Press Sensor Mon.mat';
-                        '5315 RP1 PT-5315 Press Sensor Mon.mat'
-                        };
-                        
-                        
-    dataFileNames = {   '1909 RP1 PT-1909 Press Sensor Mon.mat' ;
-                        '8030 HSS DCVNC-8030 State.mat';
-                        '1913 RP1 LS-1913 Liquid Lvl Mon.mat';
-    };
+    for n = 1:numel(dataFileNames)
+        dataFileNames{n} = apd.fdMasterList{ ismember(apd.fdMasterList, dataFileNames{n} ), 2 };
+    end
 
-    dataFileNames = { '2902 LO2 PT-2902 Press Sensor Mon.mat';
-                      '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
-                      '4927 Ghe PT-4927 Press Sensor Mon.mat'};
-                  
-    dataFileNames =  { '2913 LO2 PT-2913 Press Sensor Mon.mat' };
-dataFileNames = {       '2908 LO2 TC-2908 Temp Sensor Mon.mat';
-                        '2912 LO2 TC-2912 Temp Sensor Mon.mat'; };
-
-    EventString = 'FGSE FLS Low Flow Fill Command';
-    EventFD = 'FLS LLFF Cmd';
-
-    EventString = 'FGSE LOLS High Flow Fill Command'
-    EventFD = 'LOLS LHFO Cmd'
-%     EventFD = 'LOLS Chilldown Phase3 Cmd'
-%     EventString = 'LOLS Chilldown Transfer Line Phase 3'
-
+    
+    % Get selected event info
+    if ~isempty(apd.selectedTimeline);
+        eventInd = apd.hs.EventListbox.Value;
+        EventString =   apd.selectedTimeline.milestone(eventInd).String;
+        EventFD =       apd.selectedTimeline.milestone(eventInd).FD;
+    end
+       
+    
     % fix color matrix based on number of plots!
-
-        recentColors =  [   0.0 0.0 0.9;
-                            0.5 0.0 0.5;
-                            0.0 0.5 0.0; ];
+    recentColors =  [   0.0 0.0 0.9;
+                        0.5 0.0 0.5;
+                        0.0 0.5 0.0; ];
     %                         0.9 0.0 0.0 ];
-        length(dataFolders)
+    length(dataFolders)
 
-        for ci = 1:length(dataFolders)
-            if ci <= length(recentColors )
-                colors(ci, :) = recentColors(ci, :);
-            else
-                colors(ci, :) = [0.6 0.6 0.6];
-            end
+    for ci = 1:length(dataFolders)
+        if ci <= length(recentColors )
+            colors(ci, :) = recentColors(ci, :);
+        else
+            colors(ci, :) = [0.6 0.6 0.6];
         end
+    end
 
-        colors = num2cell(colors(end:-1:1,:) ,2 )
+    colors = num2cell(colors(end:-1:1,:) ,2 );
 
 
     fig = makeMDRTPlotFigure;
@@ -248,10 +373,12 @@ dataFileNames = {       '2908 LO2 TC-2908 Temp Sensor Mon.mat';
         load( fullfile( dataFolders{end}, 'timeline.mat') );
         eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
 
-        tf = timeline.milestone(eventInd).Time;
-        % If using t0 instead of a milestone you need different code!
-        % tf=timeline.t0.time;
-
+        % Select the "Final Time" to calculate the time offsets
+        if useT0
+            tf = timeline.t0.time;
+        else
+            tf = timeline.milestone(eventInd).Time;
+        end
 
         for f = 1:numel(dataFolders)
 
@@ -261,12 +388,22 @@ dataFileNames = {       '2908 LO2 TC-2908 Temp Sensor Mon.mat';
                 load( fullfile( dataFolders{f},  'metadata.mat') );
 
                 eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
+                
+                if isempty(eventInd)
+                    % Use milestone.FD to attempt to recover
+                    fprintf('Unable to match event String "%s"\nAttempting to proceed with event FD "%s"\n', ...
+                        EventString, EventFD)
+                    eventInd = find(ismember( {timeline.milestone.FD}', EventFD), 1, 'first');
+                end
 
-                if ~ isempty(eventInd)
+                if ~ isempty(eventInd) || useT0
 
-                    to = timeline.milestone(eventInd).Time;
-
-                %     deltaT = tf - timeline.t0.time;
+                    if useT0
+                        t0 = timeline.t0.time;
+                    else
+                        to = timeline.milestone(eventInd).Time;
+                    end
+                    
                     deltaT = tf - to;
 
 
@@ -304,6 +441,7 @@ dataFileNames = {       '2908 LO2 TC-2908 Temp Sensor Mon.mat';
 
             catch
                 % Unable to load metadata - no action
+                disp(sprintf('%s : Skipped. No matching data or event', metaData.operationName))
                 
             end
 
@@ -314,10 +452,10 @@ dataFileNames = {       '2908 LO2 TC-2908 Temp Sensor Mon.mat';
     dynamicDateTicks;
 
     titleFormatString = '%s-%s Data for A230 Launches - %s';
-
+    
     for a = 1:numel(dataFileNames)
 
-        load(fullfile(dataFolders{f}, dataFileNames{a}));
+        load( fullfile( dataFolders{end},dataFileNames{a} ), '-mat' );
         axes(subPlotAxes(a));
         title(sprintf(titleFormatString, fd.Type, fd.ID, EventString));
         reviewPlotAllTimelineEvents(timeline)

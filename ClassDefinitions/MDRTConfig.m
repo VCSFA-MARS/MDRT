@@ -30,8 +30,9 @@ classdef MDRTConfig < handle
         % THESE PROPERTIES MUST MATCH validConfigKeyNames!
         % -----------------------------------------------------------------
         
-        graphConfigFolderPath   % Directory that contains .gcf files. Plot tool will default to load/save here
+        graphConfigFolderPath    % Directory that contains .gcf files. Plot tool will default to load/save here
         dataArchivePath         % Directory that holds all locally stored, indexed data sets. Comparison tool looks here
+        remoteArchivePath       % Directory that holds remote-synced data archive. Index files will not be saved in this directory
         userSavePath            % Target directory for output (graphs, text files, etc) from active data set
         userWorkingPath         % Directory that contains the active data folders (data, delim, plots)
         importDataPath          % Directory that holds all imported data sets. Import tool will create folders here.
@@ -58,9 +59,10 @@ classdef MDRTConfig < handle
         validConfigKeyNames = {...
             'graphConfigFolderPath'; ...
             'dataArchivePath'; ...
+            'remoteArchivePath'; ...
             'userSavePath'; ...
             'userWorkingPath'; ...
-            'importDataPath'
+            'importDataPath'; ...
             };
     end
 
@@ -142,6 +144,34 @@ classdef MDRTConfig < handle
                     % Clearing object 
                     warning('MDRTConfig.dataArchivePath set to empty string');
                     obj.dataArchivePath = '';
+                end
+                
+            end
+            
+            obj.updateConfigurationFromProperties;
+            
+        end
+        
+        
+        function set.remoteArchivePath(obj,val)
+            % Only set if it is a valid path.
+            if exist( fullfile(val), 'dir' )
+                
+                obj.remoteArchivePath = fullfile(val);
+            else
+                
+                warning('Invalid path specified. MDRT_REMOTE_ARCHIVE_PATH not set');
+                
+                % Invalid path specified. Check if existing value is good
+                % and retain or clear
+                if exist(obj.remoteArchivePath, 'dir')
+                    % there is a valid path in the object. Do nothing?
+                    
+                else
+                    % Bad path passed and invalid directory in object.
+                    % Clearing object 
+                    warning('MDRTConfig.dataArchivePath set to empty string');
+                    obj.remoteArchivePath = '';
                 end
                 
             end
@@ -456,6 +486,7 @@ classdef MDRTConfig < handle
 
                     this.setParameterFromFileContents(keyName{1}, stuffInQuotes, i);
 
+
                 end
             end
             
@@ -624,13 +655,26 @@ classdef MDRTConfig < handle
             
             % Update fileContents from configuration structure
             keyNames = self.validConfigKeyNames;
+            nextFileLine = size(self.fileContents, 1) + 1;
+            
             for i = 1:numel(keyNames)
                 
-                value = self.configuration.(keyNames{i}).value;
+                if isempty(self.configuration.(keyNames{i}).index)
+                    % no index means no match - possibly from modified
+                    % config file or new feature rollout
+                    
+                    self.configuration.(keyNames{i}).index = nextFileLine;
+                    nextFileLine = nextFileLine + 1;
+                    
+                else
+                    
+                    value = self.configuration.(keyNames{i}).value;
+                    
+                end
+                
                 index = self.configuration.(keyNames{i}).index;
-                
                 self.fileContents{index} = [keyNames{i}, '=', '"', value, '"'];
-                
+
             end
             
             

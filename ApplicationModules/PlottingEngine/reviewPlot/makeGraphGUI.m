@@ -125,7 +125,6 @@ end
 
 
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = makeGraphGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -157,8 +156,11 @@ set(objs, 'Parent', tab1)
     % Do this here so Trisha's GUI rearranging doesn't change the UI
     % Parent/Child heigherarchy out from under us.
     setappdata(hObject, 'fdMasterList', handles.quickPlotFDs);
-    updateSearchResults(hObject);
+%     updateSearchResults(hObject);
 
+
+
+feval(handles.searchBox.KeyReleaseFcn, handles.searchBox)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
@@ -1260,6 +1262,7 @@ function searchBox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
 
 
 
