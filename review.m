@@ -119,9 +119,16 @@ else
 
 end
 
+% Fix GUI Font Sizes
+if ispc
+    fixFontSizeInGUI(gcf, 0.8);
+elseif isunix
+    fixFintSizeInGUI(gcf, 0.75);
+end
 
 % Update handles structure
 guidata(hObject, handles);
+
 
 % UIWAIT makes review wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
