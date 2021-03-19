@@ -342,7 +342,7 @@ classdef MDRTConfig < handle
                 fontScaleFactor = this.fontScaleFactorPC;
             elseif ismac
                 fontScaleFactor = this.fontScaleFactorMac;
-            elseif isunix
+            elseif isunix & ~ismac
                 fontScaleFactor = this.fontScaleFactorLinux;
             else
                 fontScaleFactor = 1;
