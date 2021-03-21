@@ -10,3 +10,5 @@ processDelimFiles.cfg
 SpecialTopics/remote/id_rsa_mdrt
 
 SpecialTopics/remote/id_rsa_mdrt.pub
+
+UnitTests/testJGCF.jgcf
