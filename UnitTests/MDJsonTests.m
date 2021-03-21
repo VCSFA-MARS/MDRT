@@ -8,6 +8,12 @@ classdef MDJsonTests < matlab.unittest.TestCase
         newGraph
     end
     
+    properties (Constant)
+        outputPath = 'TestOutputFiles';
+        inputPath  = 'TestData';
+        
+    end
+    
     
     
     methods(TestMethodSetup)
@@ -20,8 +26,10 @@ classdef MDJsonTests < matlab.unittest.TestCase
             
             testCase.graph = graph;
             
-            MDWriteJSON('', graph, 'testJGCF.jgcf');
-            testCase.newGraph = MDReadJSON('testJGCF.jgcf');
+            filename = fullfile(testCase.outputPath, 'testJGCF.jgcf');
+            
+            MDWriteJSON('', graph, filename);
+            testCase.newGraph = MDReadJSON(filename);
             
         end
     end
@@ -63,8 +71,11 @@ classdef MDJsonTests < matlab.unittest.TestCase
             
             graph.time.startTime = startTime;
             
-            MDWriteJSON('', graph, 'testJGCF.jgcf');
-            newGraph = MDReadJSON('testJGCF.jgcf');
+            filename = fullfile(testCase.outputPath, 'testJGCF.jgcf');
+
+            
+            MDWriteJSON('', graph, filename);
+            newGraph = MDReadJSON(filename);
             
             oneSecond = 24*60*60;
             oneMillisecond = oneSecond / 1000;

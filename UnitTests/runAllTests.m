@@ -7,7 +7,7 @@
 fileTests = FileNameTests;
 results = run(fileTests)
 
-jsonTests = TestMDJson;
+jsonTests = MDJsonTests;
 results = run(jsonTests)
 
 
