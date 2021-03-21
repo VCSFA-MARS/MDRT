@@ -63,7 +63,7 @@ classdef MDJsonTests < matlab.unittest.TestCase
             testCase.verifyClass( actual, knownClass )
         end
         
-        function loadGraphWithStopEvent(testCase)
+        function loadGraphWithStartEvent(testCase)
             graph = testCase.graph;
             
             startTime = struct( 'String',   'Some FD Name', ...
