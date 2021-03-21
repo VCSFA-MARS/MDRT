@@ -1,11 +1,17 @@
+%% Simple script to test JSON save/load of graph structs
+
+outputPath = 'TestOutputFiles';
+filename = fullfile(outputPath, 'testJGCF.jgcf');
+
+
 
 graph = newGraphStructure;
 graph.subplots = {'Subplot 1' 'Subplot 2'};
 graph.streams(1).toPlot = {'FD 1', 'FD 2', 'FD 3'};
 graph.streams(2).toPlot = {'FD 4', 'FD 5', 'FD 6'};
 
-MDWriteJSON('', graph, 'testJGCF.jgcf');
-newGraph = MDReadJSON('testJGCF.jgcf');
+MDWriteJSON('', graph, filename);
+newGraph = MDReadJSON(filename);
 
 actSolution = newGraph;
 expSolution = graph;
