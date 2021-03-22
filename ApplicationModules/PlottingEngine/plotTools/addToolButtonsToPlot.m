@@ -11,10 +11,10 @@ function [  ] = addToolButtonsToPlot( figureHandle )
 
 % Add a push tool to the toolbar
  
-    toggleIcon  = imread( getResource('toggleLabelSize_icon_16x16.png'),'png');
-    refreshIcon = imread( getResource('refreshTimeline_icon_16x16.png'),'png');
-    showIcon    = imread( getResource('showTimeline_icon_16x16.png'),'png');
-    xAxisIcon   = imread( getResource('timeAxes_icon_23x25'),'png');
+    toggleIcon  = imread( getMDRTResource('toggleLabelSize_icon_16x16.png'),'png');
+    refreshIcon = imread( getMDRTResource('refreshTimeline_icon_16x16.png'),'png');
+    showIcon    = imread( getMDRTResource('showTimeline_icon_16x16.png'),'png');
+    xAxisIcon   = imread( getMDRTResource('timeAxes_icon_23x25'),'png');
     
     
 % % Convert white pixels into a transparent background
