@@ -146,6 +146,8 @@ setappdata(gcf, 'hs', hs);
 
 updateEventListbox;
 
+fixFontSizeInGUI(gcf, config.fontScaleFactor);
+
 end
 
 

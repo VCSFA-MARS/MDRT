@@ -255,6 +255,8 @@ debugout(allDataSetNames)
 
 
     updateDataSelectionPopup(hs.popup_dataSetOp1, []);
+
+    fixFontSizeInGUI(hs.fig, config.fontScaleFactor);
                         
 % Populate fd list
 

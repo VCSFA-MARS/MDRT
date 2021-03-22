@@ -119,9 +119,20 @@ else
 
 end
 
+% Fix GUI Font Sizes
+% Later, use this code:
+%   fixFontSizeInGUI(Config.fontScaleFactor)
+if ispc
+    fixFontSizeInGUI(gcf, 0.8);
+    debugout('Scaling fonts for Windoze...')
+elseif isunix && ~ismac
+    fixFontSizeInGUI(gcf, 0.75);
+    debugout('Scaling fonts for Linux!')
+end
 
 % Update handles structure
 guidata(hObject, handles);
+
 
 % UIWAIT makes review wait for user response (see UIRESUME)
 % uiwait(handles.figure1);

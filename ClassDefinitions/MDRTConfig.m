@@ -30,7 +30,7 @@ classdef MDRTConfig < handle
         % THESE PROPERTIES MUST MATCH validConfigKeyNames!
         % -----------------------------------------------------------------
         
-        graphConfigFolderPath    % Directory that contains .gcf files. Plot tool will default to load/save here
+        graphConfigFolderPath   % Directory that contains .gcf files. Plot tool will default to load/save here
         dataArchivePath         % Directory that holds all locally stored, indexed data sets. Comparison tool looks here
         remoteArchivePath       % Directory that holds remote-synced data archive. Index files will not be saved in this directory
         userSavePath            % Target directory for output (graphs, text files, etc) from active data set
@@ -77,6 +77,7 @@ classdef MDRTConfig < handle
         
        pathToConfig
        defaultConfigFile
+       fontScaleFactor          % return an OS-dependent font scaling factor for GUIs
         
     end
     
@@ -98,6 +99,10 @@ classdef MDRTConfig < handle
 
         macConfigFile = 'config_mac.txt';
         winConfigFile = 'config_windows.txt'
+
+        fontScaleFactorMac      = 1.0;
+        fontScaleFactorPC       = 0.8;
+        fontScaleFactorLinux    = 0.75;
         
     end
     
@@ -329,6 +334,19 @@ classdef MDRTConfig < handle
                 workingDelimPath = '';
             end
              
+        end
+
+
+        function fontScaleFactor = get.fontScaleFactor(this)
+            if ispc
+                fontScaleFactor = this.fontScaleFactorPC;
+            elseif ismac
+                fontScaleFactor = this.fontScaleFactorMac;
+            elseif isunix & ~ismac
+                fontScaleFactor = this.fontScaleFactorLinux;
+            else
+                fontScaleFactor = 1;
+            end
         end
         
         
