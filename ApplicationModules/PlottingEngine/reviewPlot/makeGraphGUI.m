@@ -64,6 +64,7 @@ function makeGraphGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Load the project configuration (paths to data, plots and raw data)
     config = getConfig;
+    Config = MDRTConfig.getInstance;
  
 % Store configuration in handles structure    
     handles.configuration = config;
@@ -122,6 +123,8 @@ end
     
 % UIWAIT makes makeGraphGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
+
+    fixFontSizeInGUI(hObject, Config.fontScaleFactor);
 
 
 

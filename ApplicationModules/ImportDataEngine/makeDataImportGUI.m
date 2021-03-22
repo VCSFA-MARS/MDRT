@@ -9,6 +9,8 @@ function hs = makeDataImportGUI( varargin )
 %
 % Counts, 2016 VCSFA
 
+Config = MDRTConfig.getInstance;
+
 figureName = 'Data Import GUI';
 overrideWindowDelete = true;
 
@@ -335,6 +337,8 @@ initialValues =    ...
             metaData.hasMARSuid         = hs.checkbox_hasUID.Value;
             metaData.isVehicleOp        = hs.checkbox_vehicleSupport.Value;
     end
+
+    fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
 
 
     function updateFolderGuess(varargin)

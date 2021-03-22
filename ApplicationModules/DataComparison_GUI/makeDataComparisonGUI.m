@@ -256,6 +256,7 @@ debugout(allDataSetNames)
 
     updateSearchResults(hs.edit_searchField);
 
+    fixFontSizeInGUI(gcf, config.fontScaleFactor);
     
     function doWindowResize(o, ~)
         defaultLabelFontSize;

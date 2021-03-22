@@ -70,10 +70,9 @@ function eventEditor1_OpeningFcn(hObject, eventdata, handles, varargin)
 % This is where I put my initialization code
 % -------------------------------------------------------------------------
     config = getConfig;
-
     handles.config = config;
 
-
+    Config = MDRTConfig.getInstance;
     
 % Debugging purposes: load existant timeline file.
 % load('~/Documents/MATLAB/Data Review/ORB-1/data/timeline.mat')
@@ -121,6 +120,8 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+
+fixFontSizeInGUI(hObject, Config.fontScaleFactor);
 
 % UIWAIT makes eventEditor1 wait for user response (see UIRESUME)
 % uiwait(handles.figure1);

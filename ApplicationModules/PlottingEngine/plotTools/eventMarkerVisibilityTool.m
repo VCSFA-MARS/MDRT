@@ -6,6 +6,8 @@ function eventMarkerVisibilityTool(hobj, event, varargin)
 %   Counts, VCSFA 2016
 
 
+Config = MDRTConfig.getInstance;
+
 % Get handle to figure that calls this function
     fh = gcbf;
 
@@ -14,7 +16,7 @@ function eventMarkerVisibilityTool(hobj, event, varargin)
     labels  = findall(fh, 'Tag',  'vlinetext');
     
 % Add listener to close this tool if the calling window closes
-lh = addlistener(fh, 'Close', @graphWindowClosed);
+    lh = addlistener(fh, 'Close', @graphWindowClosed);
 
 % Prepare event strings, sorted list, and sort index for display in
 % checklist
@@ -93,6 +95,7 @@ jScrollPane = com.mathworks.mwswing.MJScrollPane(jCBList);
     selectAllControl.String = 'Select All Events';
     selectAllControl.Callback = @toggleAllButton; 
 
+    fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
 
  
 
