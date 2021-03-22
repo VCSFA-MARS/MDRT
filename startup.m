@@ -42,7 +42,7 @@ addpath(genpath(fullfile(MDRTpath,'ClassDefinitions')));
 addpath(genpath(fullfile(MDRTpath,'comparison')));
 addpath(genpath(fullfile(MDRTpath,'extensions')));
 addpath(genpath(fullfile(MDRTpath,'helpers')));
-addpath(genpath(fullfile(MDRTpath,'resources')));
+addpath(genpath(fullfile(MDRTpath,'resources_mdrt')));
 addpath(genpath(fullfile(MDRTpath,'Review_App_Files')));
 addpath(genpath(fullfile(MDRTpath,'SpecialTopics')));
 addpath(genpath(fullfile(MDRTpath,'Structures')));

@@ -1,4 +1,4 @@
-iconFile = '~/Documents/MATLAB/MARS Review Tool/MDRT/resources/images/complete_icon_146x146.png';
+iconFile = getMDRTResource('complete_icon_146x146.png');
 
 fig = figure;
 
