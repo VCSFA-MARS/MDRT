@@ -1,11 +1,10 @@
-config = MDRTConfig.getInstance;
-load(fullfile(config.dataArchivePath, 'dataIndex.mat'))
-FDList = dataIndex(1).FDList;
+s = load(fullfile('UnitTests', 'TestData', 'AvailableFDs.mat'))
+FDList = s.FDList;
 
 hs.fig = figure
 
     setappdata(hs.fig, 'fdMasterList', FDList);
-    setappdata(hs.fig, 'dataIndex', dataIndex);
+    % setappdata(hs.fig, 'dataIndex', dataIndex);
 
 hs.searchbar = uicontrol(       hs.fig,                             ...
         'Tag',                  'searchBox',                        ...

@@ -1,0 +1,42 @@
+{
+	"graph":{
+		"name":"Unnamed Graph",
+		"subplots":[
+			"Subplot 1",
+			"Subplot 2"
+		],
+		"streams":[
+			{
+				"toPlot":[
+					"FD 1",
+					"FD 2",
+					"FD 3"
+				]
+			},
+			{
+				"toPlot":[
+					"FD 4",
+					"FD 5",
+					"FD 6"
+				]
+			},
+			{
+				"toPlot":[]
+			}
+		],
+		"time":{
+			"isStartTimeUTC":true,
+			"isStartTimeAuto":true,
+			"startTime":{
+				"String":"Some FD Name",
+				"Time":738236.803461469
+			},
+			"startTag":"none",
+			"isStopTimeUTC":true,
+			"isStopTimeAuto":true,
+			"stopTime":{
+			},
+			"stopTag":"none"
+		}
+	}
+}

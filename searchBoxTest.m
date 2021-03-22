@@ -81,7 +81,7 @@ end
 function updateSearch(hObject, eventData, jCombo, jAssetChooser)
     persistent lastSearchText
 
-    s = load('/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data/AvailableFDs.mat')
+    s = load('UnitTests/TestData/AvailableFDs.mat')
     
     
     
