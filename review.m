@@ -450,7 +450,7 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
             set(handles.uiPopup_FDList, 'Value', 1);
             
         % Save updated index IF new is different from old
-        T = load(handles.configuration.dataFolderPath, 'AvailableFDs.mat');
+        T = load(fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat') );
         
         if isequal(T.FDList, FDList)
             debugout('FDList is unchanged');

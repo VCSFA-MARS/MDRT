@@ -1,5 +1,8 @@
-dataFolder='/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
-dataFolder='/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data'
+% dataFolder='/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
+% dataFolder='/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data';
+dataFolder='/Users/nick/onedrive/Virginia Commercial Space Flight Authority/Pad 0A - Documents/General/90-Combined Systems/Launch Data/MDRT Data/2021-02-19_NG-15_Launch/data';
+
+
 timelineFile=fullfile(dataFolder, 'timeline.mat');
 
 
@@ -8,7 +11,7 @@ fds={timeline.milestone.FD}';
 
 sfInd = find(ismember(fds, 'LOLS Stop Flow Cmd'));
 
-PlotTitleString = 'LO2 Valve Testing';
+PlotTitleString = 'LO2 Stop Flow Flight Comparison';
 
 %% Constants
 
