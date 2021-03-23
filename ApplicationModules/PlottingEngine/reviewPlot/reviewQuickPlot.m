@@ -47,6 +47,7 @@ switch upper(fd.Type)
         else
             % No special case, use normal .ts plot
             h_plot = stairs(fd.ts.Time, fd.ts.Data*1);
+            title(fd.ts.Name)
         end
     
     otherwise
