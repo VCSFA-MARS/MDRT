@@ -161,8 +161,8 @@ function MDRTbrushMenu(hobj, event)
                         
                 trend = trendMath([xData{:}',yData{:}']);
 
-                hs.start.String = trend.start;
-                hs.stop.String  = trend.stop;
+                hs.start.String = trend.starts;
+                hs.stop.String  = trend.stops;
                 hs.duration.String = trend.durations;
                 hs.delta.String = trend.delta;
                 hs.slope.String = trend.rate;
