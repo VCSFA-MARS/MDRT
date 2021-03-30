@@ -17,7 +17,12 @@ Y1 = (P1(2) - abs(min(ylim)) ) / diff(ylim) * ys + yi ;
 X2 = (P2(1) - abs(min(xlim)) ) / diff(xlim) * xs + xi ;
 Y2 = (P2(2) - abs(min(ylim)) ) / diff(ylim) * ys + yi ;
 
-han = annotation( type, [X1, X2], [Y1, Y2], 'String', text);
+try
+    han = annotation( type, [X1, X2], [Y1, Y2], 'String', text);
+catch
+    % Fail Silently if annotation call is invalid
+    han = [];
+end
 
 end
 
