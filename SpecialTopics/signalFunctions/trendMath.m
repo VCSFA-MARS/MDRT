@@ -14,7 +14,21 @@ function [ trend ] = trendMath( dataBrushVariable )
 %
 %           * trendMath.m will output start, stop, duration, dy/dt and
 %           linearity to the console
-%           
+%
+%   trend = trendMath returns the following structure 
+%
+%         trend.starts    : start time as human readable string
+%         trend.stops     : stop time as human readable string
+%         trend.durations : duration as human readable string
+% 
+%         trend.start     : start time as Matlab datenum
+%         trend.stop      : stop time as Matlab datenum
+%         trend.duration  : duration as Matlab datenum
+% 
+%         trend.delta     : change in y-value
+%         trend.rate      : change in y-value per minute
+%         trend.rsq       : r^2
+
 
 
 t1 = dataBrushVariable(1,1);
