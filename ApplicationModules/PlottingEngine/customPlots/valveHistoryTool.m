@@ -2,8 +2,8 @@ missions = {
     '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
     '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
     '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
-    '/Users/nick/data/imported/2020-08-28 - NC-1145/data';
-    '/Users/nick/data/imported/2020-08-11 - NC-1145/data';
+%     '/Users/nick/data/imported/2020-08-28 - NC-1145/data';
+%     '/Users/nick/data/imported/2020-08-11 - NC-1145/data';
     '/Users/nick/data/imported/2020-02-12 - LO2 Testing/data';
     '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
     '/Users/nick/data/archive/2020-02-09_NG-13/data';
@@ -60,15 +60,26 @@ PlotTitleString = sprintf('%s : Valve Performance Comparison', valveName);
 %   TODO: Add a prompt for user selection if can't be determined from
 %   previous
 
-[s,~,~] = regexpi(valveName, '(PCVNC|PCVNO|RV-0003|RV-0004)-\d*');
+[s,~,~] = regexp(valveName, '(PCVNC|PCVNO|RV-0003|RV-0004)-\d*');
 
 if isempty(s)
     isDiscrete = true;
+    valveType = 'Discrete';
 else
     isDiscrete = false;
+    valveType = 'Proportional';
 end
 
 
+[s,~,~] = regexp(valveName, '(PCVNC|DCVNC|RV-0001|BV)');
+
+if isempty(s)
+    isNO = true;
+    normalPos = 'OPEN';
+else
+    isNO = false;
+    normalPos = 'CLOSED';
+end
 
 
 %% Grab all available data
@@ -155,6 +166,11 @@ for n = 1:numel(missions)
     data(n).metadata = tMeta.metaData;
     data(n).path = missions{n};
     
+    data(n).cmd.ts      = removeDuplicateTimeseriesPoints( tcmd.fd.ts );
+    data(n).state.ts    = removeDuplicateTimeseriesPoints( tstate.fd.ts );
+    data(n).press.ts    = removeDuplicateTimeseriesPoints( tpress.fd.ts );
+    
+    
 end
 
 data(indToClear) = [];
@@ -181,7 +197,9 @@ axPair = [];
 figCount = 1;          
 sfIndLen = 0;
 
-%% Load Data
+%% Generate Plan
+%   Step through each command and create an array of items to analyse and
+%   plot. It's the "plan"
 
 plan = [];
 
@@ -191,75 +209,31 @@ for m = 1:length(data)
     disp(data(m).metadata.operationName)
     
     % For Discrete Valves, find all command changes
-    cmdInd = find(diff(data(m).cmd.ts.Data)) + 1; % +1 needed due to diff offset.
+    cmdChg = diff(data(m).cmd.ts.Data);
+    cmdInd = find(cmdChg) + 1; % +1 needed due to diff offset.
     
     for n = 1:numel(cmdInd)
         % Step through each command change and build a "plan"
-        % plan fmt: [data() index, command fd.ts.Data index, cmd datenum]
+        % plan fmt: [data() index, command fd.ts.Data index, cmd datenum, cmdChange,    ]
         cmdDatenum = data(m).cmd.ts.Time(cmdInd(n));
-        thisPlan = [m, cmdInd, cmdDatenum ];
+        thisPlan = [m, cmdInd(n), cmdDatenum, cmdChg(cmdInd(n) -1) ];
         plan = vertcat(plan, thisPlan);
         fprintf('\tFound command change at %s\n', datestr(cmdDatenum) )
+        
     end
     
-    keyboard
-    
-    if sfInd
-        disp(datestr( [timeline.milestone(sfInd).Time] ) )
-        
-        data(m).timeline = timeline;
-        data(m).metaData = metaData;
-        data(m).sfInd = sfInd;
-        
-        sfIndLen = sfIndLen + length(sfInd); % might be redundant
-        
-        for s = 1:length(sfInd)
-            thisPlan = [m, sfInd(s)]; % mission index, milestone index
-            plan = vertcat(plan, thisPlan);
-        end
-        
-        for d = 1:length(dataFiles)
-            load( fullfile( missions{m}, dataFiles{d} ) );
-            data(m).dataFiles(d) = fd;
-        end
-        
-        for d = 1:length(valveFiles)
-            try
-                load( fullfile( missions{m}, valveFiles{d} ) );
-                data(m).valveFiles(d) = fd;
-            catch
-                tempFd = newFD;
-                tempFd.FullString = valveFiles{d}(6:end-4);
-                tempFd.ts = timeseries;
-                tempFd.ts.Name = tempFd.FullString;
-                data(m).valveFiles(d) = tempFd;
-            end
-        end
-        
-        for d = 1:length(pressFiles)
-            try
-                load( fullfile( missions{m}, pressFiles{d} ) );
-                data(m).pressFiles(d) = fd;
-            catch
-                tempFd = newFD;
-                tempFd.FullString = pressFiles{d}(6:end-4);
-                tempFd.ts = timeseries;
-                tempFd.ts.Name = tempFd.FullString;
-                data(m).pressFiles(d) = tempFd;
-            end
-        end
-
-    end
 
 end
 
 
-disp(sprintf( '\n%d instances of "%s" found\n', length(sfInd), searchMilestoneFD))
+fprintf( '\n%d instances of "%s" commands found\n', size(plan,1), valveName )
+
 
 
 %% Generate Subplot Axes and Pages
+skipFigures = true;
 
-if size(plan, 1) > spWide
+if (size(plan, 1) > spWide) & ~skipFigures
     remainder = size(plan, 1);
     while remainder > 0
         f = makeMDRTPlotFigure;
@@ -292,10 +266,10 @@ if size(plan, 1) > spWide
         subOffset = length(sfInd);
     end
 
-else  
+elseif ~skipFigures
     fig = makeMDRTPlotFigure;
     
-    subPlotAxes = MDRTSubplot(spHigh,length(sfInd),graphsPlotGap, ... 
+    subPlotAxes = MDRTSubplot(spHigh,size(plan,1),graphsPlotGap, ... 
                                 GraphsPlotMargin,GraphsPlotMargin);
 	suptitle(PlotTitleString);
 end
@@ -304,91 +278,141 @@ end
 
 %% Calculate and Plot 
 
+results = struct('firstmvt', [],        'motionstop', [], ...
+                 'transitiontime', [],  'totaltime', [], ...
+                 'operation', [],       'commandnum', [], ...
+                 'command', [],         'normalpos', [], ...
+                 'commandtime', [],     'commandtype', []);
+
 for ind = 1:size(plan, 1)
     
     isThresholdFound = false;
     
-    thisMission = plan(ind,1);
-    thisMilestoneIndex = plan(ind, 2);
+    thisInd = plan(ind,1);
+    cmdInd  = plan(ind,2);
+    cmdTime = plan(ind,3);
+    cmdChng = plan(ind,4);
     
-    milestone = data(thisMission).timeline.milestone(thisMilestoneIndex);    % timeline.milestone(sfInd(ind));
-    t0 = milestone.Time - 2*onesec ;        % time axis t0
-    tf = milestone.Time + 10*onesec ;       % time axis tf
-    tc = milestone.Time;                    % command time
+    t0 = cmdTime - 2*onesec ;        % time axis t0
+    tf = cmdTime + 15*onesec ;       % time axis tf
+    tc = cmdTime;                    % command time
     timeInterval = [t0, tf];
+    
+    lastState = find(data(thisInd).state.ts.Time <= cmdTime);
+    lastState = data(thisInd).state.ts.Data( lastState(end) );
+    
     
     %% Numerical Analysis
     
-    fd1file = fullfile(missions(thisMission), data(thisMission).dataFiles(1).FullString );
-    fd2file = fullfile(missions(thisMission), data(thisMission).dataFiles(2).FullString );
     
-    f1ts = data(thisMission).dataFiles(1).ts.getsampleusingtime(t0, tf + onesec*2);
-    f2ts = data(thisMission).dataFiles(2).ts.getsampleusingtime(t0, tf + onesec*2);
+%           firstmvt: []
+%         motionstop: []
+%     transitiontime: []
+%          totaltime: []
+%          operation: []
+%         commandnum: []
+%            command: []
+%          normalpos: []
     
-    % Find indeces for data matching condition
-    f1idx = f1ts.Data < 10;
-    f2idx = f2ts.Data < 10;
+    results(ind).operation = data(thisInd).metadata.operationName;
+    results(ind).normalpos = normalPos;
+    results(ind).command = data(thisInd).cmd.ts.Data(cmdInd);
+    results(ind).commandtime = cmdTime;
+    results(ind).lastState = lastState;
     
-    b1ts = f1ts; b1ts.Data = f1idx;
-    b2ts = f2ts; b2ts.Data = f2idx;
-    
-    % Can't calculate if no matching conditions found on both flowmeters!
-    if max(f1idx) && max(f2idx)
-        startTime = max(f1ts.Time(1), f2ts.Time(1));
-        endTime = min(f1ts.Time(end), f2ts.Time(end));
-
-        newTime = [f1ts.Time; f2ts.Time];
-        newTime = sort(newTime);
-        newTime = newTime( (newTime >= startTime) & (newTime <= endTime) );
-
-        B1ts=b1ts.resample(newTime);
-        B2ts=b2ts.resample(newTime);
-
-        Bts = B1ts; Bts.Data = B1ts.Data & B2ts.Data;
-
-        matches=find(diff(Bts.Data)==1)+1;
-
-        annotationX = [tc(1), newTime(matches(1)) ];
-        annotationY = [150, 10 ];
-
-        P1 = [tc(1) + 4*onesec,    150 ];
-        P2 = [newTime(matches(1)),  10 ];
-
-        timeToStopFlow = {datestr(newTime(matches) - tc, 'SS.FFF')};
-
-        disp(sprintf('\nResults for Stop Flow test %d : %s', ind, data(thisMission).metaData.operationName))
-        for tempInd = 1:length(matches)
-            disp(sprintf('\tCondition met in %s seconds', ...
-                datestr(newTime(matches(tempInd)) - tc, 'SS.FFF')))
+    if isDiscrete
+        if cmdChng > 0
+            %Energizing
+            results(ind).commandtype = 'Energize';
+            if isNO
+                results(ind).commandedTo = 'CLOSE';
+            else
+                results(ind).commandedTo = 'OPEN';
+            end
+        else
+            results(ind).commandtype = 'De-energize';
+            if isNO
+                results(ind).commandedTo = 'OPEN';
+            else
+                results(ind).commandedTo = 'CLOSE';
+            end
+        end
+    else
+        if (cmdChng < 0 && isNO) || (cmdChng > 0 && ~isNO)
+            %Energizing
+            results(ind).commandtype = 'Energize';
+        else
+            results(ind).commandtype = 'De-energize';
         end
         
-        isThresholdFound = true;
-
-    else
-        disp(sprintf('\nResults for Stop Flow test %d', ind))
-        disp(sprintf('\tNo matching condition found'))
+        if cmdChng > 0
+            results(ind).commandedTo = 'OPEN';
+        else
+            results(ind).commandedTo = 'CLOSE';
+        end
     end
+    
+    
+    
+    cmdTs = data(thisInd).cmd.ts.getsampleusingtime(t0, tf + onesec*2);
+    staTs = data(thisInd).state.ts.getsampleusingtime(t0, tf + onesec*2);
+    
+    % Get time to first movement
+    foundFirstMovement  = false;
+    foundFinalState     = false;
+    
+    if isDiscrete
+        targetTrans = 2;
+        switch results(ind).commandedTo
+            case 'OPEN'
+                targetFinal = 1;
+            otherwise
+                targetFinal = 0;
+        end
+    else
+        % What the hell am I gonna do for proportional??
+        
+    end
+    
+    for sInd = 1:length(staTs.Data)
+        if staTs.Time(sInd) > cmdTime;
+            
+            if abs(staTs.Data(sInd) - results(ind).lastState) > 0.5 % Should be movement for discrete or proportional in either direction
+                if ~foundFirstMovement
+                    foundFirstMovement = true;
+                    results(ind).firstmvt = staTs.Time(sInd);
+                end
+                
+                if ~foundFinalState && (staTs.Data(sInd) == targetFinal)
+                    foundFinalState = true;
+                    results(ind).motionstop = staTs.Time(sInd);
+                end    
+            end
+        end
+    end
+
+        
+    results(ind).totaltime      = (results(ind).motionstop - results(ind).commandtime)  ./ onesec;
+    results(ind).transitiontime = (results(ind).motionstop - results(ind).firstmvt)     ./ onesec;
+    
+    
+    
+    % Get time to final state (might be the same time!)
+    
+    
+ 
+    
+%         annotationX = [tc(1), newTime(matches(1)) ];
+%         annotationY = [150, 10 ];
+% 
+%         P1 = [tc(1) + 4*onesec,    150 ];
+%         P2 = [newTime(matches(1)),  10 ];
+
+
+
     
 	
-    %% Valve State Calculation and reporting
-    
-    for vind = 1:length(data(thisMission).valveFiles)
-        vstate = data(thisMission).valveFiles(vind).ts.getsampleusingtime(0, t0);
-        try
-            s1 = vstate.Data(end);
-        catch
-            s1 = nan;
-        end
-        
-        vstate = data(thisMission).valveFiles(vind).ts.getsampleusingtime(0, tf);
-        try
-            s2 = vstate.Data(end);
-        catch
-            s2 = nan;
-        end
-        
-        disp(sprintf('%s\t%d\t%d',data(thisMission).valveFiles(vind).ts.Name, s1, s2))
-    end
+continue
     
     
 
@@ -397,15 +421,15 @@ for ind = 1:size(plan, 1)
     axes(axPairs(ind,1));
     
     for fn = 1:numel(dataFiles)
-        fd = data(thisMission).dataFiles(fn);
+        fd = data(thisInd).dataFiles(fn);
 %         fd = allFDs(fn);
         hold on
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
     end
     
-    reviewPlotAllTimelineEvents(data(thisMission).timeline)
+    reviewPlotAllTimelineEvents(data(thisInd).timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
-    title(sprintf('%s %s', data(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    title(sprintf('%s %s', data(thisInd).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
     setDateAxes(axPairs(ind, 1), 'XLim', timeInterval);
     ylim([ 0, 275] );
     hline(10, '--r');
@@ -418,16 +442,16 @@ for ind = 1:size(plan, 1)
     axes(axPairs(ind,2));
     
     for fn = 1:numel(pressFiles)
-        fd = data(thisMission).pressFiles(fn);
+        fd = data(thisInd).pressFiles(fn);
 %         fd = valveFDs(fn);
         hold on
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
     end
     
     
-    reviewPlotAllTimelineEvents(data(thisMission).timeline)
+    reviewPlotAllTimelineEvents(data(thisInd).timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
-    title(sprintf('%s %s', data(thisMission).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    title(sprintf('%s %s', data(thisInd).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
     
     linkaxes(axPairs(ind,:),'x');
     dynamicDateTicks(axPairs(ind,:), 'link');
@@ -436,10 +460,10 @@ for ind = 1:size(plan, 1)
     ylim([ 0, 200] );
 %     ylim([ -0.1, 2.1] );
     
-    
+
     
 end
-
+struct2table(results)
 
 %% Add hline annotations to bottom plot
 for q = 1:length(axPairs)
