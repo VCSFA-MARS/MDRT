@@ -229,7 +229,6 @@ end
 fprintf( '\n%d instances of "%s" commands found\n', size(plan,1), valveName )
 
 
-
 %% Generate Subplot Axes and Pages
 skipFigures = true;
 
@@ -279,10 +278,14 @@ end
 %% Calculate and Plot 
 
 results = struct('firstmvt', [],        'motionstop', [], ...
-                 'transitiontime', [],  'totaltime', [], ...
+                 'timetofirstmvt', [],  'transitiontime', [],  'totaltime', [], ...
                  'operation', [],       'commandnum', [], ...
                  'command', [],         'normalpos', [], ...
                  'commandtime', [],     'commandtype', []);
+             
+             
+lastDataIndex = 0;
+cmdCount = 0;
 
 for ind = 1:size(plan, 1)
     
@@ -300,6 +303,14 @@ for ind = 1:size(plan, 1)
     
     lastState = find(data(thisInd).state.ts.Time <= cmdTime);
     lastState = data(thisInd).state.ts.Data( lastState(end) );
+    
+    if lastDataIndex ~= thisInd
+        lastDataIndex = thisInd;
+        cmdCount = 1;
+    else
+        cmdCount = cmdCount + 1;
+    end
+    
     
     
     %% Numerical Analysis
@@ -319,6 +330,7 @@ for ind = 1:size(plan, 1)
     results(ind).command = data(thisInd).cmd.ts.Data(cmdInd);
     results(ind).commandtime = cmdTime;
     results(ind).lastState = lastState;
+    results(ind).commandnum = cmdCount;
     
     if isDiscrete
         if cmdChng > 0
@@ -394,6 +406,7 @@ for ind = 1:size(plan, 1)
         
     results(ind).totaltime      = (results(ind).motionstop - results(ind).commandtime)  ./ onesec;
     results(ind).transitiontime = (results(ind).motionstop - results(ind).firstmvt)     ./ onesec;
+    results(ind).timetofirstmvt = (results(ind).firstmvt   - results(ind).commandtime)  ./ onesec;
     
     
     
@@ -460,10 +473,17 @@ continue
     ylim([ 0, 200] );
 %     ylim([ -0.1, 2.1] );
     
-
+got
     
 end
-struct2table(results)
+
+%% Table output
+
+outTable = struct2table(results)
+
+
+writetable(outTable, [valveName, '_valveTable.csv'])
+
 
 %% Add hline annotations to bottom plot
 for q = 1:length(axPairs)
