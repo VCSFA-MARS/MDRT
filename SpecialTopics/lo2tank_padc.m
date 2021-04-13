@@ -1,3 +1,7 @@
+%% Run Parameters
+GENERATE_PLOTS  =false;
+SAVE_PLOTS      =false;
+
 %% Physical Constants and Unit Conversions
 
 % Units: kg, m
@@ -54,15 +58,16 @@ LOX = struct;
 %   liquid parameters.
 
 tank = struct;
-    tank.radius  = (82.125 - 1)/2;    % inches ( minus 1 inch for material thickness closely aligns with volumes on drawing)
-    tank.length  = 210;         % inches
-    tank.mfgvol  = 5970;        % gallons
-    tank.mfgfull = 5672;        % gallons (operational capacity 95% )
+    tank.radius   = (82.125 - 1)/2;    % inches ( minus 1 inch for material thickness closely aligns with volumes on drawing)
+    tank.length   = 210;         % inches
+    tank.mfgvol   = 5970;        % gallons
+    tank.mfgfull  = 5672;        % gallons (operational capacity 95% )
+    tank.diameter = tank.radius * 2;
     
 
 
     
-cylVol = @(h) (tank.radius^2 * acos((tank.radius-h)./tank.radius)-(tank.radius-h).*sqrt(2*tank.radius.*h-h.^2)) * tank.length; % Takes inches, Returns cubic inches
+cylVol = @(h) (tank.radius^2 .* acos((tank.radius-h)./tank.radius)-(tank.radius-h).*sqrt(2*tank.radius.*h-h.^2)) .* tank.length; % Takes inches, Returns cubic inches
 sphVol = @(h) pi() ./ 3 .* h.^2 .* (1.5 * tank.radius * 2 - h); % Takes inches, Returns cubic inches
 
 tnkVol = @(h) real(( cylVol(h) + sphVol(h) ) .* convert.in3togal ); % gallons
@@ -196,7 +201,10 @@ LN2Fit = struct;
 
 %% Make Percent Figure
 
-% plot( polyval(LO2FitMfgr.cubic.psitopct, mfgrHead.kPa) )
+if ~GENERATE_PLOTS
+    fprintf('No plots generated. Update "GENERATE_PLOTS" variable if plots are desired\n')
+    return
+end
 
 results = [];
 % results = mfgrHead.kPa;
@@ -222,8 +230,9 @@ xlabel('Differential pressure in kPa');
 grid('minor');
 grid on
 
-saveas(fig, '~/Downloads/percent_LO2.pdf', 'pdf')
-
+if SAVE_PLOTS
+    saveas(fig, '~/Downloads/percent_LO2.pdf', 'pdf')
+end
 
 
 
@@ -253,7 +262,9 @@ xlabel('Differential pressure in psi');
 grid('minor');
 grid on
 
-saveas(fig, '~/Downloads/gallons_LO2.pdf', 'pdf')
+if SAVE_PLOTS
+    saveas(fig, '~/Downloads/gallons_LO2.pdf', 'pdf')
+end
 
 
 %% Make kPa L Figure
@@ -282,8 +293,9 @@ xlabel('Differential pressure in kPa');
 grid('minor');
 grid on
 
-saveas(fig, '~/Downloads/Liters_LO2.pdf', 'pdf')
-
+if SAVE_PLOTS
+    saveas(fig, '~/Downloads/Liters_LO2.pdf', 'pdf')
+end
 
 
 
@@ -311,8 +323,9 @@ xlabel('Differential pressure in kPa');
 grid('minor');
 grid on
 
-saveas(fig, '~/Downloads/Liters_LN2.pdf', 'pdf')
-
+if SAVE_PLOTS
+    saveas(fig, '~/Downloads/Liters_LN2.pdf', 'pdf')
+end
 
 
 %% Make LN2 kPa to Percent Figure
@@ -339,5 +352,6 @@ xlabel('Differential pressure in kPa');
 grid('minor');
 grid on
 
-saveas(fig, '~/Downloads/Percent_LN2.pdf', 'pdf')
-
+if SAVE_PLOTS
+    saveas(fig, '~/Downloads/Percent_LN2.pdf', 'pdf')
+end
