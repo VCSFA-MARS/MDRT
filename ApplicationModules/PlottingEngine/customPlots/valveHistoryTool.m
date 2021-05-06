@@ -16,6 +16,7 @@ missions = {
 };
 
 pressSensNum = '5070';
+timelineEventFd = 'LOLS Chilldown Phase1 Cmd';
 
 %% Constants
 
@@ -119,6 +120,7 @@ for n = 1:numel(missions)
         tpress = load(fullfile(missions{n}, pFiles.name), 'fd');
         
         tMeta = load(fullfile(missions{n}, 'metadata.mat'));
+        
     
     catch % One of the files can't be found or loaded
         
@@ -169,6 +171,27 @@ for n = 1:numel(missions)
     data(n).cmd.ts      = removeDuplicateTimeseriesPoints( tcmd.fd.ts );
     data(n).state.ts    = removeDuplicateTimeseriesPoints( tstate.fd.ts );
     data(n).press.ts    = removeDuplicateTimeseriesPoints( tpress.fd.ts );
+    
+    
+    % Event Time for later calculations
+    % ---------------------------------------------------------------------
+    try
+        tTimeline = load(fullfile(missions{n}, 'timeline.mat'), 'timeline');
+        milestones = tTimeline.timeline.milestone;
+
+        eventInd = find(not(cellfun('isempty', ...
+            strfind({milestones.FD}, timelineEventFd) )));
+                
+        data(n).eventFd     = milestones(eventInd).FD;
+        data(n).eventTime   = milestones(eventInd).Time;
+        
+        
+    catch
+        
+        data(n).eventFd     = [];
+        data(n).eventTime   = [];
+        
+    end
     
     
 end
@@ -278,7 +301,8 @@ end
 %% Calculate and Plot 
 
 results = struct('firstmvt', [],        'motionstop', [], ...
-                 'timetofirstmvt', [],  'transitiontime', [],  'totaltime', [], ...
+                 'timetofirstmvt', [],  'transitiontime', [], ...  
+                 'totaltime', [],       'timeFromEvent', [], ...
                  'operation', [],       'commandnum', [], ...
                  'command', [],         'normalpos', [], ...
                  'commandtime', [],     'commandtype', []);
@@ -402,13 +426,14 @@ for ind = 1:size(plan, 1)
             end
         end
     end
-
-        
-    results(ind).totaltime      = (results(ind).motionstop - results(ind).commandtime)  ./ onesec;
-    results(ind).transitiontime = (results(ind).motionstop - results(ind).firstmvt)     ./ onesec;
+    
+    
     results(ind).timetofirstmvt = (results(ind).firstmvt   - results(ind).commandtime)  ./ onesec;
+    results(ind).transitiontime = (results(ind).motionstop - results(ind).firstmvt)     ./ onesec;
+    results(ind).totaltime      = (results(ind).motionstop - results(ind).commandtime)  ./ onesec;
     
-    
+    results(ind).timeFromEvent  = (results(ind).commandtime - data(thisInd).eventTime); % ./ onesec;
+    results(ind).eventFd        = data(thisInd).eventFd;
     
     % Get time to final state (might be the same time!)
     
@@ -479,7 +504,17 @@ end
 
 %% Table output
 
-outTable = struct2table(results)
+outTable = struct2table(results);
+
+fieldsToClean = {'firstmvt'; 'motionstop'; 'timetofirstmvt'; 'transitiontime'; 'totaltime'};
+for f2cInd = 1:numel(fieldsToClean)
+    fieldName = fieldsToClean{f2cInd};
+    emptyIndices = cellfun(@isempty, outTable.(fieldName) );
+    outTable.(fieldName)(emptyIndices) = {nan};
+    
+end
+
+outTable
 
 
 writetable(outTable, [valveName, '_valveTable.csv'])
