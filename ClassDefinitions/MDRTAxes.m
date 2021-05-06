@@ -66,6 +66,8 @@ classdef MDRTAxes < handle
                 switch key
                     case 'title'
                         self.title = value;
+                    case 'position'
+                        self.hAx.Position = value;
                     otherwise
                 end
                 
