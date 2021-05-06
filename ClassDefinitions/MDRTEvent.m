@@ -39,25 +39,34 @@ classdef MDRTEvent
                 self.Category = '';
                 
             
-            ylim = MFig.subplots.hAx.YLim;
+            switch class(MFig)
+                case 'MDRTAxes'
+                    ylim = MFig.hAx.YLim;
+                    thisParent = MFig.hAx;
+                case 'MDRTFigure'
+                    ylim = MFig.subplots.hAx.YLim;
+                    thisParent = MFig.subplots.hAx;
+                otherwise
+            end
+            
                 
             self.hLine = line(  EventStruct.Time*[1,1], ylim , ...
-                            'Parent',           MFig.subplots.hAx , ...
+                            'Parent',           thisParent , ...
                             'Tag',              'MDRTEvent_line', ...
                             'Color',            self.LineColor, ...
                             'LineStyle',        self.LineStyle );                            
                             
             self.hText = text(self.Time, self.labelYCoordFromLimits(ylim), ...
                             self.String, ...
-                            'Parent',           MFig.subplots.hAx , ...
+                            'Parent',           thisParent , ...
                             'Tag',              'MDRTEvent_label', ...
                             'Rotation',         -90, ...
                             'FontSize',         [self.FontSize], ...
                             'Color',            self.FontColor );
                             % 'BackgroundColor', 	[1 1 1]);
                 
-            addlistener(MFig.subplots.hAx,'XLim','PostSet',@self.AxisChanged);
-            addlistener(MFig.subplots.hAx,'YLim','PostSet',@self.AxisChanged);
+            addlistener(thisParent,'XLim','PostSet',@self.AxisChanged);
+            addlistener(thisParent,'YLim','PostSet',@self.AxisChanged);
             
         end
         
