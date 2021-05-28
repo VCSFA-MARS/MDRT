@@ -1,4 +1,4 @@
-function valveStateBar(valveNumArray, targetAxes)
+function valveStateBar(valveNumArray, targetAxes, varargin)
 % Adds valve bar plot to an existing axes. If targetAxes is invalid, figure
 % and axes are created;
 %
@@ -34,6 +34,11 @@ end
 COM_LINE_WIDTH = 1;
 COM_LINE_COLOR = 'r';
 
+COL_OPEN    = 'g';
+COL_CLOSED  = [0.8 0.8 0.8];
+COL_CAUT    = 'y';
+COL_CRIT    = 'r';
+COL_OTHER   = 'm';
 
 %% Deal with Axes if needed
 
@@ -139,16 +144,15 @@ for vn = 1:numel(valveNum)
 
         switch val
             case 0
-                col = [0.8 0.8 0.8];
-    %             col = 'w';
+                col = COL_CLOSED;
             case 1
-                col = 'g';
+                col = COL_OPEN;
             case 2
-                col = 'y';
+                col = COL_CAUT;
             case 3
-                col = 'r';
+                col = COL_CRIT;
             otherwise
-                col = 'm';
+                col = COL_OTHER;
         end
 
         % clockwise from bottom-left
