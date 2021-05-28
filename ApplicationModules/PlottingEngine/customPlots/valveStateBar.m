@@ -1,10 +1,45 @@
-valveNum = {'2031', '2097', '2032', '2040'}
+function valveStateBar(valveNumArray, targetAxes)
+% Adds valve bar plot to an existing axes. If targetAxes is invalid, figure
+% and axes are created;
+%
+%   Example: 
+%   valveStateBar({'2031' '2097' '2032' '2027' '2035' '2099' '2040'}, gca)
+
+
+switch class(valveNumArray)
+    case 'cell'
+        valveNum = valveNumArray;
+    case 'char'
+        valveNum = {valveNumArray};
+    otherwise
+        valveNum = {'2031', '2097', '2032', '2040'};
+        warn('Bad valveArray passed - using default LO2 valves');
+        % error('valveArray must be a cell array or single char');
+end
+
+fprintf('%d valve numbers passed\n', numel(valveNum) )
+
+if targetAxes.isvalid
+    hax = targetAxes;
+else
+    hf = figure;
+    hax = targetAxes;
+end
+
+
+% 
+
+%% Plot Styles
+
+COM_LINE_WIDTH = 1;
+COM_LINE_COLOR = 'r';
+
 
 %% Deal with Axes if needed
 
 
-hf = figure;
-hax = axes;
+YTickLabels = {};
+YTicks = [1:numel(valveNum)] - 0.5 ;
 
 for vn = 1:numel(valveNum)
 
@@ -12,7 +47,7 @@ for vn = 1:numel(valveNum)
 
     cfg = getConfig;
     files = dir( fullfile(cfg.dataFolderPath, searchTerm) );
-    filenames = {files.name}'
+    filenames = {files.name}';
 
 
 
@@ -31,29 +66,32 @@ for vn = 1:numel(valveNum)
 
     l_allValves = l_allValves & ~l_toExclude & ~l_notValves ;
 
-    filenames(l_allValves, 1)
+    filenames(l_allValves, 1);
 
     l_proportional = ~cellfun('isempty',regexp(filenames, propSearch));
     l_proportional = l_allValves & l_proportional;
     i_proportional = find(l_proportional);
 
-    filenames(l_proportional, 1)
+    filenames(l_proportional, 1);
 
     l_propCmd = ~cellfun('isempty', regexp(filenames, 'Cmd Param'));
     l_propCmd = l_allValves & l_propCmd ;
     i_propCmd = find(l_propCmd);
 
-    filenames(l_propCmd, 1)
+    filenames(l_propCmd, 1);
 
     l_disCmd = ~cellfun('isempty', regexp(filenames, 'Ctl Param'));
     l_disCmd = l_disCmd & ~l_toExclude & ~l_notValves;
-    filenames(l_disCmd )
-
+    filenames(l_disCmd );
 
     l_state = ~cellfun('isempty', strfind(filenames, 'State'));
 
 
     findNumberPattern = '[A-Z]+-[0-9]+' ;
+    findNum = regexp(filenames{1}, findNumberPattern, 'match');
+    
+    YTickLabels = vertcat(YTickLabels, findNum);
+
 
     %% Handle Discrete vs Proportional
 
@@ -153,7 +191,10 @@ for vn = 1:numel(valveNum)
         switch val
 
             case 1
-                thisCmd = rectangle('Position', [timeL, 0+vn-1, timeR-timeL, 1], 'EdgeColor', 'r', 'LineWidth', 1);
+                thisCmd = rectangle('Position', [timeL, 0.01+vn-1, timeR-timeL, 0.98], ...
+                    'EdgeColor',    COM_LINE_COLOR, ...
+                    'LineWidth',    COM_LINE_WIDTH);
+                
                 hCmds = vertcat(hCmds, thisFill);
 
             otherwise
@@ -165,6 +206,15 @@ for vn = 1:numel(valveNum)
 
     end
 
+    
+    %% Add Label
+    
+%     ht = text(hax.XLim(1) + (hax.XLim(2)-hax.XLim(1))*0.05, ... 
+%                 0.5 + vn - 1, ...
+%                 findNum)
+
+    hax.YTick = YTicks;
+    hax.YTickLabel = YTickLabels;
 
 
 end
