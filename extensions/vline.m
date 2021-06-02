@@ -30,6 +30,8 @@ function hhh=vline(x,in1,in2, position)
 
 vscale = 0.25;
 
+hAx = gca;
+
 if length(x)>1  % vector input
     for I=1:length(x)
         switch nargin
@@ -112,15 +114,17 @@ else
         Zpos = position(2);
     end
     
-    g=ishold(gca);
+    g=ishold(hAx);
     hold on
 
-    y=get(gca,'ylim');
+%     y=get(gca,'ylim');
+    y = hAx.YLim;
     h=plot([x x],y,linetype);
     set(h,'ZData',[Zpos Zpos]);
     
     if ~isempty(label)
-        xx=get(gca,'xlim');
+%         xx=get(gca,'xlim');
+        xx = hAx.XLim;
         xrange=xx(2)-xx(1);
         xunit=(x-xx(1))/xrange;
         if xunit<0.8
