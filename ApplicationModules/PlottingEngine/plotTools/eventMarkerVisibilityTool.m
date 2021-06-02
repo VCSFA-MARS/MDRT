@@ -44,7 +44,7 @@ windowName = sprintf('Event Marker Visibility Tool : %s', fName);
             hs.fig.NumberTitle = 'off';
             hs.fig.MenuBar = 'none';
             hs.fig.ToolBar = 'none';
-            hs.fig.Tag = 'importFigure';
+            hs.fig.Tag = 'eventMarkerTool';
             
 
 
