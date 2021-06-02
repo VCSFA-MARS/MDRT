@@ -19,13 +19,17 @@ end
 
 fprintf('%d valve numbers passed\n', numel(valveNum) )
 
-if targetAxes.isvalid
-    hax = targetAxes;
-else
-    hf = figure;
-    hax = targetAxes;
+try 
+    if targetAxes.isvalid
+        hax = targetAxes;
+    else
+        hFig = figure;
+        hax = axes;
+    end
+catch
+    hFig = figure;
+    hax = axes;
 end
-
 
 % 
 
