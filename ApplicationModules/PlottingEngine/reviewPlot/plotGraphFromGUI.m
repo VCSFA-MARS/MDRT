@@ -135,13 +135,18 @@ for graphNumber = 1:numberOfGraphs
         
         % Load data sets to be plotted into array of structs
         % --> CHANGE TO CHECK FOR FULLFILE PATH <------------
-        for i = 1:length(toPlot)
-            s(i) = load([dataPath toPlot{i} '.mat'],'fd');
-        end
+        try
+            for i = 1:length(toPlot)
+                s(i) = load([dataPath toPlot{i} '.mat'],'fd');
+            end
         
-        % Build the list of variable types for axes label generation
-        for i = 1:length(s)
-            axesTypeCell = [axesTypeCell, {s(i).fd.Type}];
+            % Build the list of variable types for axes label generation
+            for i = 1:length(s)
+                axesTypeCell = [axesTypeCell, {s(i).fd.Type}];
+            end
+        
+        catch
+            continue
         end
 
         % Preallocate plot handles
