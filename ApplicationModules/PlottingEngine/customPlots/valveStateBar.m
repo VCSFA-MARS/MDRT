@@ -37,20 +37,22 @@ end
 
 COM_LINE_WIDTH = 1;
 COM_LINE_COLOR = 'r';
+COM_FLOAT_HEIGHT = 0.1;
 
-COL_OPEN    = 'g';
+COL_OPEN    = [0 1 0]; % 'g'
 COL_CLOSED  = [0.8 0.8 0.8];
-COL_CAUT    = 'y';
-COL_CRIT    = 'r';
+COL_CAUT    = [1 1 0]; % 'y';
+COL_CRIT    = [1 0 0]; % 'r';
 COL_OTHER   = 'm';
 
 %% Deal with Axes if needed
 
 
+numValves = numel(valveNum);
 YTickLabels = {};
-YTicks = [1:numel(valveNum)] - 0.5 ;
+YTicks = [1:numValves] - 0.5 ;
 
-for vn = 1:numel(valveNum)
+for vn = 1:numValves
 
     searchTerm = sprintf('*%s*',valveNum{vn} );
 
@@ -62,6 +64,10 @@ for vn = 1:numel(valveNum)
 
 
     %% Find all valve data
+    
+    % This may be excessive - future work can refactor this down. Does a
+    % lot of searching with regex to look for discrete and proportional
+    % data via Pad-0A naming conventions.
 
     mustHave = 'Damper|Positioner|Valve|[D|P]CVN[OC]|RV';
     mustNotHave = { 'Close|Open|Var|Percent|Pump|Fan|__' };
@@ -75,7 +81,12 @@ for vn = 1:numel(valveNum)
 
     l_allValves = l_allValves & ~l_toExclude & ~l_notValves ;
 
-    filenames(l_allValves, 1);
+    try
+        filenames(l_allValves, 1);
+    catch
+        searchTerm
+        continue
+    end
 
     l_proportional = ~cellfun('isempty',regexp(filenames, propSearch));
     l_proportional = l_allValves & l_proportional;
@@ -108,29 +119,98 @@ for vn = 1:numel(valveNum)
         % Valve is discrete - good
 
         % Load State
-        load(fullfile(cfg.dataFolderPath,filenames{l_state}));
-        states = fd.ts.Data;
-        times = fd.ts.Time;
+        s = load(fullfile(cfg.dataFolderPath,filenames{l_state}));
+        states = s.fd.ts.Data;
+        times = s.fd.ts.Time;
 
         % Load Command
-        load(fullfile(cfg.dataFolderPath,filenames{l_disCmd}));
-        cmdParms = fd.ts.Data;
-        cmdTimes = fd.ts.Time;
+        s = load(fullfile(cfg.dataFolderPath,filenames{l_disCmd}));
+        cmdParms = s.fd.ts.Data;
+        cmdTimes = s.fd.ts.Time;
+        
+        plotDiscrete;
 
     elseif any(l_propCmd)
         % Valve is proportional - not implemented :(
         % sad. Sad, sad, sad
-
+        
+        s = load(fullfile(cfg.dataFolderPath, filenames{l_propCmd}));
+        cmdParms = s.fd.ts.Data;
+        cmdTimes = s.fd.ts.Time;
+        
+        s = load(fullfile(cfg.dataFolderPath, filenames{l_proportional}));
+        position = s.fd.ts.Data;
+        posTimes = s.fd.ts.Time;
+        
+        plotProportional;
+                
     else
         % No one knows what happened
         return
     end
 
+end    
+%% Update Y-Axis Labels with Valve IDs
+
+hax.YTick = YTicks;
+hax.YTickLabel = YTickLabels;
+hax.YLim = [0 numValves];
+
+dynamicDateTicks;
 
 
 
 
-    %% Plot States
+
+
+
+%% Plotting Functions
+
+
+function plotProportional
+    % plotProportional scales percent position and command data to a unit
+    % height for plotting/stacking in the valveStateBar display. "closed"
+    % position is plotted above the "open" position area for consistency
+    % with the discrete valve display. 
+    
+    changeInds = [  1; 
+                    find([0;diff(cmdParms)]) ; 
+                    length(cmdParms) ];
+       
+    plotOffset = vn - 1;
+            
+    X = [posTimes(1); posTimes; posTimes(end)];
+    Y = [0; position; 0]./100 + plotOffset;
+    
+    YClosed = [100; position; 100]./100 + plotOffset;
+    
+    clsPlot = fill(X, YClosed, COL_CLOSED, ...
+                'FaceAlpha',            0.5, ...
+                'EdgeColor',            COL_CLOSED * 0.85);
+            
+    hold on;
+            
+    posPlot = fill(X, Y, COL_OPEN, ...
+                'FaceAlpha',            0.5, ...
+                'EdgeColor',            COL_OPEN * 0.85);
+           
+    
+    [cmdX cmdY] = stairs(cmdTimes, (cmdParms./100) + plotOffset);
+    cmdZ = ones(size(cmdX)).*COM_FLOAT_HEIGHT;
+    
+    cmdPlot = plot3(cmdX, cmdY, cmdZ, '-r');
+
+end
+
+
+
+
+function plotDiscrete
+    % plotDiscrete takes valve state and command data and plots rectangles
+    % representing the open, closed, cautionary, and critical states.
+    % Energize commands are represented by a "command rectangle." All items
+    % can have data tips applied as necesary.
+    
     changeInds = [  1; 
                     find([0;diff(states)]) ; 
                     length(states) ];
@@ -145,15 +225,18 @@ for vn = 1:numel(valveNum)
         timeR = times(indR);
 
         val = states(indL);
+        edgeCol = 'none';
 
         switch val
-            case 0
+            case 0 % Closed
                 col = COL_CLOSED;
-            case 1
+                edgeCol = COL_CLOSED * 0.85;
+            case 1 % Open
                 col = COL_OPEN;
-            case 2
+                edgeCol = COL_OPEN * 0.85;
+            case 2 % Cautionary
                 col = COL_CAUT;
-            case 3
+            case 3 % Critical
                 col = COL_CRIT;
             otherwise
                 col = COL_OTHER;
@@ -164,24 +247,19 @@ for vn = 1:numel(valveNum)
         X = [timeL timeL timeR timeR];
         Y = [0+vn-1 1+vn-1 1+vn-1 0+vn-1];
 
-        thisFill = fill(X, Y, col, 'FaceAlpha', 0.5, 'EdgeColor', 'none');
+        thisFill = fill(X, Y, col, 'FaceAlpha', 0.5, 'EdgeColor', edgeCol);
         hFills = vertcat(hFills, thisFill);
 
         hold on;
 
-    %     from = datestr(timeL, 'HH:MM:SS');
-    %     to = datestr(timeR, 'HH:MM:SS');
-    %     fprintf('Patch %3d : state: %d : color: %s %s to %s \t L=%3d R=%3d\n', n, val, col, from, to, indL, indR)
-
     end
 
 
-    %% Plot Commands
+    % Plot Commands
 
     changeInds = [  1; 
                     find([0;diff(cmdParms)]) ; 
                     length(cmdParms) ];
-
 
     hCmds = [];
     for n = 2:length(changeInds)
@@ -199,10 +277,12 @@ for vn = 1:numel(valveNum)
         switch val
 
             case 1
-                thisCmd = rectangle('Position', [timeL, 0.01+vn-1, timeR-timeL, 0.98], ...
+                thisCmd = fill3([timeL, timeL, timeR, timeR], [vn-1, vn, vn, vn-1], COM_FLOAT_HEIGHT.*[1 1 1 1],...
+                    [0 0 0], ...
+                    'FaceAlpha',    0.0, ...
                     'EdgeColor',    COM_LINE_COLOR, ...
                     'LineWidth',    COM_LINE_WIDTH);
-                
+
                 hCmds = vertcat(hCmds, thisFill);
 
             otherwise
@@ -213,24 +293,6 @@ for vn = 1:numel(valveNum)
         hold on;
 
     end
-
-    
-    %% Add Label
-    
-%     ht = text(hax.XLim(1) + (hax.XLim(2)-hax.XLim(1))*0.05, ... 
-%                 0.5 + vn - 1, ...
-%                 findNum)
-
-    hax.YTick = YTicks;
-    hax.YTickLabel = YTickLabels;
-
-
 end
 
-
-
-
-
-
-
-dynamicDateTicks;
+end
