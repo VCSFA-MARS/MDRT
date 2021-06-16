@@ -54,7 +54,16 @@ YTicks = [1:numValves] - 0.5 ;
 
 for vn = 1:numValves
 
-    searchTerm = sprintf('*%s*',valveNum{vn} );
+    justNumberPattern = '[0-9]{4,}' ;
+
+    searchStr = regexp(valveNum{vn}, justNumberPattern, 'match');
+    switch class(searchStr)
+        case 'cell'
+            searchStr = searchStr{1,1};
+    end
+    
+    searchTerm = sprintf('*%s*',searchStr );
+    debugout(sprintf('Finding all data matching: %s', searchTerm))
 
     cfg = getConfig;
     files = dir( fullfile(cfg.dataFolderPath, searchTerm) );
