@@ -9,6 +9,7 @@ switch class(fd)
         if strcmpi(checkStructureType(fd), 'fd')
             testStr = fd.ts.Name;
         else
+            isValve = false
             return
         end
         
