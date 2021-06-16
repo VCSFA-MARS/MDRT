@@ -19,19 +19,27 @@ end
 
 fprintf('%d valve numbers passed\n', numel(valveNum) )
 
+useNewAxes = false;
+
 try 
     if targetAxes.isvalid
         hax = targetAxes;
+        debugout('Passed valid axes handle')
     else
         hFig = figure;
         hax = axes;
+        debugout('Passed invalid axes handle')
     end
 catch
     hFig = figure;
     hax = axes;
+    useNewAxes = true;
+    debugout('No valid axes handle passed: created new figure and axes')
 end
 
-% 
+axes(hax);
+debugout(hax)
+
 
 %% Plot Styles
 
@@ -55,7 +63,7 @@ YTicks = [1:numValves] - 0.5 ;
 for vn = 1:numValves
 
     justNumberPattern = '[0-9]{4,}' ;
-
+       
     searchStr = regexp(valveNum{vn}, justNumberPattern, 'match');
     switch class(searchStr)
         case 'cell'
@@ -136,7 +144,7 @@ for vn = 1:numValves
         s = load(fullfile(cfg.dataFolderPath,filenames{l_disCmd}));
         cmdParms = s.fd.ts.Data;
         cmdTimes = s.fd.ts.Time;
-        
+                
         plotDiscrete;
 
     elseif any(l_propCmd)
@@ -155,7 +163,7 @@ for vn = 1:numValves
                 
     else
         % No one knows what happened
-        return
+        continue
     end
 
 end    
@@ -165,7 +173,10 @@ hax.YTick = YTicks;
 hax.YTickLabel = YTickLabels;
 hax.YLim = [0 numValves];
 
-dynamicDateTicks;
+if useNewAxes
+    plotStyle;
+    dynamicDateTicks;
+end
 
 
 
