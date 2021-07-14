@@ -22,7 +22,7 @@ function varargout = makeGraphGUI(varargin)
 
 % Edit the above text to modify the response to help makeGraphGUI
 
-% Last Modified by GUIDE v2.5 18-May-2018 22:53:08
+% Last Modified by GUIDE v2.5 14-Jul-2021 15:24:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -683,6 +683,16 @@ function ui_button_generateGraph_Callback(hObject, eventdata, handles)
         % There are no warnings - proceed to next step
 
     end
+    
+    % Process plot options from GUI to pass to plotGraphFromGUI
+    opts = {};
+    if handles.useNewValvePlotCheckbox.Value == 1
+        opts = horzcat(opts, {'ValveBarPlot', true } );
+    end
+    
+    if handles.useReducePlotCheckbox.Value == 1
+        opts = horzcat(opts, {'UseReducePlot', true } );
+    end
 
 debugout('Still in the GRAPH function')
 
@@ -695,10 +705,16 @@ debugout('Still in the GRAPH function')
 % Step 3: Call plotting engine with graph structure
 
     % DUMMY OPTIONS VARIABLE TO BE IMPLEMENTED LATER
+    % The irony is not lost on me that I have implemented actual options,
+    % and we are retaining this dummy options code to avoid rewriting the
+    % plotGraphFromGUI function... c'est la vie
     options = 5;
 
-    
-    plotGraphFromGUI(graph, options);
+    if isempty(opts)
+        plotGraphFromGUI(graph, options);
+    else
+        plotGraphFromGUI(graph, options, opts);
+    end
     
 
 
@@ -1274,3 +1290,21 @@ function figure1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in useReducePlotCheckbox.
+function useReducePlotCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useReducePlotCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useReducePlotCheckbox
+
+
+% --- Executes on button press in useNewValvePlotCheckbox.
+function useNewValvePlotCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useNewValvePlotCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useNewValvePlotCheckbox

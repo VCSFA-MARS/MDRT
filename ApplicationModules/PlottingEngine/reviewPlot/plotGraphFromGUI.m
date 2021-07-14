@@ -1,4 +1,4 @@
-function varargout = plotGraphFromGUI(graph, timeline)
+function varargout = plotGraphFromGUI(graph, timeline, varargin)
 %% plotGraphFromGUI is a function for the MARS data tool GUI
 % --> changes by Paige 8/1/16 -- changing secodn input from options structure to timeline structure
 % --- > make sure am passing timeline 
@@ -21,7 +21,7 @@ function varargout = plotGraphFromGUI(graph, timeline)
     
 % temporary hack to handle giant data sets
     useReducePlot = true;
-    ENABLE_REDUCE = false;
+    ENABLE_REDUCE = true;
     
 % Flag to supress warning dialogs
     supressWarningDialogs = false;
@@ -29,7 +29,57 @@ function varargout = plotGraphFromGUI(graph, timeline)
 % Number of points in FD to trigger "reduce plot" routine
     reducePlotThresholdLength = 1500000;
     
+% Flag to enable/disable the new valve plots (bar style)    
+    ENABLE_NEW_VALVE_PLOT = false;
     
+
+if any(size(varargin))
+    if numel(varargin) == 1 && iscell(varargin(1))
+        varargin = varargin{1};
+    end
+    for n = 1:2:numel(varargin)
+        key = lower(varargin{n});
+        val = varargin{n+1};
+        
+        switch key
+            case {'newvalveplot', 'valvebarplot'}
+                if islogical(val)
+                    ENABLE_NEW_VALVE_PLOT = val;
+                elseif ischar(val) || iscellstr(val)
+                    if iscellstr(val)
+                        val = val{1};
+                        switch lower(val)
+                            case {'on', 'yes', 'true', 'use'}
+                                ENABLE_NEW_VALVE_PLOT = true;
+                            case {'off', 'no', 'false', 'not'}
+                                ENABLE_NEW_VALVE_PLOT = false;
+                        end
+                    end
+                end
+            case {'reduceplot', 'usereduceplot'}
+                if islogical(val)
+                    ENABLE_REDUCE = val;
+                elseif ischar(val) || iscellstr(val)
+                    if iscellstr(val)
+                        val = val{1};
+                        switch lower(val)
+                            case {'on', 'yes', 'true', 'use'}
+                                ENABLE_REDUCE = true;
+                            case {'off', 'no', 'false', 'not'}
+                                ENABLE_REDUCE = false;
+                        end
+                    end
+                end
+                
+            otherwise
+                debugout('Unrecognized key/val pair')
+                debugout(key)
+                debugout(val)
+        end
+    end
+end
+
+
 % Load the project configuration (paths to data, plots and raw data)
 % -------------------------------------------------------------------------
 % --> want to change to if timeline structure passed with path to data/timeline file, plot timeline. else if call
@@ -130,6 +180,7 @@ for graphNumber = 1:numberOfGraphs
     
     for subPlotNumber = 1:numberOfSubplots
         debugout(sprintf('Subplot %d of %d', subPlotNumber, numberOfSubplots))
+        iv = [];
         
         isNormalSubplot(subPlotNumber) = true;
         
@@ -154,7 +205,7 @@ for graphNumber = 1:numberOfGraphs
             continue
         end
         
-        if all(iv)
+        if all(iv) && ENABLE_NEW_VALVE_PLOT
             % All streams are valve data - use cool valve plot
             debugout('Detected all valves in subplot: calling valveStateBar')
             debugout(toPlot')
