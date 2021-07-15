@@ -1,6 +1,6 @@
 function valveStateBar(valveNumArray, targetAxes, varargin)
 % Adds valve bar plot to an existing axes. If targetAxes is invalid, figure
-% and axes are created;
+% and axes are created. Plotted top-to-bottom in order of valveNumArray
 %
 %   Example: 
 %   valveStateBar({'2031' '2097' '2032' '2027' '2035' '2099' '2040'}, gca)
@@ -55,10 +55,11 @@ COL_OTHER   = 'm';
 
 %% Deal with Axes if needed
 
-
 numValves = numel(valveNum);
 YTickLabels = {};
 YTicks = [1:numValves] - 0.5 ;
+
+valveNum = flip(valveNum); % flip order since we plot bottom-up
 
 for vn = 1:numValves
 
