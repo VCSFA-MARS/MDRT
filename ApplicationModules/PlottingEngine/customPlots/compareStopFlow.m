@@ -137,8 +137,8 @@ for ind = 1:length(sfInd)
     
     % Numerical Analysis
     
-    f1ts = allFDs(1).ts.getsampleusingtime(t0, tf + onesec*2); % Search up to 2 seconds after the plot window
-    f2ts = allFDs(2).ts.getsampleusingtime(t0, tf + onesec*2);
+    f1ts = allFDs(1).ts.getsampleusingtime(t0, tf + onesec*10); % Search up to 2 seconds after the plot window
+    f2ts = allFDs(2).ts.getsampleusingtime(t0, tf + onesec*10);
     
     f1idx = f1ts.Data < 10;
     f2idx = f2ts.Data < 10;
@@ -146,15 +146,15 @@ for ind = 1:length(sfInd)
     b1ts = f1ts; b1ts.Data = f1idx;
     b2ts = f2ts; b2ts.Data = f2idx;
     
-    startTime = max(f1ts.Time(1), f2ts.Time(1));
-    endTime = min(f1ts.Time(end), f2ts.Time(end));
+    startTime = min(f1ts.Time(1), f2ts.Time(1));
+    endTime = max(f1ts.Time(end), f2ts.Time(end));
     
     newTime = [f1ts.Time; f2ts.Time];
-    newTime = sort(newTime);
-    newTime = newTime((newTime >= startTime) & (newTime <= endTime));
+    newTime = unique(sort(newTime));
+    newTime = newTime((newTime >= startTime) & (newTime <= endTime)) ;
     
-    B1ts=b1ts.resample(newTime);
-    B2ts=b2ts.resample(newTime);
+    B1ts=b1ts.resample(newTime, 'zoh');
+    B2ts=b2ts.resample(newTime, 'zoh');
     
     Bts = B1ts; Bts.Data = B1ts.Data & B2ts.Data;
     
