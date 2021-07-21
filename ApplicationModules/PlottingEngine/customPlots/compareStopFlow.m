@@ -4,10 +4,14 @@ dataFolder='/Users/nick/onedrive/Virginia Commercial Space Flight Authority/Pad 
 
 
 timelineFile=fullfile(dataFolder, 'timeline.mat');
+metaDataFile=fullfile(dataFolder, 'metadata.mat');
 
 
 load(timelineFile);
 fds={timeline.milestone.FD}';
+
+load(metaDataFile);
+thisOp = metaData.operationName;
 
 sfInd = find(ismember(fds, 'LOLS Stop Flow Cmd'));
 
@@ -53,7 +57,7 @@ if length(sfInd) > spWide
         spa = MDRTSubplot(spHigh,plotCols,graphsPlotGap, ... 
                                 GraphsPlotMargin,GraphsPlotMargin);
                             
-        PageTitleString = sprintf('%s - Page %d',PlotTitleString, figCount);
+        PageTitleString = sprintf('%s - %s - Page %d', PlotTitleString, thisOp, figCount);
         disp(sprintf('Generating %s', PageTitleString))
         suptitle(PageTitleString);
         figCount = figCount + 1;
@@ -81,7 +85,9 @@ else
     subPlotAxes = MDRTSubplot(spHigh,length(sfInd),graphsPlotGap, ... 
                                 GraphsPlotMargin,GraphsPlotMargin);
     axPairs = reshape(subPlotAxes, length(sfInd), 2);
-	suptitle(PlotTitleString);
+    
+    PageTitleString = sprintf('%s - %s', PlotTitleString, thisOp);
+	suptitle(PageTitleString);
 end
     
 %% FDs to plot
