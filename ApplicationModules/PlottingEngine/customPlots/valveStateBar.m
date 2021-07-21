@@ -2,9 +2,67 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 % Adds valve bar plot to an existing axes. If targetAxes is invalid, figure
 % and axes are created. Plotted top-to-bottom in order of valveNumArray
 %
+%   Supported Key/Val Pairs
+%
+%       DataFolder      a full path to the folder containing .mat files
+%                       Overrides default behavior to use MDRTConfig
+%
 %   Example: 
 %   valveStateBar({'2031' '2097' '2032' '2027' '2035' '2099' '2040'}, gca)
+%
+%   Example: 
+%   valveStateBar({'2031' '2097'}, gca, 'DataFolder', '/MDRT/DataSet1/data')
+%
 
+%% Process Key/Value Pairs
+
+userPassedDataFolder = '';
+
+if any(size(varargin))
+    if numel(varargin) == 1 && iscell(varargin(1))
+        varargin = varargin{1};
+    end
+    for n = 1:2:numel(varargin)
+        key = lower(varargin{n});
+        val = varargin{n+1};
+        
+        switch key
+            case {'datafolder', 'datasetfolder'}
+                if ischar(val) || iscellstr(val)
+                    if iscellstr(val)
+                        val = val{1};
+                    end
+                    userPassedDataFolder = val;
+                    debugout(sprintf('User passed a data folder: %s\n', val));
+                end
+                
+            case {'reduceplot', 'usereduceplot'}
+                if islogical(val)
+                    ENABLE_REDUCE = val;
+                elseif ischar(val) || iscellstr(val)
+                    if iscellstr(val)
+                        val = val{1};
+                        switch lower(val)
+                            case {'on', 'yes', 'true', 'use'}
+                                ENABLE_REDUCE = true;
+                            case {'off', 'no', 'false', 'not'}
+                                ENABLE_REDUCE = false;
+                        end
+                    end
+                end
+                
+            otherwise
+                debugout('Unrecognized key/val pair')
+                debugout(key)
+                debugout(val)
+        end
+    end
+end
+
+
+
+
+%% Process Standard Named Arguments
 
 switch class(valveNumArray)
     case 'cell'
@@ -74,8 +132,16 @@ for vn = 1:numValves
     searchTerm = sprintf('*%s*',searchStr );
     debugout(sprintf('Finding all data matching: %s', searchTerm))
 
-    cfg = getConfig;
-    files = dir( fullfile(cfg.dataFolderPath, searchTerm) );
+    
+    if isempty(userPassedDataFolder)
+        cfg.dataFolderPath
+        cfg = getConfig;
+        DATA_FOLDER = cfg.dataFolderPath;
+    else
+        DATA_FOLDER = userPassedDataFolder;
+    end
+        
+    files = dir( fullfile(DATA_FOLDER, searchTerm) );
     filenames = {files.name}';
 
 
@@ -137,12 +203,12 @@ for vn = 1:numValves
         % Valve is discrete - good
 
         % Load State
-        s = load(fullfile(cfg.dataFolderPath,filenames{l_state}));
+        s = load(fullfile(DATA_FOLDER,filenames{l_state}));
         states = s.fd.ts.Data;
         times = s.fd.ts.Time;
 
         % Load Command
-        s = load(fullfile(cfg.dataFolderPath,filenames{l_disCmd}));
+        s = load(fullfile(DATA_FOLDER,filenames{l_disCmd}));
         cmdParms = s.fd.ts.Data;
         cmdTimes = s.fd.ts.Time;
                 
@@ -152,11 +218,11 @@ for vn = 1:numValves
         % Valve is proportional - not implemented :(
         % sad. Sad, sad, sad
         
-        s = load(fullfile(cfg.dataFolderPath, filenames{l_propCmd}));
+        s = load(fullfile(DATA_FOLDER, filenames{l_propCmd}));
         cmdParms = s.fd.ts.Data;
         cmdTimes = s.fd.ts.Time;
         
-        s = load(fullfile(cfg.dataFolderPath, filenames{l_proportional}));
+        s = load(fullfile(DATA_FOLDER, filenames{l_proportional}));
         position = s.fd.ts.Data;
         posTimes = s.fd.ts.Time;
         
@@ -180,7 +246,7 @@ if useNewAxes
 end
 
 
-
+hax.YRuler.TickLabelGapOffset = -20;
 
 
 

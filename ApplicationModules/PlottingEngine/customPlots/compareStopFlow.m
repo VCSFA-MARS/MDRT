@@ -203,11 +203,13 @@ for ind = 1:length(sfInd)
     % Bottom Plot (Valve State)
     axes(axPairs(ind,2));
     
-    for fn = 1:numel(valveFiles)
-        fd = valveFDs(fn);
-        hold on
-        stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
-    end
+    valveStateBar(valveFiles, axPairs(ind,2), 'DataFolder', dataFolder)
+    
+%     for fn = 1:numel(valveFiles)
+%         fd = valveFDs(fn);
+%         hold on
+%         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
+%     end
     
     % Display Stop Flow State
     try
@@ -222,7 +224,7 @@ for ind = 1:length(sfInd)
     reviewPlotAllTimelineEvents(timeline)
     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
     xlim(timeInterval);
-    ylim([ -0.1, 2.1] );
+%     ylim([ -0.1, 2.1] );
     
     
     
