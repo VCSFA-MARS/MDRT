@@ -1,11 +1,21 @@
+% dataFolder='/Users/nick/data/archive/2016-20-17 OA-5 LA1/data/data'
+% dataFolder='/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data'
+% dataFolder='/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data'
+% dataFolder='/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data'
+% dataFolder='/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data'
+dataFolder='/Users/nick/data/archive/2019-11-01 - NG-12/data'
+% dataFolder='/Users/nick/data/archive/2020-02-09_NG-13/data'
+% dataFolder='/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data'
+% dataFolder='/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data'
+% dataFolder='/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data'
+
 % dataFolder='/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
 % dataFolder='/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data';
-dataFolder='/Users/nick/onedrive/Virginia Commercial Space Flight Authority/Pad 0A - Documents/General/90-Combined Systems/Launch Data/MDRT Data/2021-02-19_NG-15_Launch/data';
-
+% dataFolder='/Users/nick/onedrive/Virginia Commercial Space Flight Authority/Pad 0A - Documents/General/90-Combined Systems/Launch Data/MDRT Data/2021-02-19_NG-15_Launch/data';
+% dataFolder='/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
 
 timelineFile=fullfile(dataFolder, 'timeline.mat');
 metaDataFile=fullfile(dataFolder, 'metadata.mat');
-
 
 load(timelineFile);
 fds={timeline.milestone.FD}';
