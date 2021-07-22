@@ -134,7 +134,6 @@ for vn = 1:numValves
 
     
     if isempty(userPassedDataFolder)
-        cfg.dataFolderPath
         cfg = getConfig;
         DATA_FOLDER = cfg.dataFolderPath;
     else
