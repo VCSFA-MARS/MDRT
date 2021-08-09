@@ -103,8 +103,10 @@ end
     
     uiNewButton_ClickedCallback(hObject, eventdata, handles);
     
-    graph.name = makeDataSetTitleStringFromActiveConfig(config);
-    handles.ui_editBox_graphTitle.String = makeDataSetTitleStringFromActiveConfig(config);
+%     graph.name = makeDataSetTitleStringFromActiveConfig(config);
+%     handles.ui_editBox_graphTitle.String = makeDataSetTitleStringFromActiveConfig(config);
+    handles.graph.name = '<operation> <procedure> <vehicle>';
+    handles.ui_editBox_graphTitle.String = handles.graph.name;
     
     handles.graph = returnGraphStructureFromGUI(handles);
     
@@ -1109,6 +1111,7 @@ function uiNewButton_ClickedCallback(hObject, eventdata, handles)
 
 % Start with the default graph structure
     handles.graph = newGraphStructure;
+    handles.graph.name = '<operation> <procedure> <vehicle>';
     guidata(hObject, handles);
     
 % Clear the current GUI inputs
