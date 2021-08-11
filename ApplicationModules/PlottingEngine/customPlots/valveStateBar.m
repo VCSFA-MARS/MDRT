@@ -7,6 +7,10 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 %       DataFolder      a full path to the folder containing .mat files
 %                       Overrides default behavior to use MDRTConfig
 %
+%       LabelOffset     numeric value: positive shifts to the left,
+%                       negative to the right. Adjusts the position of the
+%                       Y-Axis labels
+%
 %   Example: 
 %   valveStateBar({'2031' '2097' '2032' '2027' '2035' '2099' '2040'}, gca)
 %
@@ -17,6 +21,7 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 %% Process Key/Value Pairs
 
 userPassedDataFolder = '';
+TICK_LABEL_GAP_OFFSET = -20;
 
 if any(size(varargin))
     if numel(varargin) == 1 && iscell(varargin(1))
@@ -36,19 +41,13 @@ if any(size(varargin))
                     debugout(sprintf('User passed a data folder: %s\n', val));
                 end
                 
-            case {'reduceplot', 'usereduceplot'}
-                if islogical(val)
-                    ENABLE_REDUCE = val;
-                elseif ischar(val) || iscellstr(val)
+            case {'labeloffset', 'labelposition'}
+                if isnumeric(val) || iscell(val)
                     if iscellstr(val)
                         val = val{1};
-                        switch lower(val)
-                            case {'on', 'yes', 'true', 'use'}
-                                ENABLE_REDUCE = true;
-                            case {'off', 'no', 'false', 'not'}
-                                ENABLE_REDUCE = false;
-                        end
                     end
+                    TICK_LABEL_GAP_OFFSET = val;
+                    debugout(sprintf('User passed a y-tick label offset: %d\n', val));
                 end
                 
             otherwise
@@ -245,7 +244,7 @@ if useNewAxes
 end
 
 
-hax.YRuler.TickLabelGapOffset = -20;
+hax.YRuler.TickLabelGapOffset = TICK_LABEL_GAP_OFFSET;
 
 
 
