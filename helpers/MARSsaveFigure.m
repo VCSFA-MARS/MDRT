@@ -49,10 +49,14 @@ end
         defaultName = defaultName{1};
     end
     
-    
-
 % Open UI for save name and path
     [file,path] = uiputfile('*.pdf','Save Plot to PDF as:',fullfile(config.outputFolderPath, defaultName));
+    
+% Sanitize User-selected file name - For Alina
+    file = regexprep(file,'^[!@$^&*~?.|/[]<>\`";#()]','');
+    file = regexprep(file, '[:*]','-');
+    debugout(sprintf('Alina-proof filename: %s', file))
+    
 
 % Check the user didn't "cancel"
 if file ~= 0
