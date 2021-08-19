@@ -450,7 +450,15 @@ function uiButton_updateFDList_Callback(hObject, eventdata, handles)
             set(handles.uiPopup_FDList, 'Value', 1);
             
         % Save updated index IF new is different from old
-        T = load(fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat') );
+        setIndexFile = fullfile(handles.configuration.dataFolderPath, 'AvailableFDs.mat');
+        try
+            T = load(setIndexFile );
+        catch
+            warndlg({'The selected folder does not contain a valid AvailableFDs.mat file.';
+                     'No data will be available until you change directories or import' }, ...
+                     'Warning - empty data set') ;
+             return
+        end
         
         if isequal(T.FDList, FDList)
             debugout('FDList is unchanged');
@@ -659,7 +667,39 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
     if rootFolder ~= 0
         % We got a path selection. Now append the trailing / for linux
         % Note, we are not implementing OS checking at this time (isunix, ispc)
-        dataFolderPath = [rootFolder '/'];
+        
+        % Validate Selected Folder
+        [rootPath, selectedFolder, ~] = fileparts(rootFolder);
+        [oneUpRoot, oneUp, ~] = fileparts(rootPath);
+        
+        if any(strcmp(selectedFolder, {'data' 'delim' 'plots'}))
+
+            dialogText = { sprintf('You selected a folder named %s.', selectedFolder);
+                       sprintf('MDRT automatically creates a folder named %s during data import.', selectedFolder);
+                       sprintf('Did you actually want to select "%s" data?', oneUp) };
+
+            useOneUp    = sprintf('Use "%s"', oneUp);
+            useSelected = sprintf('Use "%s"', selectedFolder);
+            useNeither  = 'Cancel';
+
+            ButtonName = questdlg(dialogText, ...
+                             'Are you sure you selected the right folder?', ...
+                             useOneUp, useSelected, useNeither, useOneUp);
+
+            switch ButtonName
+                case useOneUp,
+                    disp(sprintf('%s selected', oneUp));
+                    rootFolder = fullfile(oneUpRoot, oneUp);
+                case useSelected,
+                    disp(sprintf('%s selected', selectedFolder));
+                case useNeither,
+                    return;
+                otherwise
+                    return;
+            end % switch
+        end % if any (folders)
+                
+        dataFolderPath = [rootFolder filesep()];
         handles.configuration.dataFolderPath = dataFolderPath;
         set(handles.uiTextbox_dataFolderTextbox, 'String', dataFolderPath);
         % Use existing FD list to update GUI on folder change
@@ -668,6 +708,9 @@ function ui_newDataButton_Callback(hObject, eventdata, handles)
         % oh noes, there was nothing selected!
         return
     end
+    
+
+    
     
     newDataPath  = fullfile(rootFolder, 'data',  filesep);
     newDelimPath = fullfile(rootFolder, 'delim', filesep);
