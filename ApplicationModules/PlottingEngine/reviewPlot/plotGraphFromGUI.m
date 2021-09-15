@@ -72,7 +72,7 @@ if any(size(varargin))
                 end
                 
             otherwise
-                debugout('Unrecognized key/val pair')
+                debugout('Unrecognized key/val pair') 
                 debugout(key)
                 debugout(val)
         end
@@ -248,7 +248,7 @@ for graphNumber = 1:numberOfGraphs
 
                         % Crappy workaround to still have timeline events
                         if useTimeline
-                            reviewPlotAllTimelineEvents(config);
+                            reviewPlotAllTimelineEvents(timeline);
                         end
 
 
