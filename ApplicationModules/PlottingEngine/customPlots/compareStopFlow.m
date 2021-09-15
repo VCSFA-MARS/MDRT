@@ -1,144 +1,143 @@
-% dataFolder='/Users/nick/data/archive/2016-20-17 OA-5 LA1/data/data'
-% dataFolder='/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data'
-% dataFolder='/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data'
-% dataFolder='/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data'
-% dataFolder='/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data'
-dataFolder='/Users/nick/data/archive/2019-11-01 - NG-12/data'
-% dataFolder='/Users/nick/data/archive/2020-02-09_NG-13/data'
-% dataFolder='/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data'
-% dataFolder='/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data'
-% dataFolder='/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data'
+dataFolder = {
+%     '/Users/nick/data/archive/2016-20-17 OA-5 LA1/data/';
+%     '/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
+%     '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
+%     '/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data';
+%     '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
+%     '/Users/nick/data/archive/2019-11-01 - NG-12/data';
+%     '/Users/nick/data/archive/2020-02-09_NG-13/data';
+%     '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
+%     '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
+    '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
+    '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
+    '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
 
-% dataFolder='/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
-% dataFolder='/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data';
-% dataFolder='/Users/nick/onedrive/Virginia Commercial Space Flight Authority/Pad 0A - Documents/General/90-Combined Systems/Launch Data/MDRT Data/2021-02-19_NG-15_Launch/data';
-% dataFolder='/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
+    % '/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
+    % '/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data';
+    % '/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
+    % '/Users/nick/data/imported/2021-07-23 - Stop Flow Dry Cycles ITR-2174 OP-10/data';
+}
 
-timelineFile=fullfile(dataFolder, 'timeline.mat');
-metaDataFile=fullfile(dataFolder, 'metadata.mat');
+dataFiles = { '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
+              '2016 LO2 FM-2016 Coriolis Meter Mon.mat';
+              '5903 GN2 PT-5903 Press Sensor Mon.mat';
+              '5070 GN2 PT-5070 Press Sensor Mon.mat';
+              };
 
-load(timelineFile);
-fds={timeline.milestone.FD}';
+valveFiles = {'2010 LO2 DCVNO-2010 State.mat';
+              '2013 LO2 PCVNO-2013 State.mat';
+              '2014 LO2 PCVNO-2014 State.mat';
+              '2029 LO2 PCVNO-2029 State.mat';
+              '2027 LO2 DCVNO-2027 State.mat';
+              '2032 LO2 DCVNO-2032 State.mat';
+              };
+          
+stateFile = { 'LOLS Stop Flow State.mat' };
 
-load(metaDataFile);
-thisOp = metaData.operationName;
+triggerEventString = 'LOLS Stop Flow Cmd';
 
-sfInd = find(ismember(fds, 'LOLS Stop Flow Cmd'));
+
+%% Script Constant and Setup Defs ---------------------------------------------
 
 PlotTitleString = 'LO2 Stop Flow Flight Comparison';
-
-%% Constants
 
 onehr = 1/24;
 onemin = onehr/60;
 onesec = onemin/60;
 
-%% Plot Setup
+topPlotYLim = [ 0, 275];
+topPlotYLim = [ 75 101];
 
-    graphsInFigure = 1;
-    graphsPlotGap = 0.05;
-    GraphsPlotMargin = 0.06;
-    numberOfSubplots = 2;
 
-    legendFontSize = [8];
-    spWide = 3;
-    spHigh = 2;
-        
-fig = [];
-subPlotAxes = [];
-subOffset = [];
-axPairs = [];
-axPair = [];
-figCount = 1;
-if length(sfInd) > spWide
-    remainder = length(sfInd);
-    while remainder > 0
-        f = makeMDRTPlotFigure;
-        disp(sprintf('Creating figure %d', f.Number))
-        
-        fig = vertcat(fig, f);
-        
-        if remainder >= spWide
-            plotCols = spWide;
-        else
-            plotCols = remainder;
-        end
-                
-        spa = MDRTSubplot(spHigh,plotCols,graphsPlotGap, ... 
-                                GraphsPlotMargin,GraphsPlotMargin);
-                            
-        PageTitleString = sprintf('%s - %s - Page %d', PlotTitleString, thisOp, figCount);
-        disp(sprintf('Generating %s', PageTitleString))
-        suptitle(PageTitleString);
-        figCount = figCount + 1;
-        
-        disp(sprintf('Adding %d subplot axes', length(spa)))
-        subPlotAxes = vertcat(subPlotAxes, spa);
-        
-        axPair = reshape(spa, plotCols, 2);
-        axPairs = vertcat(axPairs, axPair);
-        
-        remainder = remainder - spWide;
-        disp(sprintf('Remainder = %d', remainder))
-        
-%         subOffset = vertcat(subOffset, spWide);
-        subOffset = length(sfInd);
+%% Find All Events in data sets -----------------------------------------------
+
+sfIndices = [];
+stopEvents = [];
+
+for f = 1:numel(dataFolder)
+    thisFolder = dataFolder{f};
+
+    timelineFile=fullfile(thisFolder, 'timeline.mat');
+    metaDataFile=fullfile(thisFolder, 'metadata.mat');
+
+    if exist(timelineFile, 'file')
+        load(timelineFile);
+        fds={timeline.milestone.FD}';
+    else
+        sprintf('No timeline.mat file found in: %s\n', thisFolder);
+        continue
     end
-%         if mod(length(sfInd),spWide)
-%             subOffset(end) = mod(length(sfInd),spWide);
-%         end
-else
-    % NOTE: This code DOES NOT WORK for 2 stop flow events! Must correctly
-    % implement the generation of the axPairs array
-    fig = makeMDRTPlotFigure;
-    
-    subPlotAxes = MDRTSubplot(spHigh,length(sfInd),graphsPlotGap, ... 
-                                GraphsPlotMargin,GraphsPlotMargin);
-    axPairs = reshape(subPlotAxes, length(sfInd), 2);
-    
-    PageTitleString = sprintf('%s - %s', PlotTitleString, thisOp);
-	suptitle(PageTitleString);
-end
-    
-%% FDs to plot
-dataFiles = { '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
-              '2016 LO2 FM-2016 Coriolis Meter Mon.mat' };
 
-valveFiles = {'2010 LO2 DCVNO-2010 State.mat';
-              '2013 LO2 PCVNO-2013 State.mat';
-              '2014 LO2 PCVNO-2014 State.mat';
-              '2029 LO2 PCVNO-2029 State.mat'};
-          
-stateFile = { 'LOLS Stop Flow State.mat' };
 
-allFDs = [];
-for fn = 1:numel(dataFiles)
-    f = dataFiles{fn};
-    load(fullfile(dataFolder, f))
-    allFDs = vertcat(allFDs, fd);
+    load(metaDataFile);
+
+    sfIndices = vertcat( find(ismember(fds, triggerEventString)) );
+
+    if ~isempty(sfIndices)
+        for s = 1:numel(sfIndices)
+                
+            thisEvent = struct();
+            thisEvent.dataFolder = thisFolder;
+            thisEvent.metaData  = metaData;
+            thisEvent.timeline  = timeline;
+            thisEvent.eventInd  = sfIndices(s);
+            thisEvent.opName    = metaData.operationName;
+            % thisEvent.allFdInd  = numel(allFDs);
+
+            stopEvents = vertcat(stopEvents, thisEvent);
+        end
+    end
 end
 
-valveFDs = [];
-for fn = 1:numel(valveFiles)
-    f = valveFiles{fn};
-    load(fullfile(dataFolder, f))
-    valveFDs = vertcat(valveFDs, fd);
-end
 
-%% Plot 
+%% Calculate All Stop Flow Times ----------------------------------------------
 
-for ind = 1:length(sfInd)
-    
-    milestone = timeline.milestone(sfInd(ind));
-    t0 = milestone.Time - 2*onesec ;
-    tf = milestone.Time + 10*onesec ;
-    tc = milestone.Time;
+lastDataSet = [];
+plotInfo = [];
+allFDs = {};
+allResults = [];
+
+for ind = 1:numel(stopEvents)
+    thisEvent = stopEvents(ind);
+
+    thisMilestone = thisEvent.timeline.milestone(thisEvent.eventInd);
+    t0 = thisMilestone.Time - 2*onesec ;
+    tf = thisMilestone.Time + 10*onesec ;
+    tc = thisMilestone.Time;
     timeInterval = [t0, tf];
     
+
+    % Load new data if needed
+
+    if ~isequal(thisEvent.dataFolder, lastDataSet)
+
+        fprintf('Loading data from: %s\n', thisEvent.dataFolder)
+
+        thisFDs = [];
+        for fn = 1:numel(dataFiles)
+            f = dataFiles{fn};
+            load(fullfile(thisEvent.dataFolder, f))
+            thisFDs = vertcat(thisFDs, fd);
+            commandNum = 1;
+            % fprintf('Skipping calculation on Event %d, FD %d\n', ind, fn)
+        end
+
+        allFDs = vertcat(allFDs, thisFDs);
+        
+        % Can skip loading valves, they'll be plotted later
+        % valveFDs = [];
+        % for fn = 1:numel(valveFiles)
+        %     f = valveFiles{fn};
+        %     load(fullfile(dataFolder, f))
+        %     valveFDs = vertcat(valveFDs, fd);
+        % end
+
+        lastDataSet = thisEvent.dataFolder;
+    end
+
     % Numerical Analysis
-    
-    f1ts = allFDs(1).ts.getsampleusingtime(t0, tf + onesec*10); % Search up to 2 seconds after the plot window
-    f2ts = allFDs(2).ts.getsampleusingtime(t0, tf + onesec*10);
+    f1ts = thisFDs(1).ts.getsampleusingtime(t0, tf + onesec*10); % Search up to 10 seconds after the plot window
+    f2ts = thisFDs(2).ts.getsampleusingtime(t0, tf + onesec*10);
     
     f1idx = f1ts.Data < 10;
     f2idx = f2ts.Data < 10;
@@ -160,75 +159,105 @@ for ind = 1:length(sfInd)
     
     matches=find(diff(Bts.Data)==1)+1;
     
-    annotationX = [tc(1), newTime(matches(1)) ];
-    annotationY = [150, 10 ];
-    
     P1 = [tc(1) + 4*onesec,    150 ];
     P2 = [newTime(matches(1)),  10 ];
-    
+
     timeToStopFlow = {datestr(newTime(matches) - tc, 'SS.FFF')};
+
+ 
     
-    disp(sprintf('\nResults for Stop Flow test %d', sfInd(ind)))
-    for tempInd = 1:length(matches)
-        disp(sprintf('\tCondition met in %s seconds', ...
-            datestr(newTime(matches(tempInd)) - tc, 'SS.FFF')))
+    fprintf('\nResults for Stop Flow Command %d\n', ind )
+
+    if ~isempty(matches)
+        for tempInd = 1:length(matches)
+            disp(sprintf('\tCondition met in %s seconds', ...
+                datestr(newTime(matches(tempInd)) - tc, 'SS.FFF')))
+        end
     end
+
+    thisResult = struct;
+    thisResult.annotationP1     = P1;
+    thisResult.annotationP2     = P2;
+    thisResult.stopTime         = timeToStopFlow;
+    thisResult.timeInterval     = timeInterval;
+    thisResult.commandNum       = commandNum; commandNum = commandNum + 1;
+    thisResult.opName           = thisEvent.opName;
+    thisResult.dataFolder       = thisEvent.dataFolder;
+    thisResult.allFdInd         = numel(allFDs);
+    thisResult.stopEventInd     = ind;
+
+    allResults = vertcat(allResults, thisResult);
+
+end
+    
+
+
+%% Generate Figures and Subplots ----------------------------------------------
+
+[axHandles, figHandles, axPairArray] = makeManyMDRTSubplots( numel(allResults) * 2, ...
+                                                            PlotTitleString ); 
+
+
+    % PageTitleString = sprintf('%s - %s - Page %d', PlotTitleString, thisOp, figCount);    
+    % PageTitleString = sprintf('%s - %s', PlotTitleString, thisOp);
     
     
+%% Populate Plots -------------------------------------------------------------
     
-	
+for n = 1:numel(allResults)
+    this = allResults(n);
     
+
+    % TOP PLOT ---------------------------------
+    thisFDs = allFDs{this.allFdInd};
+
+    axes(axPairArray(n,1));
+    title(sprintf('%s %s %d', '(Flow)', this.opName, this.commandNum))
     
-        
-    
-    % Top Plot (Flow Rate)
-    axes(axPairs(ind,1));
-    
-    for fn = 1:numel(dataFiles)
-        fd = allFDs(fn);
+    for fn = 1:numel(thisFDs)
+        fd = thisFDs(fn);
         hold on
         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
     end
-    
-    
+
     dynamicDateTicks; set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
-    reviewPlotAllTimelineEvents(timeline)
-    title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
-    xlim(timeInterval);
-    ylim([ 0, 275] );
+    
+    xlim(this.timeInterval);
+    ylim(topPlotYLim );
     hline(10, '--r');
+    reviewPlotAllTimelineEvents(stopEvents(this.stopEventInd).timeline)
 
-    MDRTannotation('textarrow', timeToStopFlow, P1, P2);
+    MDRTannotation('textarrow', this.stopTime, this.annotationP1, this.annotationP2);
+
     
-    % Bottom Plot (Valve State)
-    axes(axPairs(ind,2));
-    
-    valveStateBar(valveFiles, axPairs(ind,2), 'DataFolder', dataFolder)
-    
-%     for fn = 1:numel(valveFiles)
-%         fd = valveFDs(fn);
-%         hold on
-%         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
-%     end
-    
-    % Display Stop Flow State
-    try
-        load( fullfile( dataFolder, stateFile{1} ) );
-        hold on
-        stairs(fd.ts.Time, fd.ts.Data, 'displayName', 'Stop Flow State');
-    catch
-        disp(sprintf('\tState FD not found'))
-    end
-    
+
+    % BOTTOM PLOT ------------------------------
+
+    axes(axPairArray(n,2));
+    title(sprintf('%s %s %d', '(Valve)', this.opName, this.commandNum))
+    valveStateBar(valveFiles, axPairArray(n,2), 'DataFolder', this.dataFolder, 'LabelOffset', -16);
     dynamicDateTicks; set(datacursormode(gcf), 'UpdateFcn', @dateTipCallback);
-    reviewPlotAllTimelineEvents(timeline)
-    title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
-    xlim(timeInterval);
-%     ylim([ -0.1, 2.1] );
-    
-    
-    
-end
+    xlim(this.timeInterval);
+    %     ylim([ -0.1, 2.1] );
+    reviewPlotAllTimelineEvents(stopEvents(this.stopEventInd).timeline)
 
-reviewRescaleAllTimelineEvents
+    
+
+end
+  
+    
+
+    
+    % % Display Stop Flow State
+    % try
+    %     load( fullfile( dataFolder, stateFile{1} ) );
+    %     hold on
+    %     stairs(fd.ts.Time, fd.ts.Data, 'displayName', 'Stop Flow State');
+    % catch
+    %     disp(sprintf('\tState FD not found'))
+    % end
+    
+
+
+
 
