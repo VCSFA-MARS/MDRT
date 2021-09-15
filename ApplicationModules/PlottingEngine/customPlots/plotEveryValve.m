@@ -63,7 +63,28 @@ filesCommand = {
         '8031 HSS DCVNC-8031 Ball Valve Ctl Param.mat';
         '8032 HSS DCVNC-8032 Ball Valve Ctl Param.mat';
         };
-    
+
+propCommand = {
+        '1014 RP1 PCVNC-1014 Globe Valve Cmd Param.mat';
+        '1015 RP1 PCVNC-1015 Globe Valve Cmd Param.mat';
+        '1049 RP1 PCVNC-1049 Globe Valve Cmd Param.mat';
+        '2013 LO2 PCVNO-2013 Globe Valve Cmd Param.mat';
+        '2014 LO2 PCVNO-2014 Globe Valve Cmd Param.mat';
+        '2029 LO2 PCVNO-2029 Globe Valve Cmd Param.mat';
+        '2059 LO2 PCVNC-2059 Globe Valve Cmd Param.mat';
+        '2069 LO2 PCVNC-2069 Globe Valve Cmd Param.mat';
+        '2220 LO2 PCVNO-2220 Globe Valve Cmd Param.mat';
+        '2221 LO2 PCVNC-2221 Globe Valve Cmd Param.mat';
+        '3021 LN2 PCVNC-3021 Globe Valve Cmd Param.mat';
+        '3028 LN2 PCVNC-3028 Globe Valve Cmd Param.mat';
+        '3055 LN2 PCVNC-3055 Globe Valve Cmd Param.mat';
+        '3070 LN2 PCVNC-3070 Globe Valve Cmd Param.mat';
+        '3086 LN2 PCVNC-3086 Globe Valve Cmd Param.mat';
+        '4168 Ghe PCVNC-4168 Globe Valve Cmd Param.mat';
+        '5256 ECS PCVNC-5256 Globe Valve Cmd Param.mat';
+        '5258 ECS PCVNC-5258 Globe Valve Cmd Param.mat';    
+        };
+
 filesState = {    
         '3131 LN2 DCVNO-3131 State.mat';
         '1003 RP1 DCVNC-1003 State.mat';
