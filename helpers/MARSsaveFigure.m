@@ -43,7 +43,7 @@ end
 % clean up unhappy reserved filename characters
 %     defaultName = regexprep(UserData.graph.name,'^[!@$^&*~?.|/[]<>\`";#()]','');
     defaultName = regexprep(graphTitle,'^[!@$^&*~?.|/[]<>\`";#()]','');
-    defaultName = regexprep(defaultName, '[:]','-');
+    defaultName = regexprep(defaultName, '[:/]','-');
     
     if iscell(defaultName)
         defaultName = defaultName{1};
@@ -51,15 +51,14 @@ end
     
 % Open UI for save name and path
     [file,path] = uiputfile('*.pdf','Save Plot to PDF as:',fullfile(config.outputFolderPath, defaultName));
-    
-% Sanitize User-selected file name - For Alina
-    file = regexprep(file,'^[!@$^&*~?.|/[]<>\`";#()]','');
-    file = regexprep(file, '[:*]','-');
-    debugout(sprintf('Alina-proof filename: %s', file))
-    
 
 % Check the user didn't "cancel"
 if file ~= 0
+    
+    % Sanitize User-selected file name - For Alina
+    file = regexprep(file,'^[!@$^&*~?.|/[]<>\`";#()]','');
+    file = regexprep(file, '[:*]','-');
+    debugout(sprintf('Alina-proof filename: %s', file))
     
     progressbar('Generating PDF'); totalSteps = 14;
     
