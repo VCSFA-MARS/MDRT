@@ -1,3 +1,123 @@
+%% Create tool window
+
+config = MDRTConfig.getInstance;
+
+windowName = 'Historical Comparison - All Instances across missions';
+
+    hs.fig = figure;
+            guiSize = [672 387];
+            hs.fig.Position = [hs.fig.Position(1:2) guiSize];
+            hs.fig.Name = windowName;
+            hs.fig.NumberTitle = 'off';
+            hs.fig.MenuBar = 'none';
+            hs.fig.ToolBar = 'none';
+            hs.fig.Tag = 'importFigure';
+
+
+
+%% Create UI Elements
+
+
+hs.mis = uicontrol( 'style',                'edit', ...
+                    'max',                  20, ...
+                    'min',                  1, ...
+                    'Units',                'normalized', ...
+                    'position',             [0.077 0.61 0.708 0.336], ...
+                    'HorizontalAlignment',  'left', ...
+                    'FontUnits',            'normalized' ...
+                    );
+
+hs.top = uicontrol( 'style',                'edit', ...
+                    'max',                  20, ...
+                    'min',                  1, ...
+                    'Units',                'normalized', ...
+                    'position',             [0.077 0.39 0.708 0.163], ...
+                    'HorizontalAlignment',  'left', ...
+                    'FontUnits',            'normalized' ...
+                    );
+
+hs.bot = uicontrol( 'style',                'edit', ...
+                    'max',                  20, ...
+                    'min',                  1, ...
+                    'Units',                'normalized', ...
+                    'position',             [0.077 0.167 0.708 0.163], ...
+                    'HorizontalAlignment',  'left', ...
+                    'FontUnits',            'normalized' ...
+                    );
+
+hs.evt = uicontrol( 'style',                'edit', ...
+                    'Units',                'normalized', ...
+                    'position',             [0.077 0.058 0.708 0.049], ...
+                    'HorizontalAlignment',  'left', ...
+                    'FontUnits',            'normalized' ...
+                    );
+
+hs.run = uicontrol( 'style',                'pushbutton', ...
+                    'String',               'Generate Plots', ...
+                    'Units',                'normalized', ...
+                    'position',             [0.808 0.058 0.159 0.336], ...
+                    'HorizontalAlignment',  'center', ...
+                    'Callback',             '', ...
+                    'FontUnits',            'normalized' ...
+                    );
+                
+                
+%% Load Archive Data to Populate Initial Values                
+
+    setappdata(hs.fig, 'isRemoteArchive', false);
+    setappdata(hs.fig, 'selectedRootPath', config.dataArchivePath);
+    setappdata(hs.fig, 'indexFilePath', config.dataArchivePath);
+
+    % Load local archive by default
+    allowRemote = false;
+    t = load(fullfile(config.dataArchivePath, 'dataIndex.mat'));
+
+    localDataIndex = t.dataIndex;
+    setappdata(hs.fig, 'localDataIndex', localDataIndex);   % Retain local data index
+    setappdata(hs.fig, 'fdMasterList',   localDataIndex(end).FDList);
+
+
+    remoteDataIndex = [];
+    if ~isempty(config.remoteArchivePath)
+        % Remote data index is configured. Load the index and prepare it to be
+        % used.
+
+        allowRemote = true;
+        t = load(fullfile(config.pathToConfig, 'dataIndex.mat'));
+        remoteDataIndex = t.dataIndex;
+    end
+    setappdata(hs.fig, 'remoteDataIndex', remoteDataIndex); % Retain remote data index
+
+%% Hard-coded presets
+
+    dataFiles = { '5903 GN2 PT-5903 Press Sensor Mon.mat';
+                  '5070 GN2 PT-5070 Press Sensor Mon.mat' };
+
+    valveFiles = {'2031 LO2 DCVNC-2031 State.mat';
+                  '2031 LO2 DCVNC-2031 Ball Valve Ctl Param.mat';
+                  '2097 LO2 DCVNC-2097 State.mat';
+                  '2097 LO2 DCVNC-2097 Ball Valve Ctl Param.mat'};
+
+    eventFD = 'LOLS Topoff Cmd';
+
+%% Pre-populate mission list
+
+    hs.mis.String = {localDataIndex.pathToData}';
+    hs.top.String = dataFiles;
+    hs.bot.String = valveFiles;
+    hs.evt.String = eventFD;
+
+
+
+
+
+
+
+
+
+
+%% This chunk will get replaced by the menu!
+
 dataFolders = { '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
                 '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
                 '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
@@ -107,8 +227,6 @@ for pi = 1:numel(PlotParam)
         topAx.addFD(thisDataSet.PTFDs(p));
     end
                     
-
-
 
     dynamicDateTicks(topAx.hAx);
     setDateAxes(topAx.hAx, 'XLim', [thisPlot.t0 thisPlot.tf] ) ;
