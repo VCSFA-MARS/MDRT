@@ -32,7 +32,7 @@ function [subPlotAxes,  varargout] = makeManyMDRTSubplots(InputTitleArray, Figur
 %   Supported Name/Value parameters
 %
 %       newStyle        true or false - true to use MDRTAxes. Default is false
-%       plotsHide       numeric - how many subplots across the figure. Default is 3
+%       plotsWide       numeric - how many subplots across the figure. Default is 3
 %       plotsHigh       numeric - how many subplots down the figure. Default is 2
 %       legendFontSize  numeric - set the legend font size
 %       gap             numeric - set the gap between subplots (normalized units)
@@ -48,7 +48,9 @@ function [subPlotAxes,  varargout] = makeManyMDRTSubplots(InputTitleArray, Figur
 
 % InputTitleArray = {'valve 1', 'valve 2', 'valve 3', 'valve 4', 'valve 5', 'valve 6', 'valve 7', 'valve 8'};
 % FigureTitleString = '';
-
+if nargin == 1;
+    FigureTitleString = [];
+end
 
 if exist('InputTitleArray', 'var') && iscellstr(InputTitleArray)
     expectedSubplots = numel(InputTitleArray);
@@ -67,7 +69,9 @@ AxesTitles = cell(expectedSubplots, 1);
             FigureTitleFormatString = '%s - Page %d';
         end
 
-
+        if iscellstr(FigureTitleString)
+            FigureTitleString = FigureTitleString{1};
+        end
 
 if mod(numel(varargin),2)
     % Name/value pairs not passed in pairs! Expect even number of arguments
