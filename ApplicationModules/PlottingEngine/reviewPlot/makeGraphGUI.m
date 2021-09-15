@@ -694,6 +694,8 @@ function ui_button_generateGraph_Callback(hObject, eventdata, handles)
     
     if handles.useReducePlotCheckbox.Value == 1
         opts = horzcat(opts, {'UseReducePlot', true } );
+    else
+        opts = horzcat(opts, {'UseReducePlot', false } );
     end
 
 debugout('Still in the GRAPH function')

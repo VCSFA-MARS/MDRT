@@ -20,8 +20,8 @@ function varargout = plotGraphFromGUI(graph, timeline, varargin)
     useTimeline = true;
     
 % temporary hack to handle giant data sets
-    useReducePlot = true;
-    ENABLE_REDUCE = true;
+    isReduceThisPlot = true;
+    ENABLE_REDUCE = true; % Default value for argument (passed)
     
 % Flag to supress warning dialogs
     supressWarningDialogs = false;
@@ -68,6 +68,7 @@ if any(size(varargin))
                             case {'off', 'no', 'false', 'not'}
                                 ENABLE_REDUCE = false;
                         end
+                        debugout(sprintf('ENABLE_REDUCE = %s', mat2str(ENABLE_REDUCE)))
                     end
                 end
                 
@@ -394,24 +395,27 @@ end % Graph Loop
 
         hold off;
         axes(subPlotAxes(subPlotNumber));
-
+        
         for i = 1:length(toPlot)
 
             % Set useReducePlot based on FD length
             if (length(s(i).fd.ts.Time) > reducePlotThresholdLength) && ENABLE_REDUCE
-                useReducePlot = true;
+                isReduceThisPlot = true;
             else
-                useReducePlot = false;
+                isReduceThisPlot = false;
             end
+            debugout(sprintf('isReduceThisPlot=%s', mat2str(isReduceThisPlot)))
+            
             
             debugStr = sprintf('%s to %s : %s', ...
                             datestr(s(i).fd.ts.Time(1)), ...
                             datestr(s(i).fd.ts.Time(end)), ...
                             displayNameFromFD(s(i).fd) );
-            debugout(debugStr)
+            % debugout(debugStr)
+            
 
 
-            % Valve thing to do for the plot
+            % Check for set point/command - plot as red stairs
             if(strfind(s(i).fd.FullString, 'Param' ))
 
                 hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, ...
@@ -422,7 +426,7 @@ end % Graph Loop
                 overrideColor = [1 0 0];
             else
 
-                if useReducePlot
+                if isReduceThisPlot
 
                     hThisPlot = LinePlotReducer(@stairs, ...
                                     s(i).fd.ts.Time, ...
