@@ -27,8 +27,7 @@ end
         
 mustHave = {'Damper|Positioner|Valve|[D|P]CVN[OC]|RV'};
 mustNotHave = { 'Close|Open|Var|Percent|Pump|Fan|__' };
-excludeValves = { 'RV-000[15678]|WDS PCR|Shut-Out'} ;
-
+excludeValves = { 'WDS PCR|Shut-Out'} ;
 
 l_allValves = ~cellfun('isempty',regexp(testStr, mustHave));
 l_toExclude = ~cellfun('isempty',regexp(testStr, mustNotHave));
