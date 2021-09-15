@@ -2,6 +2,11 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 % Adds valve bar plot to an existing axes. If targetAxes is invalid, figure
 % and axes are created. Plotted top-to-bottom in order of valveNumArray
 %
+% Takes a number as a valve identifier for convenience. Note: if using an
+% overloaded find number (0003 - 0008, for example) the tool will select
+% the first FD in lexicographical order. To avoid confusion, a find number
+% char array will fully define the intended valve.
+%
 %   Supported Key/Val Pairs
 %
 %       DataFolder      a full path to the folder containing .mat files
@@ -16,6 +21,9 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 %
 %   Example: 
 %   valveStateBar({'2031' '2097'}, gca, 'DataFolder', '/MDRT/DataSet1/data')
+%
+%   Example:
+%   valveStateBar({'RV-0003' 'RV-0004' 'RV-0008'}, gca)
 %
 
 %% Process Key/Value Pairs
@@ -143,54 +151,61 @@ for vn = 1:numValves
     filenames = {files.name}';
 
 
-
-
     %% Find all valve data
     
     % This may be excessive - future work can refactor this down. Does a
     % lot of searching with regex to look for discrete and proportional
     % data via Pad-0A naming conventions.
+    
+    findNumberPattern = '[A-Z]+-[0-9]+' ;
 
-    mustHave = 'Damper|Positioner|Valve|[D|P]CVN[OC]|RV';
+    mustHave = {'Damper|Positioner|Valve|[D|P]CVN[OC]|RV'};
     mustNotHave = { 'Close|Open|Var|Percent|Pump|Fan|__' };
-    excludeValves = { 'RV-000[15678]|WDS PCR|Shut-Out'} ;
+    excludeValves = { 'WDS PCR|Shut-Out'} ;
 
     propSearch = {' Mon' };
-
+    
     l_allValves = ~cellfun('isempty',regexp(filenames, mustHave));
     l_toExclude = ~cellfun('isempty',regexp(filenames, mustNotHave));
     l_notValves = ~cellfun('isempty',regexp(filenames, excludeValves));
 
     l_allValves = l_allValves & ~l_toExclude & ~l_notValves ;
+    
+    filenames = filenames(l_allValves);
+    
+    findNum = regexp(filenames{1}, findNumberPattern, 'match');
+    l_thisFind  = ~cellfun('isempty',regexp(filenames, findNum));
+    filenames = filenames(l_thisFind);
+    
+    
 
     try
-        filenames(l_allValves, 1);
+%         filenames(l_allValves, 1)
     catch
         searchTerm
         continue
     end
-
+    
     l_proportional = ~cellfun('isempty',regexp(filenames, propSearch));
-    l_proportional = l_allValves & l_proportional;
+%     l_proportional = l_allValves & l_proportional;
     i_proportional = find(l_proportional);
 
     filenames(l_proportional, 1);
 
     l_propCmd = ~cellfun('isempty', regexp(filenames, 'Cmd Param'));
-    l_propCmd = l_allValves & l_propCmd ;
+%     l_propCmd = l_allValves & l_propCmd ;
     i_propCmd = find(l_propCmd);
 
     filenames(l_propCmd, 1);
 
     l_disCmd = ~cellfun('isempty', regexp(filenames, 'Ctl Param'));
-    l_disCmd = l_disCmd & ~l_toExclude & ~l_notValves;
+%     l_disCmd = l_disCmd & ~l_toExclude & ~l_notValves;
     filenames(l_disCmd );
 
     l_state = ~cellfun('isempty', strfind(filenames, 'State'));
 
 
-    findNumberPattern = '[A-Z]+-[0-9]+' ;
-    findNum = regexp(filenames{1}, findNumberPattern, 'match');
+    
     
     YTickLabels = vertcat(YTickLabels, findNum);
 
@@ -199,7 +214,7 @@ for vn = 1:numValves
 
     if any(l_disCmd)
         % Valve is discrete - good
-
+        
         % Load State
         s = load(fullfile(DATA_FOLDER,filenames{l_state}));
         states = s.fd.ts.Data;
@@ -265,15 +280,17 @@ function plotProportional
     plotOffset = vn - 1;
             
     X = [posTimes(1); posTimes; posTimes(end)];
-    Y = [0; position; 0]./100 + plotOffset;
+    Y = [0;           position; 0] ./100 + plotOffset;
     
     YClosed = [100; position; 100]./100 + plotOffset;
+    
+    hax.NextPlot = 'add';
     
     clsPlot = fill(X, YClosed, COL_CLOSED, ...
                 'FaceAlpha',            0.5, ...
                 'EdgeColor',            COL_CLOSED * 0.85);
             
-    hold on;
+    hax.NextPlot = 'add';
             
     posPlot = fill(X, Y, COL_OPEN, ...
                 'FaceAlpha',            0.5, ...
@@ -381,3 +398,4 @@ function plotDiscrete
 end
 
 end
+
