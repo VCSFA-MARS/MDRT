@@ -7,13 +7,13 @@ dataPath = '/Users/nick/data/imported/2021-02-19 - NG-15 Launch/data'
 % dataPath = '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 
 config = getConfig;
-dataPath = uigetdir(dataPath, 'Select data folder');
-
-% [x,y,button] = ginput(1)
-
-
-dataPath = config.dataFolderPath;
-dataPath = uigetdir(dataPath, 'Select data folder')
+% dataPath = uigetdir(dataPath, 'Select data folder');
+% 
+% % [x,y,button] = ginput(1)
+% 
+% 
+% dataPath = config.dataFolderPath;
+% dataPath = uigetdir(dataPath, 'Select data folder')
 
 I = imread('LO2-schematic.png');
 hf = figure;
@@ -106,7 +106,8 @@ end
 flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
 % flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
 % flowData = '4919 Ghe PT-4919 Press Sensor Mon.mat';
-flowData = 'OxygenLevel.mat'
+flowData = '5070 GN2 PT-5070 Press Sensor Mon.mat';
+% flowData = 'OxygenLevel.mat'
 % statData = 'LO2TopOffStatus.mat';
 % stopData = 'StopLO2Top-Off.mat';
 
@@ -268,7 +269,6 @@ htime = uicontrol(hf, 'Style',              'text',...
         pt = get(had, 'CurrentPoint');
         set(hMark, 'XData', pt(1)*[1 1]);
         updateGUIfromTime(pt(1));
-        
     end
 
 
