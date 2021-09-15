@@ -9,7 +9,7 @@
 %     startTime = datenum('2016/113/10:00:00.203354')
 %     startTime = datenum('2016/221/13:15:31.347377')
 %     startTime = datenum('2016/219/17:00:07.855209')
-    startTime = datenum('Sept 18 2016 10:00:00')
+    startTime = datenum('June 23 2021 13:00:00')
     % time = startTime + (t * oneSec);
 
 %% Generate new Time Vector
@@ -21,16 +21,18 @@
 % 
     PTmaxRange = 500;
     psi = (a7 - 1)/4 * PTmaxRange;
+    
+    keyboard
 
     
 %% Time Sync Data to FCS:
 
 
 % look at 8020 Ctl
-
-%     reduce_plot(time, a6, 'DisplayName', '8030 Command');
-    figure;
-    reduce_plot(time, psi, 'DisplayName', 'STE Pressure');
+    figure
+    reduce_plot(time, a5, 'DisplayName', '8020 Command');
+%     figure;
+%     reduce_plot(time, psi, 'DisplayName', 'STE Pressure');
     dynamicDateTicks;
     plotStyle;
     
