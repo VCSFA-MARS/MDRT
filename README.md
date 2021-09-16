@@ -22,6 +22,11 @@ Check the included `startup.m` file, which sets the required paths for the tool.
 
 MDRT is developed entirely in MATLAB (with a little Java in the Matlab code). There are a few additional tools that are required for best performance.
 
+#### Matlab Libraries/Extensions
+
+* `findjobj()` v1.53 by Yair Altman of [Undocumented Matlab](https://undocumentedmatlab.com/articles/findjobj-find-underlying-java-object)
+* JSONlab 2.0
+
 #### Grep
 
 MDRT uses the `grep` utility during data import. On OSX it is recommended to install GNU grep, which is significantly faster than BSD grep. 
