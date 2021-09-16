@@ -404,7 +404,8 @@ end % Graph Loop
             else
                 isReduceThisPlot = false;
             end
-            debugout(sprintf('isReduceThisPlot=%s', mat2str(isReduceThisPlot)))
+            debugout(sprintf('isReduceThisPlot=<strong>%s</strong>', ... 
+                                mat2str(isReduceThisPlot) ) )
             
             
             debugStr = sprintf('%s to %s : %s', ...
