@@ -1,28 +1,50 @@
 missions = {
+    '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
+%     '/Users/nick/data/imported/2021-07-29 - Stop Flow Accumulator Timing ITR-2174 OP-40/data';   
+%     '/Users/nick/data/imported/2021-07-29 - 2010 Muscle Supply Test ITR-2174 OP-20/data';    
+%     '/Users/nick/data/imported/2021-07-23 - Stop Flow Dry Cycles ITR-2174 OP-10/data';
+%     '/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
+%     '/Users/nick/data/imported/2021-02-23 - All 2031 Post NG-15/data';
     '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
-    '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
-    '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
+%     '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
+%     '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
 %     '/Users/nick/data/imported/2020-08-28 - NC-1145/data';
 %     '/Users/nick/data/imported/2020-08-11 - NC-1145/data';
-    '/Users/nick/data/imported/2020-02-12 - LO2 Testing/data';
-    '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
-    '/Users/nick/data/archive/2020-02-09_NG-13/data';
-    '/Users/nick/data/archive/2019-11-01 - NG-12/data';
-	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
-	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data';
-	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
-	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
-	'/Users/nick/data/archive/2016-20-17 OA-5 LA1/data';
+%     '/Users/nick/data/imported/2020-02-12 - LO2 Testing/data';
+%     '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
+%     '/Users/nick/data/archive/2020-02-09_NG-13/data';
+%     '/Users/nick/data/archive/2019-11-01 - NG-12/data';
+% 	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
+% 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data';
+% 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
+% 	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
+% 	'/Users/nick/data/archive/2016-20-17 OA-5 LA1/data';
 };
 
+shouldPrintMessages = true;
+skipFigures = false;
+
 pressSensNum = '5070';
+steSens = 'STE TC06';
+steSens = '';
 timelineEventFd = 'LOLS Chilldown Phase1 Cmd';
+
+
+%% Calculated Parameters
+
+skipSTE = isempty(steSens);
+skipPTs = isempty(pressSensNum);
+
+
 
 %% Constants
 
-onehr = 1/24;
-onemin = onehr/60;
-onesec = onemin/60;
+oneHr = 1/24;
+oneMin = oneHr/60;
+oneSec = oneMin/60;
+
+plotWindow = [-5*oneSec, 15*oneSec];
+dataWindow = [-11*oneMin, 11*oneMin];
 
 
 %% Valve Selection
@@ -116,8 +138,20 @@ for n = 1:numel(missions)
         tcmd    = load(fullfile(missions{n}, files(cmdInd).name), 'fd');
         tstate  = load(fullfile(missions{n}, files(stateInd).name), 'fd');
         
-        pFiles = dir(fullfile(missions{n}, ['*' pressSensNum '*']));
-        tpress = load(fullfile(missions{n}, pFiles.name), 'fd');
+        try
+            pFiles = dir(fullfile(missions{n}, ['*' pressSensNum '*']));
+            tpress = load(fullfile(missions{n}, pFiles.name), 'fd');
+            disp('Found pressure sensor')
+        catch
+            skipPTs = true;
+        end
+        
+        try
+            stFiles = dir(fullfile(missions{n}, ['*' steSens '*']));
+            stData = load(fullfile(missions{n}, stFiles.name), 'fd');
+        catch
+            skipSTE = true;
+        end
         
         tMeta = load(fullfile(missions{n}, 'metadata.mat'));
         
@@ -164,13 +198,20 @@ for n = 1:numel(missions)
     
     data(n).cmd = tcmd.fd;
     data(n).state = tstate.fd;
-    data(n).press = tpress.fd;
+    
+    if ~skipPTs;
+        data(n).press = tpress.fd;
+    end
+    
     data(n).metadata = tMeta.metaData;
     data(n).path = missions{n};
     
     data(n).cmd.ts      = removeDuplicateTimeseriesPoints( tcmd.fd.ts );
     data(n).state.ts    = removeDuplicateTimeseriesPoints( tstate.fd.ts );
-    data(n).press.ts    = removeDuplicateTimeseriesPoints( tpress.fd.ts );
+    
+    if ~skipPTs
+        data(n).press.ts    = removeDuplicateTimeseriesPoints( tpress.fd.ts );
+    end
     
     
     % Event Time for later calculations
@@ -215,7 +256,7 @@ data(indToClear) = [];
 fig = [];
 subPlotAxes = [];
 subOffset = [];
-axPairs = [];
+axPairArray = [];
 axPair = [];
 figCount = 1;          
 sfIndLen = 0;
@@ -241,7 +282,7 @@ for m = 1:length(data)
         cmdDatenum = data(m).cmd.ts.Time(cmdInd(n));
         thisPlan = [m, cmdInd(n), cmdDatenum, cmdChg(cmdInd(n) -1) ];
         plan = vertcat(plan, thisPlan);
-        fprintf('\tFound command change at %s\n', datestr(cmdDatenum) )
+        if shouldPrintMessages; fprintf('\tFound command change at %s\n', datestr(cmdDatenum) ); end
         
     end
     
@@ -253,47 +294,11 @@ fprintf( '\n%d instances of "%s" commands found\n', size(plan,1), valveName )
 
 
 %% Generate Subplot Axes and Pages
-skipFigures = true;
 
-if (size(plan, 1) > spWide) & ~skipFigures
-    remainder = size(plan, 1);
-    while remainder > 0
-        f = makeMDRTPlotFigure;
-        disp(sprintf('Creating figure %d', f.Number))
-        
-        fig = vertcat(fig, f);
-        
-        if remainder >= spWide
-            plotCols = spWide;
-        else
-            plotCols = remainder;
-        end
-                
-        spa = MDRTSubplot(  spHigh, plotCols, graphsPlotGap, ... 
-                            GraphsPlotMargin, GraphsPlotMargin);
-                            
-        PageTitleString = sprintf('%s - Page %d',PlotTitleString, figCount);
-        disp(sprintf('  Generating %s', PageTitleString))
-        suptitle(PageTitleString);
-        figCount = figCount + 1;
-        
-        disp(sprintf('  Adding %d subplot axes', length(spa)))
-        subPlotAxes = vertcat(subPlotAxes, spa);
-        
-        axPair = reshape(spa, plotCols, 2);
-        axPairs = vertcat(axPairs, axPair);
-        
-        remainder = remainder - spWide;
-        
-        subOffset = length(sfInd);
-    end
+if ~skipFigures
 
-elseif ~skipFigures
-    fig = makeMDRTPlotFigure;
-    
-    subPlotAxes = MDRTSubplot(spHigh,size(plan,1),graphsPlotGap, ... 
-                                GraphsPlotMargin,GraphsPlotMargin);
-	suptitle(PlotTitleString);
+    [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots(size(plan, 1)*2, PlotTitleString);
+
 end
 
 
@@ -320,13 +325,17 @@ for ind = 1:size(plan, 1)
     cmdTime = plan(ind,3);
     cmdChng = plan(ind,4);
     
-    t0 = cmdTime - 2*onesec ;        % time axis t0
-    tf = cmdTime + 15*onesec ;       % time axis tf
+    t0 = cmdTime - 2*oneSec ;        % time axis t0
+    tf = cmdTime + 15*oneSec ;       % time axis tf
     tc = cmdTime;                    % command time
     timeInterval = [t0, tf];
     
-    lastState = find(data(thisInd).state.ts.Time <= cmdTime);
-    lastState = data(thisInd).state.ts.Data( lastState(end) );
+    try
+        lastState = find(data(thisInd).state.ts.Time <= cmdTime);
+        lastState = data(thisInd).state.ts.Data( lastState(end) );
+    catch
+        lastState = [];
+    end
     
     if lastDataIndex ~= thisInd
         lastDataIndex = thisInd;
@@ -355,6 +364,10 @@ for ind = 1:size(plan, 1)
     results(ind).commandtime = cmdTime;
     results(ind).lastState = lastState;
     results(ind).commandnum = cmdCount;
+    % This is STE!
+    if ~skipSTE
+        results(ind).steTemp = mean(stData.fd.ts.getsampleusingtime(t0,tf).Data);
+    end
     
     if isDiscrete
         if cmdChng > 0
@@ -390,8 +403,8 @@ for ind = 1:size(plan, 1)
     
     
     
-    cmdTs = data(thisInd).cmd.ts.getsampleusingtime(t0, tf + onesec*2);
-    staTs = data(thisInd).state.ts.getsampleusingtime(t0, tf + onesec*2);
+    cmdTs = data(thisInd).cmd.ts.getsampleusingtime(t0, tf + oneSec*2);
+    staTs = data(thisInd).state.ts.getsampleusingtime(t0, tf + oneSec*2);
     
     % Get time to first movement
     foundFirstMovement  = false;
@@ -407,7 +420,7 @@ for ind = 1:size(plan, 1)
         end
     else
         % What the hell am I gonna do for proportional??
-        
+        continue
     end
     
     for sInd = 1:length(staTs.Data)
@@ -428,9 +441,9 @@ for ind = 1:size(plan, 1)
     end
     
     
-    results(ind).timetofirstmvt = (results(ind).firstmvt   - results(ind).commandtime)  ./ onesec;
-    results(ind).transitiontime = (results(ind).motionstop - results(ind).firstmvt)     ./ onesec;
-    results(ind).totaltime      = (results(ind).motionstop - results(ind).commandtime)  ./ onesec;
+    results(ind).timetofirstmvt = (results(ind).firstmvt   - results(ind).commandtime)  ./ oneSec;
+    results(ind).transitiontime = (results(ind).motionstop - results(ind).firstmvt)     ./ oneSec;
+    results(ind).totaltime      = (results(ind).motionstop - results(ind).commandtime)  ./ oneSec;
     
     results(ind).timeFromEvent  = (results(ind).commandtime - data(thisInd).eventTime); % ./ onesec;
     results(ind).eventFd        = data(thisInd).eventFd;
@@ -449,56 +462,73 @@ for ind = 1:size(plan, 1)
 
 
     
-	
-continue
+if skipFigures
+    continue
+end
     
     
 
     %% Plot Data
     % Top Plot (Flow Rate)
-    axes(axPairs(ind,1));
+    axes(axPairArray(ind,1));
+%     
+%     for fn = 1:numel(dataFiles)
+%         fd = data(thisInd).dataFiles(fn);
+% %         fd = allFDs(fn);
+%         hold on
+%         stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
+%     end
     
-    for fn = 1:numel(dataFiles)
-        fd = data(thisInd).dataFiles(fn);
-%         fd = allFDs(fn);
-        hold on
-        stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
-    end
+    tempState = data(thisInd).state.ts.getsampleusingtime(dataWindow(1)+t0, dataWindow(2)+t0);
+    tempParam = data(thisInd).cmd.ts.getsampleusingtime(dataWindow(1)+t0, dataWindow(2)+t0);
     
-    reviewPlotAllTimelineEvents(data(thisInd).timeline)
+    stairs(tempState.Time, tempState.Data, 'DisplayName', 'State');
+    hold on;
+    stairs(tempParam.Time, tempParam.Data, 'DisplayName', 'Command')
+    
+%     reviewPlotAllTimelineEvents(data(thisInd).timeline)
 %     title(sprintf('%s %d', 'Stop Flow (Flow)', ind))
-    title(sprintf('%s %s', data(thisInd).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
-    setDateAxes(axPairs(ind, 1), 'XLim', timeInterval);
-    ylim([ 0, 275] );
-    hline(10, '--r');
+%     title(sprintf('%s %s', data(thisInd).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    setDateAxes(axPairArray(ind, 1), 'XLim', plotWindow + t0);
     
-    if isThresholdFound
-        MDRTannotation('textarrow', timeToStopFlow, P1, P2);
-    end
-    
-    % Bottom Plot (Valve State)
-    axes(axPairs(ind,2));
-    
-    for fn = 1:numel(pressFiles)
-        fd = data(thisInd).pressFiles(fn);
-%         fd = valveFDs(fn);
-        hold on
-        stairs(fd.ts.Time, fd.ts.Data, 'displayName', displayNameFromFD(fd));
+    if isDiscrete
+        ylim([ -0.1, 2.1 ] );
+    else
+        ylim([ -0.1, 100.1 ] );
     end
     
     
-    reviewPlotAllTimelineEvents(data(thisInd).timeline)
-%     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
-    title(sprintf('%s %s', data(thisInd).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+    if ~skipPTs
+        % Bottom Plot (Valve State)
+        axes(axPairArray(ind,2));
+
+%         for fn = 1:numel(pressFiles)
+%             fd = data(thisInd).pressFiles(fn);
+            data(thisInd).press.ts
+    %         fd = valveFDs(fn);
+            hold on
+            stairs(data(thisInd).press.ts.Time, data(thisInd).press.ts.Data, ...
+                'displayName', displayNameFromFD(data(thisInd).press));
+%         end
+
+
+        try
+            reviewPlotAllTimelineEvents(data(thisInd).timeline)
+        catch
+        end
+    %     title(sprintf('%s %d', 'Stop Flow (Valve)', ind))
+%         title(sprintf('%s %s', data(thisInd).metaData.operationName, 'Stop Flow'), 'interpreter', 'none');
+
+        linkaxes(axPairArray(ind,:),'x');
+        dynamicDateTicks(axPairArray(ind,:), 'link');
+        setDateAxes(axPairArray(ind, 2), 'XLim', timeInterval);
     
-    linkaxes(axPairs(ind,:),'x');
-    dynamicDateTicks(axPairs(ind,:), 'link');
-    setDateAxes(axPairs(ind, 2), 'XLim', timeInterval);
+        ylim([ 0, 200] );
+    end
     
-    ylim([ 0, 200] );
+    
 %     ylim([ -0.1, 2.1] );
-    
-got
+
     
 end
 
@@ -509,20 +539,25 @@ outTable = struct2table(results);
 fieldsToClean = {'firstmvt'; 'motionstop'; 'timetofirstmvt'; 'transitiontime'; 'totaltime'};
 for f2cInd = 1:numel(fieldsToClean)
     fieldName = fieldsToClean{f2cInd};
-    emptyIndices = cellfun(@isempty, outTable.(fieldName) );
-    outTable.(fieldName)(emptyIndices) = {nan};
+    switch class(outTable.(fieldName))
+        case 'cell'
+            emptyIndices = cellfun(@isempty, outTable.(fieldName) );
+            outTable.(fieldName)(emptyIndices) = {nan};
+        case 'double'
+            % Anything to do here?
+    end
     
 end
 
 outTable
 
 
-writetable(outTable, [valveName, '_valveTable.csv'])
+writetable(outTable, fullfile(missions{end}, [valveName, '_valveTable.csv']))
 
 
 %% Add hline annotations to bottom plot
-for q = 1:length(axPairs)
-    axes(axPairs(q,2))
+for q = 1:length(axPairArray)
+    axes(axPairArray(q,2))
     hline(165, '--r', 'RV setpoint');
     hline(165*0.9, '--r', '- 10%');
 end
