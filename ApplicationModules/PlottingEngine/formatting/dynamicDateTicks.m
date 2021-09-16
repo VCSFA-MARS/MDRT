@@ -135,7 +135,7 @@ set(d,'UpdateFcn',@dateTip);
         if all(ticks(1) < get(ax1,'xlim'))
             ticks(1) = [];
             labels(1,:) = [];
-            debugout(size(ticks))
+            % %%debugout(size(ticks))
         end
         
         [yr, mo, da] = datevec(ticks); % Extract year & day information (necessary for ticks on the boundary)
