@@ -1,39 +1,28 @@
 Version 0.7.0:
- - pruned development files from release
  - Merge remote-tracking branch 'origin/release_0.7.0_candidate' into release_0.7.0_candidate
  - Merge branch '77-java-gettext-method-fails-on-windows-installations' into 'release_0.7.0_candidate'
- - Merge branch '77-java-gettext-method-fails-on-windows-installations' into release_0.7.0_candidate
  - Unit Test: Added directory listing as test data for future testing
  - New Feature : find every command to every valve in a data set
- - Removed superfluous debug output
- - Updates to custom plots - added datasets and small output tweaks.
  - Improved debug readability
  - Optimization: Refactored to attempt more efficient LinePlotReducer
- - Removed debugging output
  - BugFix: plot setup tool "reduce" option fixed
  - Custom Plot: step through valve commands
- - New data files added
  - New Tool: click/drag to add an event marker to a plot
  - Update: Started adding every proportional valve
  - SpecialPlot: tweaked data selection and plot contents
  - Refactor: updated to new API for reviewPlotAllTimelineEvents
  - Bug Fix: typo in help doc and better figure title string handling
- - SaveFigure - updated filename string sanitizer
- - Special Plots for LO2 valve with TC STE
+ - Update: SaveFigure - better filename string sanitizer
+ - New Features: Special Plots for LO2 valve with TC STE
  - Refactor: updated intern code to use new API for milestone plotting
  - New Custom Plot: Multi-mission, multi-page, VNO1 cycling comparison
- - Converting to valveBar style - no calculated time (yet)
- - In Work: Converting to "FamilyPlot" style menu. May be removed
  - New Feature: isFDValve correctly identifies WDS and ECS valves
  - BugFix: broken comment crashed filterFDtool
  - New Feature: valveStateBar ignores duplicate valve FDs
  - New Feature: key/value options for plotting timeline events
- - Merge remote-tracking branch 'origin/develop' into develop
  - review: added date picker and MDRTfamilyPlot tool shortcuts
- - Merge remote-tracking branch 'origin/develop' into develop
  - Review validates data set folder selection, prompts with suggestion
  - Sanitize user selected file name to prevent file system issues
- - Merge remote-tracking branch 'origin/develop' into develop
  - Updated with key/value pairs and a label offset
  - Graph Setup GUI defaults to dynamic graph title string
  - BugFix: valveStateBar crashed when called without 'DataFolder' argument
@@ -54,7 +43,6 @@ Version 0.7.0:
  - valveStateBar doesn't crash if called without axes handle
  - MDRTEvent class updated - markers no longer on legend
  - Update vline() with fewer gca() calls for performance improvement
- - Merge remote-tracking branch 'origin/develop' into develop
  - Parameterized some of valveStateBar
  - valveStateBar is now a function
  - Vectorized valve state bar - can plot multiple valves on one Axes
@@ -82,7 +70,6 @@ Version 0.7.0:
  - Changed archive manager GUI to normalized units for scaling
  - Added GUI text scaling function to main MDRT GUIs
  - Merge branch 'develop' into 73-font-sizes-on-windows-os
- - Merge remote-tracking branch 'origin/develop' into develop
  - load AvailableFDs using fullfile path
  - Merge branch '76-2021a-compatability-resources-path' into 'develop'
  - moved resource folder, renamed getResource.m, and refactored
@@ -90,7 +77,6 @@ Version 0.7.0:
  - Added fontScaleFactor to MDRTConfig. Detects OS automatically
  - Added call to openingFcn to scale GUI font size based on OS
  - Added function to scale GUI fonts recursively
- - Merge remote-tracking branch 'origin/develop' into develop
  - Help button points to VCSFA GitHub instead of Nick's personal
  - Added bug report issue template
  - MDDRTFamilyPlot - fixed "useT0" bugs with missing EventString and others
@@ -153,7 +139,6 @@ Version 0.7.0:
  - BugFix: Stop displaying Z axis on DateTips placed on annotations
  - Merge branch 'develop' into feature-remoteArchive
  - New Feature: Better y-axis scaling for valve states and other state data
- - Merge remote-tracking branch 'origin/feature-remoteArchive' into feature-remoteArchive
  - New Feature: MDRT now imports and captures engineering units for data
  - Generalized Family Plotter supports up to 4 axes, parameterized data
  - BugFix: Error message correction in MDRTConfig
@@ -174,7 +159,6 @@ Version 0.7.0:
  - BugFix: find brush button handle correctly. Check valid figure to close
  - BugFix: was crashing if parent window was closed by another process
  - BugFix: fixed crash when saving plots with no data tips or event labels
- - Merge remote-tracking branch 'origin/develop' into develop
  - BugFix: reduce plot kicks in at higher threshold. Correctly plots stairs
  - BugFix: LinePlotReducer correctly handles stair plots
  - NewFeature: save plot scales and restores font sizes. Added progress bar
@@ -187,10 +171,8 @@ Version 0.7.0:
  - Update: dynamicDateTicks modified to listen to XLIM property
  - NewFeature: Annotations for MDRT plots by coordinate
  - BugFix: rescale timeline events doesn't crash if nothing on axis
- - Merge remote-tracking branch 'origin/develop' into develop
  - Added Feature: Custom plot for 2029 performance
  - BugFix: Stop crashing when importing raw input data from .delim
- - Merge remote-tracking branch 'MARSGitlab/develop' into develop
  - Cleanup: Plotting engine makes commands red and fixes line styles
  - New Feature: Intelligent legend 'displayname' string generation
  - plot checks FD length and uses LinePlotReducer when it's helpful
@@ -198,7 +180,6 @@ Version 0.7.0:
  - Change to DAQ parser to handle extra columns
  - Updated linkTimeAxes and unlinkTimeAxes - added documentation
  - update linkTimeAxes() - now takes menu handle, fig handle, or axes array
- - Merge remote-tracking branch 'origin/develop' into develop
  - Added HSS historical plot scripts
  - valve control analysis
  - Added NG-13 T0 info
@@ -232,7 +213,6 @@ Version 0.7.0:
  - In Development: remote retrievals over ssh
  - Automated data set selection for TELRR plots
  - New Feature: automatically update timeline with T0
- - Merge remote-tracking branch 'MARSGitlab/develop' into develop
  - Add legend to TEL RR plot generator
  - BugFix: Find Changing Data Tool
  - Added: Level sensor calculations for Pad-0C
@@ -242,7 +222,6 @@ Version 0.7.0:
  - Cleanup: stopped "poofing" variables into existance
  - New Feature: Plot titles use metadata to populate tags!
  - New Function: replace tags in title string with metadata info
- - Merge remote-tracking branch 'origin/develop' into develop
  - Clean up DAQ parser
  - Resolved merge issues
  - Auto stash before merge of "develop" and "MARSGitlab/develop"
@@ -256,13 +235,11 @@ Version 0.7.0:
  - New script for decimating and resampling FDs
  - Revert to simpler data filtering tool. Fixed saved filename generation
  - Added special comparison plot of LO2 Drainback pressures
- - Merge remote-tracking branch 'origin/develop' into develop
  - Tool windows close when "parent" figure is closed
  - Tool windows close when "parent" figure is closed
  - Window closes when calling figure is closed
  - Minor cleanup. Removed unused variable
  - Deleted unused legacy code
- - Merge remote-tracking branch 'origin/develop' into develop
  - New Feature: Find all data that changes in a time interval
  - New function: is metadata out of date?
  - Clean up console output
@@ -273,7 +250,6 @@ Version 0.7.0:
  - BugFix: Fails gracefully for malformed metadata files.
  - New Tool: Find t0 timestamp by linear interpolation
  - "Remove invalid characters from filenames"
- - Merge remote-tracking branch 'origin/develop' into develop
  - New Feature: Data Playback Tool
  - Source Cleanup: removed unused files
  - New Feature: Scalable Data Comparison GUI
@@ -287,7 +263,6 @@ Version 0.7.0:
  - Bug Fix: data importer correctly populates fd.ID -> plot legends work
  - New Feature: TELHS Rapid Retract Valve custom plot script
  - Added: helper to change the size of a figure prior to exporting
- - Merge remote-tracking branch 'origin/develop' into develop
  - Update documentation - clarified usage of integrateTotalFlow()
  - New feature: added a helper to combine data.mat files
  - Cleanup
@@ -295,7 +270,6 @@ Version 0.7.0:
  - Added support for string arguments like older Matlab style commands
  - New Feature: Import Tool can combine .delims from multiple TAMs
  - Bug Fix: reviewRescaleAllTimelineEvents() performance improved
- - Merge remote-tracking branch 'origin/develop' into develop
  - New Feature: Progress bar added to archive manager re-indexing
  - Update: Progress bar added to archive manager re-indexing
  - New Feature: Archive manager "update index" tool
