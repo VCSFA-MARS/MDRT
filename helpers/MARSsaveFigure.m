@@ -1,3 +1,4 @@
+function MARSsaveFigure(varargin)
 % MARSsaveFigure is a script for overriding the default save button
 %
 %   Gets the current graphics context, looks for a suptitle object and
@@ -10,27 +11,24 @@
 %   Counts, VCSFA, 2017 - updated to be more fault tolerant. Fixed
 %   documentation
 
-
+%   Counts, VCSFA, 2020 - convert to function for improved fault tolerance.
 
 config = getConfig;
 
-fh = gcf;
+if nargin == 3
+    switch class(varargin{3})
+        case 'matlab.ui.Figure'
+            fh = varargin{3};
+        otherwise
+            msg = sprintf('Argument of type %s is unsupported. Defaulting to gcf()', class(varargin{3} ) );
+            warning(msg);
+            fh = gcf;
+    end
+else
+    fh = gcf;
+end
 
 
-%% Automatically select best font size for printing
-
-    % Data Cursors / Tooltips
-    cursors = findall(fh, 'type', 'hggroup');
-    set(cursors, 'FontSize', 6)
-    
-    % Plot Legends
-    legends = findall(fh, 'Type', 'Legend');
-    set(legends, 'FontSize', 7); % default font was 9
-    
-    % Timeline Events - fix stacking order
-    reviewEventLabelsToTop(fh);
-    
-    
 %% Intelligent filename guess based on plot super title
 
 % Find handle to supertitle object and extract string
@@ -45,20 +43,73 @@ end
 % clean up unhappy reserved filename characters
 %     defaultName = regexprep(UserData.graph.name,'^[!@$^&*~?.|/[]<>\`";#()]','');
     defaultName = regexprep(graphTitle,'^[!@$^&*~?.|/[]<>\`";#()]','');
-    defaultName = regexprep(defaultName, '[:]','-');
+    defaultName = regexprep(defaultName, '[:/]','-');
     
     if iscell(defaultName)
         defaultName = defaultName{1};
     end
     
-    
-
 % Open UI for save name and path
     [file,path] = uiputfile('*.pdf','Save Plot to PDF as:',fullfile(config.outputFolderPath, defaultName));
 
 % Check the user didn't "cancel"
 if file ~= 0
-    saveas(fh, [path file],'pdf')
+    
+    % Sanitize User-selected file name - For Alina
+    file = regexprep(file,'^[!@$^&*~?.|/[]<>\`";#()]','');
+    file = regexprep(file, '[:*]','-');
+    debugout(sprintf('Alina-proof filename: %s', file))
+    
+    progressbar('Generating PDF'); totalSteps = 14;
+    
+    % Data Cursors / Tooltips
+    cursors = findall(fh, 'type', 'hggroup');       progressbar(1/totalSteps);
+    oldCursorFontSize = get(cursors, 'FontSize');	progressbar(2/totalSteps);
+    
+    % Plot Legends
+    legends = findall(fh, 'Type', 'Legend');        progressbar(3/totalSteps);
+    oldLegendFontSize = get(legends, 'FontSize');	progressbar(4/totalSteps);
+    
+    %% Automatically select best font size for printing
+    set(cursors, 'FontSize', 6);                    progressbar(5/totalSteps);
+    set(legends, 'FontSize', 7);                    progressbar(6/totalSteps);
+    
+    % Timeline Events - fix stacking order
+    reviewEventLabelsToTop(fh);                     progressbar(7/totalSteps);
+    
+    % Timeline Label Sizes
+    labels = findall(fh,'Tag','vlinetext');         progressbar(8/totalSteps);
+    
+    if ~(isempty(labels))
+        oldLabelFontSize = get(labels, 'FontSize'); progressbar(9/totalSteps);
+        set(labels, 'FontSize', 8);                 progressbar(10/totalSteps);
+    else
+        oldLabelFontSize = {};                      progressbar(10/totalSteps);
+    end
+    
+    % Save
+    saveas(fh, [path file],'pdf');                  progressbar(11/totalSteps);
+    
+    %% Restore font sizes
+    
+        % set method requires cell as argument - fix for size 1 returns
+        
+        if ~iscell(oldCursorFontSize)
+            oldCursorFontSize = { oldCursorFontSize };
+        end
+
+        if ~iscell(oldLegendFontSize)
+            oldLegendFontSize = { oldLegendFontSize };
+        end
+
+        if ~ iscell(oldLabelFontSize)
+            oldLabelFontSize = { oldLabelFontSize };
+        end
+    
+    set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(12/totalSteps);
+    set(legends, {'FontSize'}, oldLegendFontSize);  progressbar(13/totalSteps);
+    set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
+    
 else
     % Cancelled... not sure what the best behavior is... return to GUI
 end

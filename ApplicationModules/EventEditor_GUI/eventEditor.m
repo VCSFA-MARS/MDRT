@@ -22,7 +22,7 @@ function varargout = eventEditor(varargin)
 
 % Edit the above text to modify the response to help eventEditor1
 
-% Last Modified by GUIDE v2.5 24-May-2017 15:14:09
+% Last Modified by GUIDE v2.5 19-Nov-2018 10:30:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,14 +70,12 @@ function eventEditor1_OpeningFcn(hObject, eventdata, handles, varargin)
 % This is where I put my initialization code
 % -------------------------------------------------------------------------
     config = getConfig;
-
     handles.config = config;
 
-
+    Config = MDRTConfig.getInstance;
     
 % Debugging purposes: load existant timeline file.
 % load('~/Documents/MATLAB/Data Review/ORB-1/data/timeline.mat')
-
 
 % Constant Definitions
 % -------------------------------------------------------------------------
@@ -98,8 +96,11 @@ function eventEditor1_OpeningFcn(hObject, eventdata, handles, varargin)
 % Check for existing timeline.mat file in the working data directory and
 % load if exists
 % -------------------------------------------------------------------------
+    timeline = [];
+
     if exist(fullfile(path, timelineFile),'file')
-        load([path timelineFile]);
+        s = load([path timelineFile], 'timeline');
+        timeline = s.timeline;
     else
         % timeline file not found
         timeline = newTimelineStructure;
@@ -119,6 +120,8 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+
+fixFontSizeInGUI(hObject, Config.fontScaleFactor);
 
 % UIWAIT makes eventEditor1 wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -155,6 +158,11 @@ function ui_eventListBox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from ui_eventListBox
 
 eventIndex = get(hObject, 'Value');
+
+if isempty(eventIndex)
+    return
+end
+
 handles.timeline.milestone(eventIndex);
 
 t = handles.timeline.milestone(eventIndex).Time;
@@ -509,6 +517,8 @@ end
 % is found.
 function eventEditor_pre_populate_GUI(handles)
 
+handles.checkbox_UseT0.Value = handles.timeline.uset0;
+    
     t0Month  = str2double(datestr(handles.timeline.t0.time, 'mm'));
     t0Day    = str2double(datestr(handles.timeline.t0.time, 'dd'));
     t0Year   = str2double(datestr(handles.timeline.t0.time, 'yyyy'));
@@ -535,7 +545,6 @@ function eventEditor_pre_populate_GUI(handles)
     set(handles.ui_editBox_minute, 'String', t0Minute);
     set(handles.ui_editBox_second, 'String', t0Second);
 
-
 % Set event information with the T0 info as default
     set(handles.ui_popup_eventMonthPicker,  'Value',    t0Month);
     set(handles.ui_editBox_eventDay,        'String',   t0Day);
@@ -551,11 +560,6 @@ function eventEditor_pre_populate_GUI(handles)
     
 
 function updateGUIfromHandles(handles)
-
-    
-    
-    index = handles.ui_eventListBox.Value;
-    currentEvent = handles.timeline.milestone(index);
     
     t0flag = handles.timeline.uset0;
     
@@ -566,7 +570,7 @@ function updateGUIfromHandles(handles)
         % There is a t0, so load it and update the editor pane
         t0time = handles.timeline.t0.time;
         
-        handles.ui_popup_monthPicker.Value  = datestr(t0time, 'mm');
+        handles.ui_popup_monthPicker.Value  = month(t0time);
         handles.ui_editBox_year.String      = datestr(t0time, 'yyyy');
         handles.ui_editBox_day.String       = datestr(t0time, 'dd');
         
@@ -575,22 +579,49 @@ function updateGUIfromHandles(handles)
         handles.ui_editBox_second.String    = datestr(t0time, 'SS.FFF');
         
     end
+    
+    
+    index = handles.ui_eventListBox.Value;
+    
+    if index
         
-    % Update Event information group
-    handles.ui_popup_monthPicker.Value      = datestr(currentEvent.Time, 'mm');
-    
-    handles.ui_editBox_eventDay.String      = datestr(currentEvent.Time, 'dd');
-    handles.ui_editBox_eventYear.String     = datestr(currentEvent.Time, 'yyyy');
-    
-    handles.ui_editBox_eventHour.String     = datestr(currentEvent.Time, 'HH');
-    handles.ui_editBox_eventMinute.String   = datestr(currentEvent.Time, 'MM');
-    handles.ui_editBox_eventSecond.String   = datestr(currentEvent.Time, 'SS.FFF');
-    
-    handles.ui_editBox_eventNameString.String = currentEvent.String;
-    handles.ui_editBox_eventTriggerFD.String  = currentEvent.FD;
-    
-    % Update Event List
-    handles.ui_eventListBox.String = {handles.timeline.milestone.String}';
+        currentEvent = handles.timeline.milestone(index);
+        
+        % Update Event information group
+        handles.ui_popup_monthPicker.Value      = month(currentEvent.Time);
+
+        handles.ui_editBox_eventDay.String      = datestr(currentEvent.Time, 'dd');
+        handles.ui_editBox_eventYear.String     = datestr(currentEvent.Time, 'yyyy');
+
+        handles.ui_editBox_eventHour.String     = datestr(currentEvent.Time, 'HH');
+        handles.ui_editBox_eventMinute.String   = datestr(currentEvent.Time, 'MM');
+        handles.ui_editBox_eventSecond.String   = datestr(currentEvent.Time, 'SS.FFF');
+
+        handles.ui_editBox_eventNameString.String = currentEvent.String;
+        handles.ui_editBox_eventTriggerFD.String  = currentEvent.FD;
+
+        % Update Event List
+        handles.ui_eventListBox.String = {handles.timeline.milestone.String}';
+        
+    else
+        
+        % Update Event information group
+        handles.ui_popup_monthPicker.Value      = 1;
+
+        handles.ui_editBox_eventDay.String      = '';
+        handles.ui_editBox_eventYear.String     = '';
+
+        handles.ui_editBox_eventHour.String     = '';
+        handles.ui_editBox_eventMinute.String   = '';
+        handles.ui_editBox_eventSecond.String   = '';
+
+        handles.ui_editBox_eventNameString.String = '';
+        handles.ui_editBox_eventTriggerFD.String  = '';
+
+        % Update Event List
+        handles.ui_eventListBox.String = '';
+        
+    end
 
 
 function setEventTimeGUIValuesFromNumericArray ( MDYhms, handles )
@@ -627,27 +658,30 @@ et0Minute = get(handles.ui_editBox_eventMinute,     'String');
 et0Second = get(handles.ui_editBox_eventSecond,     'String');
 
 
+if handles.ui_eventListBox.Value
 
-% validate input type
-if validDateTime([et0Day et0Year et0Hour et0Minute et0Second])
-    % Update the structure
-    newDateString = [num2str(et0Month) '-' et0Day '-' et0Year ' ' et0Hour ':' et0Minute ':' et0Second];
-    
-    eventIndex = get(handles.ui_eventListBox, 'Value');
-    
-    handles.timeline.milestone(eventIndex).Time = datenum(newDateString);
-    
-    guidata(hObject,handles);
-    
+    % validate input type
+    if validDateTime([et0Day et0Year et0Hour et0Minute et0Second])
+        % Update the structure
+        newDateString = [num2str(et0Month) '-' et0Day '-' et0Year ' ' et0Hour ':' et0Minute ':' et0Second];
+
+        eventIndex = get(handles.ui_eventListBox, 'Value');
+
+        handles.timeline.milestone(eventIndex).Time = datenum(newDateString);
+
+        guidata(hObject,handles);
+
+    else
+        % Do NOT update the structure. 
+    end
+
+    % Update FD and String
+    handles.timeline.milestone(eventIndex).FD = handles.ui_editBox_eventTriggerFD.String;
+    handles.timeline.milestone(eventIndex).String = handles.ui_editBox_eventNameString.String;
+
 else
-    % Do NOT update the structure. 
+    % No event was selected in the GUI - anything we want to do here?
 end
-
-
-
-% Update FD and String
-handles.timeline.milestone(eventIndex).FD = handles.ui_editBox_eventTriggerFD.String;
-handles.timeline.milestone(eventIndex).String = handles.ui_editBox_eventNameString.String;
 
 guidata(hObject, handles);
 
@@ -816,24 +850,30 @@ function uipanel_timeZone_SelectionChangeFcn(hObject, ~, handles)
         % Enable the daylight savings time checkbox
         set(handles.checkbox_DST, 'Enable', 'on');
     end
-    
-    
-    
-     
+   
     
     
 % --- Executes on button press in uiAddEventButton.
 function uiAddEventButton_Callback(hObject, eventdata, handles)
-    
+
     timeline = handles.timeline;
     milestone = handles.timeline.milestone;
+    
     selected = handles.ui_eventListBox.Value;
+    if isempty(selected)
+        selected = 1
+    else
+        selected = selected + 1
+    end
+    
+    % update event list selection
+    handles.ui_eventListBox.Value = selected;
 
     list = handles.ui_eventListBox.String;
     
     % Generate new event contents;
-    newTimeline = newTimelineStructure;
-    newMilestone = newTimeline.milestone;
+    newTimeline     = newTimelineStructure;
+    newMilestone    = newTimeline.milestone;
     
     if timeline.uset0
         newMilestone.Time = timeline.t0.time;
@@ -1021,8 +1061,11 @@ function uiToolbar_openButton_callback(hObject, eventdata, handles)
     if file
         % User did not hit cancel
         % grab the variable to save
-                
-        load(fullfile(pathname, file));
+        
+        timeline = [];
+        
+        s = load(fullfile(pathname, file), 'timeline');
+        timeline = s.timeline;
         
         if exist('timeline','var')
             
@@ -1089,3 +1132,12 @@ function uiToolbar_newButton_ClickedCallback(hObject, ~, handles)
 % Update handles structure
     guidata(hObject, handles);
 
+
+
+% --------------------------------------------------------------------
+function ui_findTool_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to ui_findTool (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+eventFinderGUI

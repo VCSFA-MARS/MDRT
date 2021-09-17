@@ -22,7 +22,7 @@ function varargout = makeGraphGUI(varargin)
 
 % Edit the above text to modify the response to help makeGraphGUI
 
-% Last Modified by GUIDE v2.5 18-May-2018 22:53:08
+% Last Modified by GUIDE v2.5 14-Jul-2021 15:24:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,6 +64,7 @@ function makeGraphGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Load the project configuration (paths to data, plots and raw data)
     config = getConfig;
+    Config = MDRTConfig.getInstance;
  
 % Store configuration in handles structure    
     handles.configuration = config;
@@ -102,8 +103,10 @@ end
     
     uiNewButton_ClickedCallback(hObject, eventdata, handles);
     
-    graph.name = makeDataSetTitleStringFromActiveConfig(config);
-    handles.ui_editBox_graphTitle.String = makeDataSetTitleStringFromActiveConfig(config);
+%     graph.name = makeDataSetTitleStringFromActiveConfig(config);
+%     handles.ui_editBox_graphTitle.String = makeDataSetTitleStringFromActiveConfig(config);
+    handles.graph.name = '<operation> <procedure> <vehicle>';
+    handles.ui_editBox_graphTitle.String = handles.graph.name;
     
     handles.graph = returnGraphStructureFromGUI(handles);
     
@@ -123,6 +126,7 @@ end
 % UIWAIT makes makeGraphGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
+    fixFontSizeInGUI(hObject, Config.fontScaleFactor);
 
 
 
@@ -157,8 +161,11 @@ set(objs, 'Parent', tab1)
     % Do this here so Trisha's GUI rearranging doesn't change the UI
     % Parent/Child heigherarchy out from under us.
     setappdata(hObject, 'fdMasterList', handles.quickPlotFDs);
-    updateSearchResults(hObject);
+%     updateSearchResults(hObject);
 
+
+
+feval(handles.searchBox.KeyReleaseFcn, handles.searchBox)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
@@ -284,6 +291,10 @@ function ui_editBox_subplot1Title_Callback(hObject, eventdata, handles)
 %     % Contents are a string -> directly assign contents as cell
 %     handles.graph.subplots(1) = {get(hObject, 'String')};
 %     guidata(hObject, handles);
+    
+    graph = returnGraphStructureFromGUI(handles);
+    handles.graph = graph;
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function ui_editBox_subplot1Title_CreateFcn(hObject, eventdata, handles)
@@ -674,8 +685,20 @@ function ui_button_generateGraph_Callback(hObject, eventdata, handles)
         % There are no warnings - proceed to next step
 
     end
+    
+    % Process plot options from GUI to pass to plotGraphFromGUI
+    opts = {};
+    if handles.useNewValvePlotCheckbox.Value == 1
+        opts = horzcat(opts, {'ValveBarPlot', true } );
+    end
+    
+    if handles.useReducePlotCheckbox.Value == 1
+        opts = horzcat(opts, {'UseReducePlot', true } );
+    else
+        opts = horzcat(opts, {'UseReducePlot', false } );
+    end
 
-disp('Still in the GRAPH function')
+debugout('Still in the GRAPH function')
 
 % Step 2: Validate graph structure
 % -------------------------------------------------------------------------
@@ -686,10 +709,16 @@ disp('Still in the GRAPH function')
 % Step 3: Call plotting engine with graph structure
 
     % DUMMY OPTIONS VARIABLE TO BE IMPLEMENTED LATER
+    % The irony is not lost on me that I have implemented actual options,
+    % and we are retaining this dummy options code to avoid rewriting the
+    % plotGraphFromGUI function... c'est la vie
     options = 5;
 
-    
-    plotGraphFromGUI(graph, options);
+    if isempty(opts)
+        plotGraphFromGUI(graph, options);
+    else
+        plotGraphFromGUI(graph, options, opts);
+    end
     
 
 
@@ -800,15 +829,15 @@ setActiveListSelection(handles, list, index)
 
 function ui_listbox_streams3_ButtonDownFcn(hObject, eventdata, handles)
     handles.activeList = 3;
-    disp('inside 3')
+    debugout('inside 3')
 
 function ui_listbox_streams2_ButtonDownFcn(hObject, eventdata, handles)
     handles.activeList = 2;
-    disp('inside 2')
+    debugout('inside 2')
 
 function ui_listbox_streams1_ButtonDownFcn(hObject, eventdata, handles)
     handles.activeList = 1;
-    disp('inside 1')
+    debugout('inside 1')
 
 
 
@@ -1005,7 +1034,7 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
     if isfield(handles.configuration, 'graphConfigFolderPath')
         % Loads path from configuration
         lookInPath = handles.configuration.graphConfigFolderPath;
-        disp(lookInPath)
+        debugout(lookInPath)
     else
         % Set default path... to graph
         lookInPath = handles.configuration.dataFolderPath;
@@ -1031,7 +1060,7 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
     if isfield(handles.configuration, 'graphConfigFolderPath')
         % Loads path from configuration
         lookInPath = handles.configuration.graphConfigFolderPath;
-        disp(lookInPath)
+        debugout(lookInPath)
     else
         % Set default path... to graph
         lookInPath = handles.configuration.dataFolderPath;
@@ -1084,6 +1113,7 @@ function uiNewButton_ClickedCallback(hObject, eventdata, handles)
 
 % Start with the default graph structure
     handles.graph = newGraphStructure;
+    handles.graph.name = '<operation> <procedure> <vehicle>';
     guidata(hObject, handles);
     
 % Clear the current GUI inputs
@@ -1259,8 +1289,27 @@ end
 
 
 
+
 % --- Executes during object creation, after setting all properties.
 function figure1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in useReducePlotCheckbox.
+function useReducePlotCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useReducePlotCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useReducePlotCheckbox
+
+
+% --- Executes on button press in useNewValvePlotCheckbox.
+function useNewValvePlotCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useNewValvePlotCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useNewValvePlotCheckbox

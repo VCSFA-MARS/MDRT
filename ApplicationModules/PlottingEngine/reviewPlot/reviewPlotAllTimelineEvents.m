@@ -8,7 +8,9 @@ function reviewPlotAllTimelineEvents ( varargin )
 %
 %   reviewPlotAllTimelineEvents( configStruct )
 %   reviewPlotAllTimelineEvents( timeLineStruct )
-%   reviewPlotAllTimelineEvents( timeLineStruct, timeShift )
+%   reviewPlotAllTimelineEvents( timeLineStruct, timeshift) *Legacy*
+%   reviewPlotAllTimelineEvents( timeLineStruct, 'timelineOnly', true )
+%   reviewPlotAllTimelineEvents( timeLineStruct, 'timeshift', -0.5 )
 %
 %   End of support argument: (maintained for legacy support, depricated)   
 %
@@ -19,6 +21,7 @@ function reviewPlotAllTimelineEvents ( varargin )
 %   reviewPlotAllTimelineEvents() 
 %       relys on getConfig(), planned for deprecation.
 
+PLOT_TIMELINE_ONLY = false;
 deltaT = 0;
 timelineFileName = 'timeline.mat';
 
@@ -89,8 +92,7 @@ elseif nargin == 2
         
         % END OF LEGACY CODE SUPPORT
         % -----------------------------------------------------------------
-        
-        
+
     else
         
         %TODO: Add type checking
@@ -99,6 +101,30 @@ elseif nargin == 2
         
     end
     
+elseif nargin == 3
+    timeline = varargin{1};
+    key = lower(varargin{2});
+    val = varargin{3};
+
+    switch key
+        case 'timelineonly'
+            PLOT_TIMELINE_ONLY = val;
+            debugout(sprintf('TIMELINE_ONLY = %s', mat2str(val) ) )
+        case 'timeshift'
+            deltaT = val;
+            debugout(sprintf('deltaT = %s', mat2str(val) ) )
+        otherwise
+            key = varargin{2};
+            if isnumeric(key)
+                key = num2str(key);
+            end
+            if isnumeric(val)
+                val = num2str(val);
+            end
+            warning('Unsupported arguments: key "%s" (%s), value "%s", (%s)', ...
+                    key,    class(key), ...
+                    val,    class(val))
+    end
 end
 
 
@@ -144,22 +170,26 @@ end
         vline(timeline.t0.time + deltaT,'r-',t0string,0.5)
         
         debugout('Plotted T0 line');
+        
+        if ~ PLOT_TIMELINE_ONLY
 
-        for i = 1:length(timeline.milestone)
-            dt = timeline.milestone(i).Time - timeline.t0.time;
-            if dt < 0
-                % Negative delta means T-
-                timeModifier = '-';
-            else
-                % Positive delta means T+
-                timeModifier = '+';
+            for i = 1:length(timeline.milestone)
+                dt = timeline.milestone(i).Time - timeline.t0.time;
+                if dt < 0
+                    % Negative delta means T-
+                    timeModifier = '-';
+                else
+                    % Positive delta means T+
+                    timeModifier = '+';
+                end
+
+                eventString = sprintf('T%s%s %s', timeModifier, datestr(abs(dt), 'HH:MM:SS'),timeline.milestone(i).String);
+
+                hvl = vline(timeline.milestone(i).Time + deltaT,  '-k' , eventString,  [0.05,-1]);
+
             end
-
-            eventString = sprintf('T%s%s %s', timeModifier, datestr(abs(dt), 'HH:MM:SS'),timeline.milestone(i).String);
-
-            hvl = vline(timeline.milestone(i).Time + deltaT,  '-k' , eventString,  [0.05,-1]);
-
         end
+        
         
     else
        

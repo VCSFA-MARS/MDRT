@@ -54,7 +54,7 @@ function MultiStepProgress_OpeningFcn(hObject, eventdata, handles, varargin)
 
 
 
-imshow('/Users/nickcounts/Documents/MATLAB/MARS Review Tool/MDRT/resources/images/complete_icon_146x146.png', 'Parent', handles.axes1)
+imshow( getMDRTResource('complete_icon_146x146.png'), 'Parent', handles.axes1 )
 
 
 

@@ -43,16 +43,20 @@ function [ availFDs ] = listAvailableFDs( path, fileType )
 
                 % TODO: Fix error case where file is named *.mat but is NOT 
                 % a -mat file. Loader quits with an error
+                
+                try
+                    F = load(fullfile(path, filesOfType(i).name),'-mat');
+                    % disp(sprintf('%s',[fd.Type '-' fd.ID]))
 
-                F = load(fullfile(path, filesOfType(i).name),'-mat');
-                % disp(sprintf('%s',[fd.Type '-' fd.ID]))
+                    if isfield(F, 'fd')
 
-                if isfield(F, 'fd')
+            %             availFDs{i,1} = sprintf('%s     %s-%s',F.fd.ID,F.fd.Type,F.fd.ID);
+                        availFDs{i,1} = sprintf('%s     %s',F.fd.ID, F.fd.FullString);
+                        availFDs{i,2} = filesOfType(i).name;
 
-        %             availFDs{i,1} = sprintf('%s     %s-%s',F.fd.ID,F.fd.Type,F.fd.ID);
-                    availFDs{i,1} = sprintf('%s     %s',F.fd.ID, F.fd.FullString);
-                    availFDs{i,2} = filesOfType(i).name;
-
+                    end
+                catch
+                    % Nothing to do at this time - silently ignore malformed files
                 end
                 
             end
@@ -64,6 +68,8 @@ function [ availFDs ] = listAvailableFDs( path, fileType )
         availFDs = availFDs(~cellfun('isempty',availFDs));
 
         availFDs = reshape(availFDs,length(availFDs)/2,2);
+        
+        updateMetaDataFile(path, availFDs);
     
     else % no files are found
         % return an empty cell
@@ -72,4 +78,24 @@ function [ availFDs ] = listAvailableFDs( path, fileType )
     
         
 end
+
+
+function updateMetaDataFile(path, availFDs)
+    fullFileName = fullfile(path, 'metadata.mat');
+    
+    if exist(fullFileName, 'file')
+        % Open the metadata file
+        m = load(fullFileName);
+        if isfield(m, 'metaData')
+            metaData = m.metaData;
+        else
+            debugout('No metaData available. Doing nothing')
+            return
+        end
+        metaData.fdList = availFDs;
+        save(fullFileName, 'metaData')
+    end
+    
+end
+
 

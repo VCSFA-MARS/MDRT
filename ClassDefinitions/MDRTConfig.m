@@ -29,15 +29,18 @@ classdef MDRTConfig < handle
 
         % THESE PROPERTIES MUST MATCH validConfigKeyNames!
         % -----------------------------------------------------------------
-        graphConfigFolderPath
-        dataArchivePath
-        userSavePath
-        userWorkingPath
-        importDataPath
+        
+        graphConfigFolderPath   % Directory that contains .gcf files. Plot tool will default to load/save here
+        dataArchivePath         % Directory that holds all locally stored, indexed data sets. Comparison tool looks here
+        remoteArchivePath       % Directory that holds remote-synced data archive. Index files will not be saved in this directory
+        userSavePath            % Target directory for output (graphs, text files, etc) from active data set
+        userWorkingPath         % Directory that contains the active data folders (data, delim, plots)
+        importDataPath          % Directory that holds all imported data sets. Import tool will create folders here.
         
         % These are normal object properties
         % -----------------------------------------------------------------
-        configuration
+        
+        configuration           % Meant to emulate the original config struct
         
         % This is a test object to check singleton/handle behavior!
         % -----------------------------------------------------------------
@@ -49,19 +52,24 @@ classdef MDRTConfig < handle
         prototypeConfigFilePath = 'ClassDefinitions';
         
         % UPDATE THESE from the list above!
+        % -----------------------------------------------------------------
+        
+        % Returns a cell array of the valid public properties of the MDRTConfig class.
+        % Used to read/write config files and for other validation tasks. 
         validConfigKeyNames = {...
             'graphConfigFolderPath'; ...
             'dataArchivePath'; ...
+            'remoteArchivePath'; ...
             'userSavePath'; ...
             'userWorkingPath'; ...
-            'importDataPath'
+            'importDataPath'; ...
             };
     end
 
     properties (Dependent)
         
-        workingDataPath
-        workingDelimPath
+        workingDataPath         % folder containing the .mat data files, metadata, timeline, and archive index.
+        workingDelimPath        % folder where .delim files are copied, processed, and parsed.
 
     end
     
@@ -69,6 +77,7 @@ classdef MDRTConfig < handle
         
        pathToConfig
        defaultConfigFile
+       fontScaleFactor          % return an OS-dependent font scaling factor for GUIs
         
     end
     
@@ -90,6 +99,10 @@ classdef MDRTConfig < handle
 
         macConfigFile = 'config_mac.txt';
         winConfigFile = 'config_windows.txt'
+
+        fontScaleFactorMac      = 1.0;
+        fontScaleFactorPC       = 0.8;
+        fontScaleFactorLinux    = 0.75;
         
     end
     
@@ -136,6 +149,34 @@ classdef MDRTConfig < handle
                     % Clearing object 
                     warning('MDRTConfig.dataArchivePath set to empty string');
                     obj.dataArchivePath = '';
+                end
+                
+            end
+            
+            obj.updateConfigurationFromProperties;
+            
+        end
+        
+        
+        function set.remoteArchivePath(obj,val)
+            % Only set if it is a valid path.
+            if exist( fullfile(val), 'dir' )
+                
+                obj.remoteArchivePath = fullfile(val);
+            else
+                
+                warning('Invalid path specified. MDRT_REMOTE_ARCHIVE_PATH not set');
+                
+                % Invalid path specified. Check if existing value is good
+                % and retain or clear
+                if exist(obj.remoteArchivePath, 'dir')
+                    % there is a valid path in the object. Do nothing?
+                    
+                else
+                    % Bad path passed and invalid directory in object.
+                    % Clearing object 
+                    warning('MDRTConfig.dataArchivePath set to empty string');
+                    obj.remoteArchivePath = '';
                 end
                 
             end
@@ -219,7 +260,7 @@ classdef MDRTConfig < handle
                 else
                     % Bad path passed and invalid directory in object.
                     % Clearing object 
-                    warning('MDRTConfig.userSavePath set to empty string');
+                    warning('MDRTConfig.userWorkingPath set to empty string');
                     obj.userWorkingPath = '';
                 end
                 
@@ -293,6 +334,19 @@ classdef MDRTConfig < handle
                 workingDelimPath = '';
             end
              
+        end
+
+
+        function fontScaleFactor = get.fontScaleFactor(this)
+            if ispc
+                fontScaleFactor = this.fontScaleFactorPC;
+            elseif ismac
+                fontScaleFactor = this.fontScaleFactorMac;
+            elseif isunix & ~ismac
+                fontScaleFactor = this.fontScaleFactorLinux;
+            else
+                fontScaleFactor = 1;
+            end
         end
         
         
@@ -450,6 +504,7 @@ classdef MDRTConfig < handle
 
                     this.setParameterFromFileContents(keyName{1}, stuffInQuotes, i);
 
+
                 end
             end
             
@@ -538,14 +593,18 @@ classdef MDRTConfig < handle
             %correctly capitalized version. This allows the configuration
             %file to be case insensitive.
 
-            matchIndex = cellfun(@(x)( ~isempty(x) ), regexpi(keyName, this.validConfigKeyNames) );
+            
+            isValid = false;
+            fixedKeyName = '';
 
-            fixedKeyName = this.validConfigKeyNames{matchIndex};
-
-            if isempty(fixedKeyName)
-                isValid = false;
-            else
-                isValid = true;
+            bMatchIndex = cellfun(@(x)( ~isempty(x) ), regexpi(keyName, this.validConfigKeyNames) );
+            
+            if any(bMatchIndex, 1)
+                matchIndex = find(bMatchIndex, 1, 'first');
+                fixedKeyName = this.validConfigKeyNames{matchIndex};
+                if ~ isempty(fixedKeyName)
+                    isValid = true;
+                end
             end
 
         end
@@ -614,13 +673,26 @@ classdef MDRTConfig < handle
             
             % Update fileContents from configuration structure
             keyNames = self.validConfigKeyNames;
+            nextFileLine = size(self.fileContents, 1) + 1;
+            
             for i = 1:numel(keyNames)
                 
-                value = self.configuration.(keyNames{i}).value;
+                if isempty(self.configuration.(keyNames{i}).index)
+                    % no index means no match - possibly from modified
+                    % config file or new feature rollout
+                    
+                    self.configuration.(keyNames{i}).index = nextFileLine;
+                    nextFileLine = nextFileLine + 1;
+                    
+                else
+                    
+                    value = self.configuration.(keyNames{i}).value;
+                    
+                end
+                
                 index = self.configuration.(keyNames{i}).index;
-                
                 self.fileContents{index} = [keyNames{i}, '=', '"', value, '"'];
-                
+
             end
             
             
@@ -642,6 +714,10 @@ classdef MDRTConfig < handle
         
         % Must call this function to instantiate the object
         function inst = getInstance()
+            % Instantiates an MDRTConfig instance or returns a handle to the existing object. 
+            % MDRTConfig.getInstance is used to get a handle to the 
+            % configuration object's singleton instance. To be used in 
+            % place of the traditional constructor. 
             persistent singletonObj
             if isempty(singletonObj) || ~isvalid(singletonObj)
                 singletonObj = MDRTConfig();

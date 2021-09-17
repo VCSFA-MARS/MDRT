@@ -43,6 +43,13 @@ function [ output_args ] = processDelimFiles( config, varargin )
 % TODO: Fix this ugly parameter passing!!! GROSS
 
 
+% script constants:
+% ------------------------------------------------------------------------
+    USE_FD_NAME_OVERRIDE = false;
+
+
+
+
 if isa(config, 'MDRTConfig')
     
     path = config.workingDelimPath;
@@ -54,6 +61,10 @@ end
 
 delimFiles = dir(fullfile(path, '*.delim'));
 filenameCellList = {delimFiles.name};
+
+    % Process in alphabetical lexographical order, ignoring case.
+    [sorted, ~] = sort(lower(filenameCellList));
+    filenameCellList = sorted;
 
 skippedFilesList = {};
 skipAllErrors = false;
@@ -197,7 +208,21 @@ for i = 1:length(filenameCellList)
 
         % Process time values
         tic
+        try
             timeVect = makeMatlabTimeVector(timeCell, false, false);
+        catch ME
+            warning (['unable to generate time vector from file' filenameCellList{i}]);
+            printSkipFileInfo;
+            skippedFilesList = vertcat(skippedFilesList, filenameCellList(i));
+            % UI Progress Update
+            % ------------------
+                frac = 5/5;
+                progressbar( (bytesProcessed + delimFiles(i).bytes * frac) / totalBytes, frac);
+                %update bytesProcessed for next file progress bar
+                bytesProcessed = bytesProcessed + delimFiles(i).bytes;
+            continue
+        end
+        
         disp(sprintf('Calling makeMatlabTimeVector took: %f seconds',toc));
         
         % UI Progress Update
@@ -301,7 +326,7 @@ for i = 1:length(filenameCellList)
                             
                             disp('Discrete data type detected')
                             
-                        case {'CR', 'SC'}
+                        case {'CR', 'SC', 'BA'}
                             % Ignore control stuff that is non-numerical
                             % for now. System Command and Command Response
                             
@@ -329,12 +354,22 @@ for i = 1:length(filenameCellList)
                     end
                     
                     
+                    % Parse and assign engineering units to timeseries
+                    switch unitCell{1}
+                        case { 'F' 'deg F' '°F' }
+                            thisUnit = '°F';
+                        case { 'psi' }
+                            thisUnit = 'psig';
+                        case { 'gallons' }
+                            thisUnit = 'gal';
+                        otherwise
+                                thisUnit = unitCell{1};
+                    end
                     
-                    
+                    ts.DataInfo.Units = thisUnit;
                     
                 if skipThisFile
-                    disp('SKIPPING THIS FILE');
-                    disp(sprintf('Total time spent on this file was: %f seconds',toc(tstart)));
+                    printSkipFileInfo
                     
                 else
 
@@ -369,6 +404,7 @@ for i = 1:length(filenameCellList)
     else
         % File is literally empty
         disp(sprintf('File %s is empty and will not be processed.',filenameCellList{i}));
+        skippedFilesList = vertcat(skippedFilesList, filenameCellList(i));
     end
 
     
@@ -396,6 +432,11 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
 %       These functions are called by the parsing routine to perform
 %       common tasks
 
+    function printSkipFileInfo
+        disp('SKIPPING THIS FILE');
+        disp(sprintf('Total time spent on this file was: %f seconds',toc(tstart)));
+    end
+
 
     function saveFDtoDisk(fd)
         % This helper function writes the newly parsed FD to disk, after
@@ -407,26 +448,31 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
 
         fileName = makeFileNameForFD(info.FullString);
         
-        % Check fullstring against override list
+        if USE_FD_NAME_OVERRIDE
         
-        % TODO: Implement error checking for custom FD list file and handle it if this file doesn't exist.
-        load('processDelimFiles.cfg','-mat');
+            % Check fullstring against override list
 
-        if ismember(fd.FullString,customFDnames(:,1))
+            % TODO: Implement error checking for custom FD list file and 
+            %       handle it if this file doesn't exist.
+            load('processDelimFiles.cfg','-mat');
+
+            if ismember(fd.FullString,customFDnames(:,1))
+
+                % If match is found, update structure
+                n = find(strcmp(customFDnames(:,1),fd.FullString));
+
+                fd.System       = customFDnames{n,2};
+                fd.ID           = customFDnames{n,3};
+                fd.Type         = customFDnames{n,4};
+                fd.FullString   = customFDnames{n,5};
+
+                % If match is found, update filename
+                fileName = customFDnames{n,6};
+
+            else
+                % Don't update anything!
+            end
             
-            % If match is found, update structure
-            n = find(strcmp(customFDnames(:,1),fd.FullString));
-            
-            fd.System       = customFDnames{n,2};
-            fd.ID           = customFDnames{n,3};
-            fd.Type         = customFDnames{n,4};
-            fd.FullString   = customFDnames{n,5};
-            
-            % If match is found, update filename
-            fileName = customFDnames{n,6};
-            
-        else
-            % Don't update anything!
         end
         
         save(fullfile(savePath ,[fileName '.mat']),'fd','-mat')

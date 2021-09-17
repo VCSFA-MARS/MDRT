@@ -6,6 +6,8 @@ function eventMarkerVisibilityTool(hobj, event, varargin)
 %   Counts, VCSFA 2016
 
 
+Config = MDRTConfig.getInstance;
+
 % Get handle to figure that calls this function
     fh = gcbf;
 
@@ -14,25 +16,35 @@ function eventMarkerVisibilityTool(hobj, event, varargin)
     labels  = findall(fh, 'Tag',  'vlinetext');
     
 % Add listener to close this tool if the calling window closes
-lh = addlistener(fh, 'Close', @graphWindowClosed);
+    lh = addlistener(fh, 'Close', @graphWindowClosed);
 
 % Prepare event strings, sorted list, and sort index for display in
 % checklist
     eventStrings = {labels.String}';
     [eventStrings, sortIndex] = sort(eventStrings);
 
-    
+% Get name of calling figure
+fName = fh.Name;
+fNum  = fh.Number;
+if isempty(fName)
+    fName = sprintf('(Figure %d)', fNum);
+else
+    fName = sprintf('%s (Figure %d)', fName, fNum);
+end
+
+windowName = sprintf('Event Marker Visibility Tool : %s', fName);
+
 % Create tool window
 %TODO: Make this a singleton instance - look for existing GUI
 
     hs.fig = figure;
             guiSize = [672 387];
             hs.fig.Position = [hs.fig.Position(1:2) guiSize];
-            hs.fig.Name = 'Event Marker Visibility Tool';
+            hs.fig.Name = windowName;
             hs.fig.NumberTitle = 'off';
             hs.fig.MenuBar = 'none';
             hs.fig.ToolBar = 'none';
-            hs.fig.Tag = 'importFigure';
+            hs.fig.Tag = 'eventMarkerTool';
             
 
 
@@ -83,6 +95,7 @@ jScrollPane = com.mathworks.mwswing.MJScrollPane(jCBList);
     selectAllControl.String = 'Select All Events';
     selectAllControl.Callback = @toggleAllButton; 
 
+    fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
 
  
 
@@ -137,10 +150,11 @@ jScrollPane = com.mathworks.mwswing.MJScrollPane(jCBList);
         
     end
 
-    function graphWindowClosed(hobj, event, varargin)
-        
-        close(hs.fig);
-
+    % Cleanup: close tool when "parent" figure closes
+    function graphWindowClosed(~, ~, varargin)
+        try
+            close(hs.fig);
+        end
     end
 
 end

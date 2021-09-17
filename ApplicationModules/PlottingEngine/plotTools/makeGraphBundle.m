@@ -13,6 +13,11 @@ function makeGraphBundle ( varargin )
 
 disp('<a href="makeGraphBundleHelpScript.html">Graph Bundle Help Page</a>')
 
+%% Variable Definitions
+
+plotFlag = false; % flag for checking if graph structure combined properly
+config = MDRTConfig.getInstance; % pulls configuration path files
+
 %% GUI Setup
 
     r.fig = figure; % creates handle for the GUI window
@@ -120,7 +125,10 @@ disp('<a href="makeGraphBundleHelpScript.html">Graph Bundle Help Page</a>')
                         'FontSize', 10, ...
                         'Tag',      'toPlot', ...
                         'Units',    'characters',...
-                        'Position', [102, 2, 20, 2]);                     
+                        'Position', [102, 2, 20, 2]);          
+                        
+        fixFontSizeInGUI(gcf, config.fontScaleFactor);                        
+
     end
 
 guiOpeningFcn()
@@ -129,10 +137,7 @@ handles.pathnames = {}; % Create empty handles fields to be populated in the cal
 handles.filenames = {};
 handles.graph = [];
 
-%% Variable Definitions
 
-    plotFlag = false; % flag for checking if graph structure combined properly
-    config = MDRTConfig.getInstance; % pulls configuration path files
 
 %% Initial Population from MDRT Config
 

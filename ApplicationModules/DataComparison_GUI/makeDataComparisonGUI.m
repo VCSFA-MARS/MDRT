@@ -17,6 +17,8 @@ function hs = makeDataComparisonGUI(varargin)
         
     end
     
+    hs.fig.ResizeFcn = @doWindowResize;
+    
     % MDRTConfig is now a singleton handle class!
     config = MDRTConfig.getInstance;
 
@@ -168,37 +170,51 @@ function hs = makeDataComparisonGUI(varargin)
     % hs.popup_eventSetOp1.Callback = {@update
 
 %% Text Label Generation
-    
-    uicontrol(hs.fig,       'Style','text',...
-            'String',       'Select a data set.',...
-            'HorizontalAlignment',    'left',...
-            'Position',     [50 337 151 13]);
-        
-    uicontrol(hs.fig,       'Style','text',...
-            'String',       'Search FDs',...
-            'HorizontalAlignment',    'left',...
-            'Position',     [50 287 151 13]);
-    
-    uicontrol(hs.fig,       'Style','text',...
-            'String',       'Matching FDs',...
-            'HorizontalAlignment',    'left',...
-            'Position',     [50 237 151 13]);
 
-    uicontrol(hs.fig,       'Style','text',...
-            'String',       'Comparison Plot Title',...
-            'HorizontalAlignment',    'left',...
-            'Position',     [282 337 151 13]);
-        
-    uicontrol(hs.fig,       'Style','text',...
-            'String',       'Data Set for Top Plot',...
-            'HorizontalAlignment',    'left',...
-            'Position',     [281 287 151 13]);
-        
-    uicontrol(hs.fig,       'Style','text',...
-            'String',       'Data Set for Bottom Plot',...
-            'HorizontalAlignment',    'left',...
-            'Position',     [481 287 151 13]);
+    position = {    [50 337 151 13];
+                    [50 287 151 13];
+                    [50 237 151 13];
+                    [282 337 151 13];
+                    [281 287 151 13];
+                    [481 287 151 13] };
 
+    string = {      'Select a data set.';
+                    'Search FDs';
+                    'Matching FDs';
+                    'Comparison Plot Title';
+                    'Data Set for Top Plot';
+                    'Data Set for Bottom Plot' };
+    labels = [];
+    
+    for i = 1:numel(position)
+        t = uicontrol(	hs.fig,         'Style', 'text', ...
+            'String',                   string(i), ...
+            'HorizontalAlignment',      'left',...
+            'Position',                 position{i} );
+        t.Units = 'normalized';
+        labels = vertcat(labels, t);
+    end
+    
+    hLinkLabels = linkprop(labels, 'FontSize');
+
+        
+%% Set rescale behavior
+
+    u = fieldnames(hs);
+    for i = 1:numel(u)
+        hs.(u{i}).Units = 'normalized';
+    end
+
+    hLinkUI = linkprop([hs.(u{2}), hs.(u{3})], 'FontSize');
+
+    for i = 4:numel(u)
+        hLinkUI.addtarget(hs.(u{i}))
+    end
+
+
+    defaultLabelFontSize = labels(1).FontSize;
+    defaultEditFontSize  = hs.edit_plotTitle.FontSize;
+    defaultWindowHeight  = hs.fig.Position(3);
         
 
 %% Populate GUI with stuff from dataIndex
@@ -240,6 +256,24 @@ debugout(allDataSetNames)
 
     updateSearchResults(hs.edit_searchField);
 
+    fixFontSizeInGUI(gcf, config.fontScaleFactor);
+    
+    function doWindowResize(o, ~)
+        defaultLabelFontSize;
+        defaultEditFontSize;
+        defaultWindowHeight;
+                
+        scaleFactor  = o.Position(3) / defaultWindowHeight;
+        newLabelSize = round(defaultLabelFontSize * scaleFactor);
+        newEditSize  = round(defaultEditFontSize * scaleFactor);
+        
+        hs.button_graph.FontSize = newEditSize;
+        labels(1).FontSize = newLabelSize; 
+
+        
+    end
+
+end
 
 
 

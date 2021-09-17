@@ -47,12 +47,17 @@ switch upper(fd.Type)
         else
             % No special case, use normal .ts plot
             h_plot = stairs(fd.ts.Time, fd.ts.Data*1);
+            title(fd.ts.Name)
         end
     
     otherwise
         h_plot = plot(fd.ts);
 end
 
+    % Stop TeX interpreter for Title to prevent subscripts
+    h_title = get(gca, 'title');
+    h_title.Interpreter = 'none';
+    
     
 
     h_zoom = zoom(figureHandle);
@@ -97,19 +102,6 @@ end
         
         timeline = varargin(1);
 
-
-
-        t0time = timeline.t0.time;
-        if timeline.t0.utc
-            timezone = ' eastern';
-        else
-            timezone = ' UTC';
-        end
-
-        % Manual plotting of t0 in red...
-        t0string = [timeline.t0.name, ': ', datestr(timeline.t0.time,'HH:MM.SS'), timezone];
-        vline(timeline.t0.time,'r-',t0string,0.5)
-
         % Cheat and plot everything the quick and dirty way
         reviewPlotAllTimelineEvents(timeline);
 
@@ -121,7 +113,6 @@ end
 
 function mypostcallback(varargin)
 
-disp('A zoom has just occurred.');
 newLim = get(evd.Axes,'XLim');
 msgbox(sprintf('The new X-Limits are [%.2f %.2f].',newLim));
 
@@ -145,5 +136,5 @@ msgbox(sprintf('The new X-Limits are [%.2f %.2f].',newLim));
 
 
 function myprecallback(obj,evd)
-disp('A zoom is about to occur.');
+% Nothing yet... someday
 

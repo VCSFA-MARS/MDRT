@@ -15,6 +15,9 @@ function MDRTbrushMenu(hobj, event)
 
 
     hs.parent = gcf;
+    
+    % Add listnener for auto-close when parent closes
+    el = addlistener(hs.parent, 'Close', @callerClosed);
 
 % #################################################
 %             GUI Figure Generation
@@ -106,7 +109,7 @@ function MDRTbrushMenu(hobj, event)
 %            Event Listener Definitions
 % #################################################   
     
-    hbb = findall(1,'ToolTipString','Brush/Select Data');
+    hbb = findall(hs.parent,'ToolTipString','Brush/Select Data');
     hl = addlistener(hbb, 'State', 'PostSet', @brushToolClickCallback);
     
     
@@ -158,8 +161,8 @@ function MDRTbrushMenu(hobj, event)
                         
                 trend = trendMath([xData{:}',yData{:}']);
 
-                hs.start.String = trend.start;
-                hs.stop.String  = trend.stop;
+                hs.start.String = trend.starts;
+                hs.stop.String  = trend.stops;
                 hs.duration.String = trend.durations;
                 hs.delta.String = trend.delta;
                 hs.slope.String = trend.rate;
@@ -200,6 +203,13 @@ function MDRTbrushMenu(hobj, event)
         
     end
     
+
+    % Cleanup: close tool when "parent" figure closes
+    function callerClosed(~, ~, varargin)
+        if hs.fig.isvalid
+            close(hs.fig);
+        end
+    end
 
 
 end % main function

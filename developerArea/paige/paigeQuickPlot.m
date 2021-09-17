@@ -12,6 +12,7 @@ function [ figureHandle ] = paigeQuickPlot( searchResult, handles)
 %
 %   Counts 2014, Spaceport Support Services
 %   Counts 2016, VCSFA - Updated
+%   Counts 2021, VCSFA - Updated
 
 
     % SET PLOT STYLE INFO FOR SAVING TO PDF
@@ -124,7 +125,7 @@ end
         vline(timeline.t0.time,'r-',t0string,0.5)
 
         % Cheat and plot everything the quick and dirty way
-        reviewPlotAllTimelineEvents(config);
+        reviewPlotAllTimelineEvents(timeline);
 
 
 

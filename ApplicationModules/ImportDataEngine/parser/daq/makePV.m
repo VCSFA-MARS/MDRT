@@ -9,7 +9,7 @@
 %     startTime = datenum('2016/113/10:00:00.203354')
 %     startTime = datenum('2016/221/13:15:31.347377')
 %     startTime = datenum('2016/219/17:00:07.855209')
-    startTime = datenum('Sept 18 2016 10:00:00')
+    startTime = datenum('June 23 2021 13:00:00')
     % time = startTime + (t * oneSec);
 
 %% Generate new Time Vector
@@ -19,17 +19,20 @@
 
 %% Translate 1-5 Volt signal to 0 to 100%
 % 
-    PTmaxRange = 5000;
+    PTmaxRange = 500;
     psi = (a7 - 1)/4 * PTmaxRange;
+    
+    keyboard
 
     
 %% Time Sync Data to FCS:
 
 
 % look at 8020 Ctl
-
-%     reduce_plot(time, a6, 'DisplayName', '8030 Command');
-    reduce_plot(time, a5, 'DisplayName', 'STE Pressure');
+    figure
+    reduce_plot(time, a5, 'DisplayName', '8020 Command');
+%     figure;
+%     reduce_plot(time, psi, 'DisplayName', 'STE Pressure');
     dynamicDateTicks;
     plotStyle;
     
@@ -74,7 +77,7 @@ ts = timeseries();
     
     
     
-keyboard
+
 
 progressbar('Saving DAQ Data as FDs');
     
@@ -130,7 +133,7 @@ progressbar(3/7);
 fd.ID = '8030 Open';
 fd.Type = 'DCVNC';
 fd.System = 'HSS';
-fd.FullString = 'DCVNC-8030 Close Switch'
+fd.FullString = 'DCVNC-8030 Open Switch'
 
 ts.Name = 'DCVNO-8030 Open Switch';
 ts.Time = time;
@@ -141,7 +144,7 @@ fd.ts = ts;
 save(fullfile(dataFolderPath,['MARDAQ ', fd.ID, '.mat']),'fd','-mat');
 progressbar(4/7);
 
-% DCVNO-8020
+% DCVNO-8030
 fd.ID = '8030 Close';
 fd.Type = 'DCVNC';
 fd.System = 'HSS';
