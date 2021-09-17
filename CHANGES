@@ -1,3 +1,317 @@
+Version 0.7.0:
+ - pruned development files from release
+ - Merge remote-tracking branch 'origin/release_0.7.0_candidate' into release_0.7.0_candidate
+ - Merge branch '77-java-gettext-method-fails-on-windows-installations' into 'release_0.7.0_candidate'
+ - Merge branch '77-java-gettext-method-fails-on-windows-installations' into release_0.7.0_candidate
+ - Unit Test: Added directory listing as test data for future testing
+ - New Feature : find every command to every valve in a data set
+ - Removed superfluous debug output
+ - Updates to custom plots - added datasets and small output tweaks.
+ - Improved debug readability
+ - Optimization: Refactored to attempt more efficient LinePlotReducer
+ - Removed debugging output
+ - BugFix: plot setup tool "reduce" option fixed
+ - Custom Plot: step through valve commands
+ - New data files added
+ - New Tool: click/drag to add an event marker to a plot
+ - Update: Started adding every proportional valve
+ - SpecialPlot: tweaked data selection and plot contents
+ - Refactor: updated to new API for reviewPlotAllTimelineEvents
+ - Bug Fix: typo in help doc and better figure title string handling
+ - SaveFigure - updated filename string sanitizer
+ - Special Plots for LO2 valve with TC STE
+ - Refactor: updated intern code to use new API for milestone plotting
+ - New Custom Plot: Multi-mission, multi-page, VNO1 cycling comparison
+ - Converting to valveBar style - no calculated time (yet)
+ - In Work: Converting to "FamilyPlot" style menu. May be removed
+ - New Feature: isFDValve correctly identifies WDS and ECS valves
+ - BugFix: broken comment crashed filterFDtool
+ - New Feature: valveStateBar ignores duplicate valve FDs
+ - New Feature: key/value options for plotting timeline events
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - review: added date picker and MDRTfamilyPlot tool shortcuts
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Review validates data set folder selection, prompts with suggestion
+ - Sanitize user selected file name to prevent file system issues
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Updated with key/value pairs and a label offset
+ - Graph Setup GUI defaults to dynamic graph title string
+ - BugFix: valveStateBar crashed when called without 'DataFolder' argument
+ - Use valveStateBar to plot valves - added datafolder key/val pair
+ - compareStopFlow - better search window for off nominal events
+ - compareStopFlow - added additional data set paths for easy access
+ - compareStopFlow - page titles from metadata
+ - valveStateBar plots top-to-bottom now (order of argument)
+ - New Feature: enable/disable valve bar plots and reduce plot from GUI
+ - updated isFDValve behavior - return false if passed unknown struct
+ - refactored with "populate subplot" and added hooks for valveStatusBar
+ - valveStateBar reliably uses the axes handle passed as an argument
+ - valveStateBar is robust to valve data names - smart searches for numbers
+ - New Function: check if FD is valve data
+ - Added proportional valve support to valveStateBar
+ - BugFix: plotGraphFromGUI will complete if an active subplot has no FDs
+ - BugFix: eventMarkerVisibilityTool has correct object tag
+ - valveStateBar doesn't crash if called without axes handle
+ - MDRTEvent class updated - markers no longer on legend
+ - Update vline() with fewer gca() calls for performance improvement
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Parameterized some of valveStateBar
+ - valveStateBar is now a function
+ - Vectorized valve state bar - can plot multiple valves on one Axes
+ - New Feature: Working valve display - state and command on one bar
+ - Script to generate a "delta" FD (calculated) from two PTs
+ - option to print number of days, also
+ - Added VNO1 cycle comparison custom plot
+ - New Feature: valve history tool looks through all data. Gives stats!!!
+ - Many custom plots: All discrete valves, CB11 DOs
+ - New Feature: create many figures and subplots to accomodate many plots
+ - Updated MDRTEvent to work on MDRTAxes, not just MDRTFigure object
+ - New subplot making function - uses MDRTAxes object.
+ - Update: Pad-0C LOX Tank volume pressure calcs
+ - Added "command" index and table/.csv output
+ - Working data miner - outputs table, no plots
+ - New Feature: remove duplicate entries from FD time series
+ - MDRTannotation is error tolerant now. No crash, no error message
+ - Update Documentation: trendMath() output structure documented
+ - BugFix: data analysis now shows human-readable times
+ - valveHistoryTool - in work
+ - BugFix: Add plot title to valve position quickplots
+ - Updated readme to reflect new findjobj() version
+ - Updated findjobj from v1.28 (2010) to v1.53 (2019)
+ - Merge branch '73-font-sizes-on-windows-os' into 'develop'
+ - Changed archive manager GUI to normalized units for scaling
+ - Added GUI text scaling function to main MDRT GUIs
+ - Merge branch 'develop' into 73-font-sizes-on-windows-os
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - load AvailableFDs using fullfile path
+ - Merge branch '76-2021a-compatability-resources-path' into 'develop'
+ - moved resource folder, renamed getResource.m, and refactored
+ - Fixed bug with OS X detected as unix. Stubbed for using MDRTConfig
+ - Added fontScaleFactor to MDRTConfig. Detects OS automatically
+ - Added call to openingFcn to scale GUI font size based on OS
+ - Added function to scale GUI fonts recursively
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Help button points to VCSFA GitHub instead of Nick's personal
+ - Added bug report issue template
+ - MDDRTFamilyPlot - fixed "useT0" bugs with missing EventString and others
+ - Fixed eventmarker window cleanup crash - try fixes window already closed
+ - Merge branch 'feature-remoteArchive' into develop
+ - Merge branch '72-implement-search-bar-with-popup-results-field' into feature-remoteArchive
+ - Fixed MDRTFamilyPlotGUI - works again (not as clean as before)
+ - Fix bad merge artifact in makeGraphGUI
+ - Merge branch 'feature-remoteArchive' into 72-implement-search-bar-with-popup-results-field
+ - MDRT search widget class started
+ - Working MDRTFamilyPlotGUI with searchable FDs and selectable T0/Events
+ - Merge branch 'feature-remoteArchive' into 72-implement-search-bar-with-popup-results-field
+ - resolve stash conflicts
+ - Updated development test script for object-driven FD search
+ - BugFix: search bar doesn't pop user to console on first use
+ - Small user tweaks from datamac files
+ - BugFix: smart y-axis scaling error on multi-axis plots
+ - Merge branch 'smartUpdateFDs' into develop
+ - index tool searches specifically for metadata.mat to prevent double hits
+ - Added hook to update metadata file if user selected `save`
+ - added 'force' index all option and try/catch w/ force if no index file
+ - removed listAvailableFDs, added MDRTConfig update, fixed `save` button
+ - Updated code documentation and fixed incorrect  warning message
+ - optimized directory index creation. Fixed bug using nFile inst iThisFile
+ - only tries to save if FDList is modified
+ - Moved `who()` and load calls inside conditional - now 10x faster!
+ - matfile() changed to load - more than doubled execution speed
+ - parses input and optional parameters. refactored to reference them
+ - wrapped function with inputParser object. Runs, no parsing yet
+ - changed file names to variable in preparation for function wrapping
+ - updated debug output to include all changes made or not made
+ - Added debug messages to summarize FDList changes
+ - Prunes, updates, and appends FDList variable.
+ - Added local path for NG15 data. Will be cleaned in final release
+ - Merge branch '66-review-crashes-if-availablefds-mat-is-missing' into 'develop'
+ - Updated plot title autotext with common tag variants for ease of use
+ - updated outline
+ - Initial code - identifies FD List file and timestamp. Loops through new
+ - Updated warning msg. No 'double print' and include suggestion
+ - Handles bad file permissions when reading FD List - graceful w/ warning
+ - Handles bad file permissions when saving FD List to disk - graceful warn
+ - Fix upstream stash/commit
+ - Updated LO2 plot
+ - Merge branch 'customPlots' into develop
+ - Event manager window title updates to identify parent window
+ - Tooltips with smarter decimal display
+ - updated search widget and test
+ - Merged in misc custom plot changes - localized paths for developer's mac
+ - dataComparisonGUI and live search w/ popup code
+ - Fixed broken search box.
+ - MDRT Plot Engine - automatic Y axis properly scales for 0:100
+ - Added local path to data for stop flow testing
+ - Update: LO2 Tank level model updated for bottom fill and plot saving
+ - New Feature: Date picker - translate local to UTC
+ - Prompt user to select data set for playback
+ - Merge branch 'develop' into feature-remoteArchive
+ - BugFix: MDRTConfig handles missing config parameters or duplicates
+ - New Feature: updateSearchResults supports more than one searchbar in GUI
+ - NewFeature: Valve control error plot and calculation
+ - BugFix: Stop displaying Z axis on DateTips placed on annotations
+ - Merge branch 'develop' into feature-remoteArchive
+ - New Feature: Better y-axis scaling for valve states and other state data
+ - Merge remote-tracking branch 'origin/feature-remoteArchive' into feature-remoteArchive
+ - New Feature: MDRT now imports and captures engineering units for data
+ - Generalized Family Plotter supports up to 4 axes, parameterized data
+ - BugFix: Error message correction in MDRTConfig
+ - NewFeature: Generalized family plot tool
+ - New Feature: Archive management works with remote archive
+ - Started data index object
+ - New Feature: Added configuration options for a remote data archive
+ - BugFix: indexer crashed backing up index file if none present
+ - Updated with faster plot performance
+ - NewFeature: Custom GHe history plot, user selectable data set
+ - Added master enable/disable for plot_reducer
+ - BugFix: renamed data files not properly indexed or updated in metadata
+ - NewFeature: Resizing event finder GUI also scales font sizes!
+ - BugFix: crash when commit change and no event is selected in editor
+ - Added subplot generation - debugging needed for data loading
+ - started Valve Survey Script to review valve tuning and performance
+ - BugFix: single axes plots crashed plot restyle during save
+ - BugFix: find brush button handle correctly. Check valid figure to close
+ - BugFix: was crashing if parent window was closed by another process
+ - BugFix: fixed crash when saving plots with no data tips or event labels
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - BugFix: reduce plot kicks in at higher threshold. Correctly plots stairs
+ - BugFix: LinePlotReducer correctly handles stair plots
+ - NewFeature: save plot scales and restores font sizes. Added progress bar
+ - BugFix: date axis updated correctly on plot generation and resize
+ - turned off LaTeX processing for subplot titles - fix subscript issues
+ - NewFeature: custom plot compares specified FDs across data sets
+ - BugFix: Milestone search/export saves to correct data folder
+ - BugFix: fix FD selection indexing if human readable string is empty
+ - NewFeature: stop flow plot generation for data review
+ - Update: dynamicDateTicks modified to listen to XLIM property
+ - NewFeature: Annotations for MDRT plots by coordinate
+ - BugFix: rescale timeline events doesn't crash if nothing on axis
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Added Feature: Custom plot for 2029 performance
+ - BugFix: Stop crashing when importing raw input data from .delim
+ - Merge remote-tracking branch 'MARSGitlab/develop' into develop
+ - Cleanup: Plotting engine makes commands red and fixes line styles
+ - New Feature: Intelligent legend 'displayname' string generation
+ - plot checks FD length and uses LinePlotReducer when it's helpful
+ - Update: new super-lightweight plots for big data sets!
+ - Change to DAQ parser to handle extra columns
+ - Updated linkTimeAxes and unlinkTimeAxes - added documentation
+ - update linkTimeAxes() - now takes menu handle, fig handle, or axes array
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Added HSS historical plot scripts
+ - valve control analysis
+ - Added NG-13 T0 info
+ - Merge branch 'UnitTestFramework' into 'develop'
+ - Added unit test for data filename generation
+ - Started ListSelectionController class
+ - Updated specialty plots
+ - Remote FCS data retrieval GUI started
+ - parse delims in alphabetical order. Skip file when maketimevector fails
+ - Fixed double calling updateFolderGuess when edit box is updated
+ - property fileList updates once to avoid triggering external listeners
+ - DataImportGUI handles bad file types and empty .delims gracefully
+ - Fixed "\" warning and simplified command and file name variables
+ - Added filter for RAW values and fixed "\" warning message
+ - Updated html docs for MDRT Axes, Figure, and Event classes
+ - Default MDRTAxes now has title "Subplot 1" in MDRTFigure constructor
+ - Added set/get methods for MDRTAxes title string
+ - Fixed MDRTFigure.axesPositionForNumberOfSubplots positioning
+ - Added function to calculate subplot positions
+ - Added setPosition method to axes controller
+ - Added html documentation/help files for MDRTAxes class
+ - Added html documentation/help files for MDRTEvent class
+ - Added "addSubplot" to MDRTFigure
+ - Documented testing script
+ - New MDRTEvent object and test script
+ - New historical "family" plots added
+ - Create a Matlab table from TAM retrieval information
+ - Update: HSS STE PT range fixed in DAQ Parse tool
+ - Update: special plot generators
+ - In Development: new plot interface and viewer
+ - In Development: remote retrievals over ssh
+ - Automated data set selection for TELRR plots
+ - New Feature: automatically update timeline with T0
+ - Merge remote-tracking branch 'MARSGitlab/develop' into develop
+ - Add legend to TEL RR plot generator
+ - BugFix: Find Changing Data Tool
+ - Added: Level sensor calculations for Pad-0C
+ - Print styles and unit test script
+ - Refactored MDRTAxes line style iteration methods
+ - MDRTFigure and MDRTAxis objects started
+ - Cleanup: stopped "poofing" variables into existance
+ - New Feature: Plot titles use metadata to populate tags!
+ - New Function: replace tags in title string with metadata info
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Clean up DAQ parser
+ - Resolved merge issues
+ - Auto stash before merge of "develop" and "MARSGitlab/develop"
+ - Started MDRT Plot controller object
+ - LO2 Tank Volume and Level Sensor Calculations
+ - Attempted to fix tab order
+ - Fixed TELHS FD Name underscores in quickplot titles
+ - Updated custom plot scripts
+ - Fixed TELHS FD names displaying as subscripts in titles and legends
+ - Added additional telemetry to LO2 interface playback
+ - New script for decimating and resampling FDs
+ - Revert to simpler data filtering tool. Fixed saved filename generation
+ - Added special comparison plot of LO2 Drainback pressures
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Tool windows close when "parent" figure is closed
+ - Tool windows close when "parent" figure is closed
+ - Window closes when calling figure is closed
+ - Minor cleanup. Removed unused variable
+ - Deleted unused legacy code
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - New Feature: Find all data that changes in a time interval
+ - New function: is metadata out of date?
+ - Clean up console output
+ - New Feature: Added timeline events to TEL RR Valve Plotter
+ - Project Cleanup: removed unused functions
+ - Cleaned up console output: changed disp() to debugout()
+ - Update .gitignore: Don't track graph config files
+ - BugFix: Fails gracefully for malformed metadata files.
+ - New Tool: Find t0 timestamp by linear interpolation
+ - "Remove invalid characters from filenames"
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - New Feature: Data Playback Tool
+ - Source Cleanup: removed unused files
+ - New Feature: Scalable Data Comparison GUI
+ - Event Editor Updates and Bugfix: Multi Select "FD Search"
+ - New Tool: Archive repair, fix FD struct fields
+ - TEL-RR Valve Plotter - added data selection and auto naming
+ - Updated plot size in .EPS export helper
+ - New Feature: Resizable data comparison tool - including fonts
+ - New Feature: Added basic resizing of plot comparison tool GUI
+ - Bug Fix: Plot creation GUI remembers the title of Subplot 1 as expected
+ - Bug Fix: data importer correctly populates fd.ID -> plot legends work
+ - New Feature: TELHS Rapid Retract Valve custom plot script
+ - Added: helper to change the size of a figure prior to exporting
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Update documentation - clarified usage of integrateTotalFlow()
+ - New feature: added a helper to combine data.mat files
+ - Cleanup
+ - Update: added case insensitivity for string arguments
+ - Added support for string arguments like older Matlab style commands
+ - New Feature: Import Tool can combine .delims from multiple TAMs
+ - Bug Fix: reviewRescaleAllTimelineEvents() performance improved
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - New Feature: Progress bar added to archive manager re-indexing
+ - Update: Progress bar added to archive manager re-indexing
+ - New Feature: Archive manager "update index" tool
+ - New Feature: update FDs also updates metadata.mat
+ - Feature: Added list of selected milestones to Event Finder GUI
+ - BugFix: Event Finder doesn't crash when cancelling file open
+ - BugFix: No more crash when deleting events when useT0=true
+ - BugFix: Quickplot no longer displays T0 as both UTC and "Eastern"
+ - Feature: Added EventFinder tool to TimelineEditor
+ - BugFix: Parser can handle short, non-standard FDs to make info struct
+ - BugFix: Preprocessor guarantees split files contain 1 unique FD
+ - Feature: Select Data Set Button
+ - Added: "Index All Datasets" button to Archive Management Tool
+ - BugFix: EventEditor useT0 checkbox and event deletion bugs fixed
+ - Merge branch 'master' into develop
+
 Version 0.6.2:
  - Merge branch 'develop'
  - UI Update: Fixed textbox justification
