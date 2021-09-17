@@ -238,19 +238,25 @@ function initTimelineData()
     end
 
     % LoadRemoteTimelines
-    remoteTimelineFiles = fullfile({apd.remoteDataIndex.pathToData}', 'timeline.mat');
     RemoteTimelines = {};
-    for f = 1:numel(remoteTimelineFiles)
-
-        try
-            tempTL = load(remoteTimelineFiles{f} );
-            RemoteTimelines{f} = tempTL.timeline;
-        catch
-            % LocalTimelines(f) = []; % Not needed since assigning to index
-            thisSet = apd.remoteDataIndex(f).metaData.operationName;
-            fprintf('No timeline data loaded for remote data set %d: %s\n', f, thisSet);
+    try
+        remoteTimelineFiles = fullfile({apd.remoteDataIndex.pathToData}', 'timeline.mat');
+        for f = 1:numel(remoteTimelineFiles)
+            try
+                tempTL = load(remoteTimelineFiles{f} );
+                RemoteTimelines{f} = tempTL.timeline;
+            catch
+                % LocalTimelines(f) = []; % Not needed since assigning to index
+                thisSet = apd.remoteDataIndex(f).metaData.operationName;
+                fprintf('No timeline data loaded for remote data set %d: %s\n', f, thisSet);
+            end
         end
+    catch
+        warning('No remote index file found. Run mdrt settings to initialize the remote repository')
     end
+    
+    
+    
 
     setappdata(gcf, 'LocalTimelines',  LocalTimelines);
     setappdata(gcf, 'RemoteTimelines', RemoteTimelines);
