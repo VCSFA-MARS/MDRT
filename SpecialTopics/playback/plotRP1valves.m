@@ -37,7 +37,9 @@ valveCenters = [ 330.9, 358.6819;
                  974.9, 355.3588;
                 1133.8, 354.8840;
                  654.3, 149.3271;
-                 874.3, 149.3271;];
+                 874.3, 149.3271;
+                1055.0, 415;
+                1055.0, 451;    ];
             
 valveNames = {  'd1003';
                 'd1010';
@@ -45,8 +47,10 @@ valveNames = {  'd1003';
                 'p1014';
                 'd1021';
                 'd1022';
-                'd1032';
-                'd8020'; };
+                'd8032';
+                'd8020';
+                'd1023';
+                'd1024';};
             
 tcPos = [        084.6, 430.3657 ;
                  173.0, 429.8910 ;
@@ -162,7 +166,9 @@ links =	 {  '1003 RP1 DCVNC-1003 State.mat', 'd1003', 'valve' ;
             '1014 RP1 PCVNC-1014 State.mat', 'p1014', 'valve' ;
             '1021 RP1 DCVNC-1021 State.mat', 'd1021', 'valve' ;
             '1022 RP1 DCVNO-1022 State.mat', 'd1022', 'valve' ;
-            '1023 RP1 DCVNC-1023 State.mat', 'd1032', 'valve' ;
+            '1023 RP1 DCVNC-1023 State.mat', 'd1023', 'valve' ;
+            '1024 RP1 DCVNC-1024 State.mat', 'd1024', 'valve' ;
+            '8032 RP1 DCVNC-8032 State.mat', 'd8032', 'valve' ;
             '8020 HSS DCVNO-8020 State.mat', 'd8020', 'valve' ; 
             '1917 RP1 PT-1917 Press Sensor Mon.mat', 'p1917', 'sensor' ;
             '1902 RP1 PT-1902 Press Sensor Mon.mat', 'p1902', 'sensor' ;
@@ -198,6 +204,7 @@ combinedTimeVector = [];
          temp = load(fullfile(dataPath, links{i,1}));
          fd.(links{i,2}) = temp.fd;
          combinedTimeVector = vertcat(combinedTimeVector, temp.fd.ts.Time);
+         debugout(sprintf('Linking %s\t%s', links{i,2}, links{i,1}) );
      catch
          disp(sprintf('%s data %s not found', links{i,3}, links{i,1}))
          blankFd = newFD;
