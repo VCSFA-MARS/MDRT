@@ -8,7 +8,7 @@ function [ output_args ] = splitDelimFiles( varargin )
 %   splitDelimFiles( filename, configStruct )
 %   splitDelimFiles( filename, configStruct )
 %
-%   splitDelimFiles( filename, configStruct, combineDelims )
+%   splitDelimFiles( filename, configStruct, combineDelims, importRaw )
 %
 %       filename        the full filename and path to a .delim file to be
 %                       processed. Can be a string or a cell string.
@@ -19,6 +19,10 @@ function [ output_args ] = splitDelimFiles( varargin )
 %       combineDelims   true/false - use when combining multiple .delim
 %                       files into one data set. Useful for retrievals that 
 %                       span multiple TAM files
+%
+%       importRaw       true/false - use to import raw values from a delim
+%                       that contains RAW. default is false, and any raw
+%                       data are omitted.
 %
 %   This tool has been updated to support Windows as well as *nix systems.
 %   getFileLineCount.m and countlines.pl are required
@@ -42,6 +46,7 @@ function [ output_args ] = splitDelimFiles( varargin )
 
     concatinateDelimFiles = false;
     noFilenamePassed = false;
+    importRaw = false;
         
     
 %% Argument parsing
@@ -59,6 +64,17 @@ switch nargin
         concatinateDelimFiles = varargin{3};
         if concatinateDelimFiles
             debugout('Combining .delim files from multiple TAM files');
+        end
+    case 4
+        fileName = varargin{1};
+        configVar = varargin{2};
+        concatinateDelimFiles = varargin{3};
+        importRaw = varargin{4};
+        if concatinateDelimFiles
+            debugout('Combining .delim files from multiple TAM files');
+        end
+        if importRaw
+            debugout('Importing RAW data from .delim files');
         end
     otherwise
         error('Invalid arguments for function splitDelimFiles');

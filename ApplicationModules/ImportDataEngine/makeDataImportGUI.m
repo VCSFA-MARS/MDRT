@@ -88,7 +88,8 @@ checkboxPositions       = { [300 339 117 23];
                             [14 48 111 23];
                             [14 15 111 23];
                             [300 100 200 23];
-                            [300  70 200 23]
+                            [300  70 200 23];
+                            [300  40 200 23]
                             };
 
                         
@@ -98,7 +99,8 @@ checkboxTags            = { 'checkbox_autoName';
                             'checkbox_hasUID';
                             'checkbox_vehicleSupport';
                             'checkbox_autoSkipErrors';
-                            'checkbox_combineDelims'
+                            'checkbox_combineDelims';
+                            'checkbox_importRaw';
                             };
                             
 
@@ -108,7 +110,8 @@ checkboxStrings         = { 'Auto-name folder';
                             'Has MARS UID';
                             'Vehicle support';
                             'Auto-skip parsing errors';
-                            '.delims are from different TAMs'
+                            '.delims are from different TAMs';
+                            'Import RAW data';
                             };
 
 
@@ -118,7 +121,8 @@ checkboxParents         =   {   'fig';
                                 'panel_metaData';
                                 'panel_metaData';
                                 'fig';
-                                'fig'
+                                'fig';
+                                'fig';
                             };
                         
 checkboxValue           =   {   true;
@@ -127,7 +131,8 @@ checkboxValue           =   {   true;
                                 false;
                                 false;
                                 true;
-                                false
+                                false;
+                                false;
                             };
                         
 %% Edit Box Parameters
@@ -458,7 +463,8 @@ initialValues =    ...
                         metaData, ...
                         hs.edit_folderName.String, ...
                         hs.checkbox_autoSkipErrors.Value, ...
-                        hs.checkbox_combineDelims.Value);
+                        hs.checkbox_combineDelims.Value, ...
+                        hs.checkbox_importRaw.Value );
         
     end
 
