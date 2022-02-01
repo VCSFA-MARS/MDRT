@@ -558,7 +558,7 @@ function menu_review_help_Callback(hObject, eventdata, handles)
 % --- Executes on button press in uiButton_helpButton.
 function uiButton_helpButton_Callback(hObject, eventdata, handles)
 % Open web browser window to MDRT wiki homepage
-web('https://github.com/VCSFA-MARS/MDRT/wiki')
+web('https://gitlab.marsspaceport.com/data-review/MDRT/-/wikis/home')
 
 % popup an "about" dialog with version info.
 % helpDialogTitle = 'About Review Tool';
