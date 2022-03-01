@@ -1,6 +1,6 @@
-function replayMDRTData
+function plotTELcyl
 
-dataPath = '/Users/nick/data/TEL_Historical/2022-02-15 - NG17 Lift 1/data'
+% dataPath = '/Users/nick/data/TEL_Historical/2022-02-15 - NG17 Lift 1/data'
 % dataPath = '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data'
 % dataPath = '/Users/nick/data/archive/2019-11-01 - NG-12/data'
 % dataPath = '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
@@ -10,6 +10,8 @@ dataPath = '/Users/nick/data/TEL_Historical/2022-02-15 - NG17 Lift 1/data'
 valveScale = 0.5;
 
 config = getConfig;
+dataPath = config.dataFolderPath;
+
 % dataPath = uigetdir(dataPath, 'Select data folder');
 % 
 % % [x,y,button] = ginput(1)
@@ -230,6 +232,7 @@ yOffset = 0;
 dpAxes = [];
 
 for i = 1:size(detailPlots, 1)
+    debugout(sprintf('Detail Plot Loop # : %d', i))
     
     thisX = detailPlots{i, 1};
     thisY = detailPlots{i, 2};
@@ -238,8 +241,6 @@ for i = 1:size(detailPlots, 1)
     thisKind = detailPlots{i, 5};
     thisFind = detailPlots{i, 6};
     
-    
-%     [figX, figY] = ds2nfu(hap, thisX, thisY);
     [figX, figY] = figCoordFromAxes(thisX, thisY, hap);
         
     dp.(detailPlots{i, 3}) = axes('position', [-1 -1 0.5 0.5]);
