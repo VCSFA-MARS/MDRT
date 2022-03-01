@@ -1,6 +1,6 @@
-function replayMDRTData
+function plotRP1valves
 
-dataPath = '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data'
+% dataPath = '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data'
 % dataPath = '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data'
 % dataPath = '/Users/nick/data/archive/2019-11-01 - NG-12/data'
 % dataPath = '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
@@ -8,6 +8,7 @@ dataPath = '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data'
 % dataPath = '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 
 config = getConfig;
+dataPath = config.dataFolderPath;
 % dataPath = uigetdir(dataPath, 'Select data folder');
 % 
 % % [x,y,button] = ginput(1)
