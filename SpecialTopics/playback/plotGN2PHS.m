@@ -67,7 +67,9 @@ hi = imagesc(I);
 
 %% Axes Setup - Master Plot Placement
 
-had = axes('Position', [0,0, 1, 0.28]);
+had = axes('Position', [0.02 ,0.02, 0.96, 0.26]);
+plotStyle;
+dynamicDateTicks;
 
 hdd = uicontrol('Style',    'popup', ...
                 'Units',    'normalized', ...
@@ -113,10 +115,10 @@ valveNames = {  'd5079';
                 'p5126';
                 'p5198';};
             
-tcPos = [       1200	 290;
+tcPos = [       1200	 180;
                 1250	 490;
-                1700	 290;
-                2100	 290;
+                1700	 180;
+                2100	 180;
                 2100	 390;
          ];
             
@@ -390,6 +392,8 @@ htime = uicontrol(hf, 'Style',              'text',...
                         % valves.(links{k,2}).FaceAlpha = ts.Data(end);
                         if (ts.Data(end) == 0)
                             valves.(links{k,2}).FaceColor = [1 0 0];
+                        elseif (ts.Data(end) == 2)
+                            valves.(links{k,2}).FaceColor = [1 1 0];
                         else
                             valves.(links{k,2}).FaceColor = [0 1 0];
                         end
