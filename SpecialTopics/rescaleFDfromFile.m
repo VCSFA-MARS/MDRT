@@ -13,6 +13,7 @@ model = struct('ID',                    '', ...
                'OriginalFullString',    '', ...
                'oldMax',                100, ...
                'newMax',                200, ...
+               'Units',                 '', ...
                'originalFolder',        '') ;
 
 
@@ -44,6 +45,7 @@ model.Type = fd.Type;
 model.System = fd.System;
 model.FullString = fd.FullString;
 model.OriginalFullString = fd.FullString;
+model.Units = fd.ts.DataInfo.Units;
 
 
 %% Window Creation
@@ -162,19 +164,47 @@ updateGUI;
 
         if ~ HAS_PERFORMED_CONVERSION
             fd.ts.Data = fd.ts.Data ./ model.oldMax .* model.newMax;
-            HAS_PERFORMED_CONVERSION = true;
-            hs.saveButton.Enable = 'off';
+            % HAS_PERFORMED_CONVERSION = true;
         else
             warning('Conversion has already been perfomed on these data. Re-scaling is being skipped')
         end
 
         newFileName = makeFileNameForFD(fd);
-
-        save(fullfile(model.originalFolder, newFileName), 'fd');
         
-        updateFDListFromDir(model.originalFolder, ...
-                                    'save',         'yes', ...
-                                    'prompt',       'yes');
+        [savePath, fileName] = userSaveDialog(model.originalFolder, newFileName);
+
+        if fileName
+            save(fullfile(savePath, newFileName), 'fd');
+            hs.saveButton.Enable = 'off';
+            updateFDListFromDir(model.originalFolder, ...
+                                'save',         'yes', ...
+                                'prompt',       'yes');
+        end
+        
+        
+    end
+
+    function [savePath, saveFile] = userSaveDialog(dataPath, fileName)
+        savePath = '';
+        saveFile = '';
+        
+        % UI Save File Dialog
+        % -----------------------------------------------------------------
+        [fileName, dataPath, ~] = uiputfile( ...
+            {'*.mat', 'MDRT Data Files (*.mat)';
+             '*.*',  'All Files (*.*)'},...
+             'Save as', fullfile(dataPath, fileName) );
+          
+        % Handle user cancel case
+        % -----------------------------------------------------------------
+        if isequal(fileName,0) || isequal(dataPath,0)
+            disp('User selected Cancel')
+            return
+        else
+           disp(['User selected ',fullfile(dataPath,fileName)])
+           savePath = dataPath;
+           saveFile = fileName;
+        end
     end
 
 
