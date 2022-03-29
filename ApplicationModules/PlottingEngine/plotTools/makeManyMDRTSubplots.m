@@ -38,6 +38,7 @@ function [subPlotAxes,  varargout] = makeManyMDRTSubplots(InputTitleArray, Figur
 %       gap             numeric - set the gap between subplots (normalized units)
 %       margin          numeric - set the margin between subplots and figure (normalized units)
 %       groupAxesBy     numeric - the grouping for the 'axPairs' array. Default is 2
+%       mdrtpairs       true or fales - use true to return MDRTAxes pairs. Default is false
 
 
 % TODO: Add parameter parsing to let the user configure height, width,
@@ -89,6 +90,7 @@ end
 %% Plot Setup
 
 USE_MDRTAxes = false;
+RETURN_MDRTAxes_Pairs = false;
 graphsPlotGap = 0.05;
 GraphsPlotMargin = 0.06;
 numberOfSubplots = 1; % Change this to define the groupings! (Shouldn't be larger than spHigh)
@@ -119,6 +121,8 @@ for K = 1:2:numel(varargin)
             GraphsPlotMargin = Val;
         case 'groupaxesby'
             reshapeParam = Val;
+        case 'mdrtpairs'
+            RETURN_MDRTAxes_Pairs = true;
            
     end
 end
@@ -159,7 +163,7 @@ if expectedSubplots > spWide
         end
         
         if USE_MDRTAxes
-            spa = CMDRTSubplot( spHigh, plotCols,	graphsPlotGap, ... 
+            [spa, MDRA] = CMDRTSubplot( spHigh, plotCols,	graphsPlotGap, ... 
                                 GraphsPlotMargin,   GraphsPlotMargin);
         else
             spa = MDRTSubplot(  spHigh, plotCols,	graphsPlotGap, ... 
@@ -177,8 +181,16 @@ if expectedSubplots > spWide
         if spHigh > reshapeParam
             numOfGroups = numel(spa) / reshapeParam;
             axPair = reshape(reshape(spa,numOfGroups,reshapeParam)', numOfGroups,reshapeParam);
+            if USE_MDRTAxes && RETURN_MDRTAxes_Pairs
+                
+                axPair = reshape(reshape(MDRA,numOfGroups,reshapeParam)', numOfGroups,reshapeParam);
+            end
         else
             axPair = reshape(spa, plotCols*spHigh/reshapeParam, reshapeParam);
+            
+            if USE_MDRTAxes && RETURN_MDRTAxes_Pairs
+                axPair = reshape(MDRA, plotCols*spHigh/reshapeParam, reshapeParam);
+            end
         end
         
         axPairs = vertcat(axPairs, axPair);
