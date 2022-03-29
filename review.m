@@ -28,7 +28,7 @@ function varargout = review(varargin)
 
 % Edit the above text to modify the response to help review
 
-% Last Modified by GUIDE v2.5 28-Feb-2022 21:11:40
+% Last Modified by GUIDE v2.5 29-Mar-2022 11:10:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -408,7 +408,7 @@ end
 
 
 % --- Executes on button press in uiButton_updateFDList.
-function uiButton_updateFDList_Callback(hObject, eventdata, handles)
+function uiButton_updateFDList_Callback(hObject, ~, handles)
 % hObject    handle to uiButton_updateFDList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -506,12 +506,13 @@ function uiButton_refreshTimelineEvents_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 reviewRescaleAllTimelineEvents;
 
-% --- Executes on button press in uiButton_toggleTimelineLabelSize.
-function uiButton_toggleTimelineLabelSize_Callback(hObject, eventdata, handles)
-% hObject    handle to uiButton_toggleTimelineLabelSize (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
+% --- Executes on button press in uiButton_rescaleFD.
+function uiButton_rescaleFD_Callback(hObject, ~, handles)
+% hObject    handle to uiButton_rescaleFD (see GCBO)
 % handles    structure with handles and user data (see GUIDATA)
-reviewRescaleAllTimelineLabels
+index = get(handles.uiPopup_FDList,'Value');
+fdFullFileName = fullfile(handles.configuration.dataFolderPath, handles.quickPlotFDs{index, 2} );
+rescaleFDfromFile(fdFullFileName);
 
 
 % --- Executes on button press in uiButton_filterData.
