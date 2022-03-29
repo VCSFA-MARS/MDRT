@@ -337,16 +337,23 @@ reverseStr = '';
                         
         end
         
-        % Use all tokens to guarantee a unique filename
-            outName = strcat(m{1:end},'.delim');
+        % Filter out accidental RAW value retrievals
+        grepFilterRAW = ' ';
+        grepFileSuffix = '';
         
-
+        if importRaw
+            grepFileSuffix = '_RAW' ;
+            grepFilterRAW = ' ,RAW ' ;
+        else
+            grepFilterRAW = '-v ,RAW ' ;
+        end
+        
+        % Use all tokens to guarantee a unique filename
+            outName = strcat(m{1:end}, grepFileSuffix, '.delim');
+            
         % Handle Spaces in filenames for *nix systems
         outputFile = fullfile(delimPath, outName);
-                
-        % Filter out accidental RAW value retrievals
-        grepFilterRAW = '-v ,RAW ';
-                
+                                
         % Generate grep command to split delim into parseable files
         % time LC_ALL=C grep -F "TELHS_SYS1 PT33  Mon" ../original/TEL-mon-s.delim > test.delim
         
