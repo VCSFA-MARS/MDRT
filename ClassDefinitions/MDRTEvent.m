@@ -46,6 +46,9 @@ classdef MDRTEvent
                 case 'MDRTFigure'
                     ylim = MFig.subplots.hAx.YLim;
                     thisParent = MFig.subplots.hAx;
+                case 'matlab.graphics.axis.Axes'
+                    ylim = MFig.YLim;
+                    thisParent = MFig;
                 otherwise
             end
             

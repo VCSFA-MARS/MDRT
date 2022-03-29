@@ -80,6 +80,18 @@ if file ~= 0
     % Timeline Label Sizes
     labels = findall(fh,'Tag','vlinetext');         progressbar(8/totalSteps);
     
+    events = [];
+    if isappdata(fh, 'MDRTEvents')
+        events = getappdata(fh, 'MDRTEvents');
+        oldEventFontSize = events(1).FontSize;
+        newEventFontSize = 4;
+    end
+    
+    if ~isempty(events)
+        [events.FontSize] = deal(newEventFontSize); progressbar(9/totalSteps);
+    end
+    
+    
     if ~(isempty(labels))
         oldLabelFontSize = get(labels, 'FontSize'); progressbar(9/totalSteps);
         set(labels, 'FontSize', 8);                 progressbar(10/totalSteps);
@@ -104,6 +116,10 @@ if file ~= 0
 
         if ~ iscell(oldLabelFontSize)
             oldLabelFontSize = { oldLabelFontSize };
+        end
+        
+        if ~isempty(events)
+            [events.FontSize] = deal(oldEventFontSize);
         end
     
     set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(12/totalSteps);
