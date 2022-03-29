@@ -98,6 +98,7 @@ end
 for i = 1:length(filenameCellList)
     
     skipThisFile = false;
+    RAW_Suffix = '';
     
     % UI Progress Update
     % ------------------
@@ -310,13 +311,35 @@ for i = 1:length(filenameCellList)
                 
                 %   make timeseries for this data set:
                 disp('Processing Standard FD Data')
-                
-                
+                RAW_FLAG = false;
+
+                % Parse and assign engineering units to timeseries
+                switch lower(unitCell{1})
+                    case { 'f' 'deg f' '°f' }
+                        thisUnit = '°F';
+                    case { 'psi' }
+                        thisUnit = 'psig';
+                    case { 'gallons' }
+                        thisUnit = 'gal';
+                    case { 'raw' }
+                        thisUnit = 'RAW';
+                        RAW_FLAG = true;
+                        RAW_Suffix = ' RAW';
+                        disp('Processing RAW Data')
+                    otherwise
+                        thisUnit = unitCell{1};
+                end                
                 
                 tic;
 %                     N = sscanf(sprintf('%s', valueCell{:,1}),'%f');
 
-                    switch valueTypeCell{1}
+                if RAW_FLAG
+                    thisValueType = 'RAW';
+                else
+                    thisValueType = valueTypeCell{1};
+                end
+
+                    switch thisValueType
                         case 'D'
                             % Process as discrete to fix integer conversion
                             % use cellfun isempty with regex to find all
@@ -332,6 +355,13 @@ for i = 1:length(filenameCellList)
                             
                             disp('File contains data of type ''CR'' - Skipping file ')
                             skipThisFile = true;
+                            
+                        case { 'RAW' }
+                            % convert hex to decimal - byte swap happens
+                            % after conversion.
+                            ts = timeseries(swapbytes(uint16( hex2dec( valueCell(:) ) ) ), ...
+                                            timeVect, ...
+                                            'Name', strcat(info.FullString, RAW_Suffix) );
                                                         
                         otherwise
                             % Process with optimized floating point
@@ -353,18 +383,7 @@ for i = 1:length(filenameCellList)
                             % ts = timeseries( str2double(valueCell), timeVect, 'Name', info.FullString);
                     end
                     
-                    
-                    % Parse and assign engineering units to timeseries
-                    switch unitCell{1}
-                        case { 'F' 'deg F' '°F' }
-                            thisUnit = '°F';
-                        case { 'psi' }
-                            thisUnit = 'psig';
-                        case { 'gallons' }
-                            thisUnit = 'gal';
-                        otherwise
-                                thisUnit = unitCell{1};
-                    end
+  
                     
                     ts.DataInfo.Units = thisUnit;
                     
@@ -380,7 +399,7 @@ for i = 1:length(filenameCellList)
                         fd = struct('ID', info.ID,...
                                     'Type', info.Type,...
                                     'System', info.System,...
-                                    'FullString', info.FullString,...
+                                    'FullString', strcat(info.FullString, RAW_Suffix), ...
                                     'ts', ts,...
                                     'isValve', false);
 
@@ -444,7 +463,7 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
         % updating the FD fields and filename.
         
         
-%% New code to fix overloaded FD file names
+        %% New code to fix overloaded FD file names
 
         fileName = makeFileNameForFD(info.FullString);
         
