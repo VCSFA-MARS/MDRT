@@ -28,6 +28,8 @@ switch unit
         deltat = 0.041666667;
     case {'gps' 's' 'sec' 'second' 'gal/s' 'gal/sec' 'gal/second' 'gallons per second'}
         deltat = 0.000011574;
+    case {'day', '1/day', 'd'}
+        deltat = 1;
     otherwise
         % assume time step is one day
         disp(sprintf('Unsupported unit ''%s''. Defaulting to 1/day', unit));
