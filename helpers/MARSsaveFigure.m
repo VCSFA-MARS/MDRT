@@ -99,8 +99,12 @@ if file ~= 0
         oldLabelFontSize = {};                      progressbar(10/totalSteps);
     end
     
-    % Save
-    saveas(fh, [path file],'pdf');                  progressbar(11/totalSteps);
+    if verLessThan('matlab','9.2.0') % R2017a
+        saveas(fh, [path file],'pdf');              progressbar(11/totalSteps);
+    else
+        print( [path, file], '-dpdf', '-fillpage'); progressbar(11/totalSteps);
+    end
+    
     
     %% Restore font sizes
     

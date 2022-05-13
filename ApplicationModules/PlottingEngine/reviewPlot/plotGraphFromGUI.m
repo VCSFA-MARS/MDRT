@@ -210,7 +210,13 @@ for graphNumber = 1:numberOfGraphs
             % All streams are valve data - use cool valve plot
             debugout('Detected all valves in subplot: calling valveStateBar')
             debugout(toPlot')
-            valveStateBar(toPlot, subPlotAxes(subPlotNumber));
+            if verLessThan('matlab','9.2.0') % before R2017a
+                valveStateBar(toPlot, subPlotAxes(subPlotNumber));
+            else
+                valveStateBar(toPlot, subPlotAxes(subPlotNumber), ...
+                              'LabelOffset',    -65 );
+            end
+            
             isNormalSubplot(subPlotNumber) = false;
         else
             populateSubplot;
