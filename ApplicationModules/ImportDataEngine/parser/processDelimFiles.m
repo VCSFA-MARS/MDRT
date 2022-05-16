@@ -105,7 +105,6 @@ for i = 1:length(filenameCellList)
     frac = 0/5;
     progressbar( (bytesProcessed + delimFiles(i).bytes * frac) / totalBytes, frac);
     
-    
     % Process first file on the list!
     filenameCellList(i)
     
@@ -173,6 +172,9 @@ for i = 1:length(filenameCellList)
         % -----------------------------------------------------------------
         %   Assign important data to their own cell arrays for parsing
         % -----------------------------------------------------------------
+        
+            %  2022/134/21:00:58.556230, , ,GN2 PT-5533 Press Sensor  Mon, A,FGSE M-P0A-GN2-PT-5533 GN2 Muscle E-Reg Press,----------------,9.921500000000000341E+01,psig,
+            %  2022/134/21:00:58.556230, , ,GN2 PT-5533 Press Sensor  Mon, A,FGSE M-P0A-GN2-PT-5533 GN2 Muscle E-Reg Press,00000000,5F4E,RAW
         
         tic
         
@@ -359,9 +361,12 @@ for i = 1:length(filenameCellList)
                         case { 'RAW' }
                             % convert hex to decimal - byte swap happens
                             % after conversion.
+                            
+                            info.FullString = strcat(info.FullString, RAW_Suffix);
+                            
                             ts = timeseries(swapbytes(uint16( hex2dec( valueCell(:) ) ) ), ...
                                             timeVect, ...
-                                            'Name', strcat(info.FullString, RAW_Suffix) );
+                                            'Name', info.FullString );
                                                         
                         otherwise
                             % Process with optimized floating point
@@ -399,7 +404,7 @@ for i = 1:length(filenameCellList)
                         fd = struct('ID', info.ID,...
                                     'Type', info.Type,...
                                     'System', info.System,...
-                                    'FullString', strcat(info.FullString, RAW_Suffix), ...
+                                    'FullString', info.FullString, ...
                                     'ts', ts,...
                                     'isValve', false);
 
