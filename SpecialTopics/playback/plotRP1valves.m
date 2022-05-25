@@ -188,8 +188,10 @@ detailPlots = { 342, 240, 'p1904', [0 100], 'sensor', {} ;
                 774, 240, 'p1906', [0 100], 'sensor', {} ; 
                 997, 240, 'p1909', [0 100], 'sensor', {} ;
                 776, 300, 'p8010', [0 200], 'sensor', {} ;
-                538, 280, 'pcv1014', [0 1], 'valve', 'PCVNC-1014' ;
-                540, 070, 'pcv1015', [0 1], 'valve', 'PCVNC-1015' ;
+%                 538, 280, 'pcv1014', [0 1], 'valve', 'PCVNC-1014' ;
+%                 540, 070, 'pcv1015', [0 1], 'valve', 'PCVNC-1015' ;
+                538, 410, 'pcv1014', [0 1], 'valve', 'PCVNC-1014' ;
+                540, 200, 'pcv1015', [0 1], 'valve', 'PCVNC-1015' ;
                 };
 
     
@@ -228,28 +230,34 @@ plotLines = [];
 dpWidth = 0.09;
 dpHeight = 0.066;
 
+dpAxes = [];
 
 for i = 1:size(detailPlots, 1)
     
-    thisX = detailPlots{i, 1};
-    thisY = detailPlots{i, 2};
+    thisX    = detailPlots{i, 1};
+    thisY    = detailPlots{i, 2};
     thisName = detailPlots{i, 3};
     thisYLim = detailPlots{i, 4};
     thisKind = detailPlots{i, 5};
     thisFind = detailPlots{i, 6};
+    thisFD   = fd.(thisName);
     
-    [figX, figY] = ds2nfu(hap, thisX, thisY);
+%     [figX, figY] = ds2nfu(hap, thisX, thisY);
+    [figX, figY] = figCoordFromAxes(thisX, thisY, hap);
         
     dp.(detailPlots{i, 3}) = axes('position', [-1 -1 0.5 0.5]);
     
     this = dp.(detailPlots{i, 3});
     
-    this.Position = [figX,      figY - dpHeight, ...
-                     dpWidth,	dpHeight            ] ;
+    
+    this.Position = [   figX, ...
+                        figY - dpHeight, ...
+                        dpWidth, ...
+                        dpHeight ] ;
     
     switch lower(thisKind)
         case 'sensor'
-            plot( fd.(detailPlots{i, 3}).ts.Time, fd.(detailPlots{i, 3}).ts.Data );
+            plot( thisFD.ts.Time, thisFD.ts.Data );
         case 'valve'
             valveStateBar( thisFind, this, 'DataFolder', dataPath );
         otherwise
@@ -259,18 +267,21 @@ for i = 1:size(detailPlots, 1)
     
     lx = mean(dp.(detailPlots{i, 3}).XLim);
 
-    hTemp = line(   [lx lx],            dp.(detailPlots{i, 3}).YLim, ...
+    hTemp = line(   [lx lx],            dp.(thisName).YLim, ...
                     'Color',            'red', ...
                     'LineWidth',        3 ...
                  );
 	
-	dynamicDateTicks(this);
-    linkaxes([this, had], 'x');
+
     this.YLim = thisYLim;
     
+    dpAxes = vertcat(dpAxes, this);
     plotLines = vertcat(plotLines, hTemp);
     
 end
+
+    linkaxes([dpAxes; had], 'x');
+    dynamicDateTicks(dpAxes, 'linked');
 
 %% Create Slider
 

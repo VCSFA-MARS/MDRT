@@ -226,20 +226,19 @@ dp = struct;
 plotLines = [];
 dpWidth = 0.08;
 dpHeight = 0.066;
-yOffset = 1 - hap.Position(2) - hap.Position(4);
-yOffset = 0;
 
 dpAxes = [];
 
 for i = 1:size(detailPlots, 1)
     debugout(sprintf('Detail Plot Loop # : %d', i))
     
-    thisX = detailPlots{i, 1};
-    thisY = detailPlots{i, 2};
+    thisX    = detailPlots{i, 1};
+    thisY    = detailPlots{i, 2};
     thisName = detailPlots{i, 3};
     thisYLim = detailPlots{i, 4};
     thisKind = detailPlots{i, 5};
     thisFind = detailPlots{i, 6};
+    thisFD   = fd.(detailPlots{i, 3});
     
     [figX, figY] = figCoordFromAxes(thisX, thisY, hap);
         
@@ -255,7 +254,7 @@ for i = 1:size(detailPlots, 1)
     
     switch lower(thisKind)
         case 'sensor'
-            plot( fd.(detailPlots{i, 3}).ts.Time, fd.(detailPlots{i, 3}).ts.Data );
+            plot( thisFD.ts.Time, thisFD.ts.Data );
         case 'valve'
             valveStateBar( thisFind, this, 'DataFolder', dataPath );
         otherwise
@@ -265,7 +264,7 @@ for i = 1:size(detailPlots, 1)
     
     lx = mean(dp.(detailPlots{i, 3}).XLim);
 
-    hTemp = line(   [lx lx],            dp.(detailPlots{i, 3}).YLim, ...
+    hTemp = line(   [lx lx],            dp.(thisName).YLim, ...
                     'Color',            'red', ...
                     'LineWidth',        2 ...
                  );
