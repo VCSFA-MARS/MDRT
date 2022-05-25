@@ -268,15 +268,19 @@ function archiveButtonChanged(hobj, event)
 
     switch event.NewValue.Tag
         case 'rb_local'
+            setappdata(gcf, 'isRemoteArchive', false);
             populateDataSetList(getappdata(gcf, 'localDataIndex'));
             dataIndex = getappdata(gcf, 'localDataIndex');
             setappdata(gcf, 'fdMasterList', dataIndex(end).FDList);
             
         case 'rb_remote'
+            setappdata(gcf, 'isRemoteArchive', true);
             populateDataSetList(getappdata(gcf, 'remoteDataIndex'));
             dataIndex = getappdata(gcf, 'remoteDataIndex');
             setappdata(gcf, 'fdMasterList', dataIndex(end).FDList);
     end
+    
+    updateEventListbox
 
 end
 
