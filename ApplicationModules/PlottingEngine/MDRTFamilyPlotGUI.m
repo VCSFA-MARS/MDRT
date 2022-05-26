@@ -394,11 +394,15 @@ function generatePlot(event, obj, varargin)
         end
 
         for f = 1:numel(dataFolders)
+            
+            timelineLoaded = false;
+            metadataLoaded = false;
+            datafileLoaded = false;
 
             try
 
-                load( fullfile( dataFolders{f},  'timeline.mat') );
-                load( fullfile( dataFolders{f},  'metadata.mat') );
+                load( fullfile( dataFolders{f},  'timeline.mat') ); timelineLoaded = true;
+                load( fullfile( dataFolders{f},  'metadata.mat') ); metadataLoaded = true;
 
                 eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
                 
@@ -424,8 +428,10 @@ function generatePlot(event, obj, varargin)
 
                     % Plot each FD in its own axes
                     for a = 1:numel(dataFileNames)
+                        
+                        datafileLoaded = false;
 
-                        load(fullfile(dataFolders{f}, dataFileNames{a}));
+                        load(fullfile(dataFolders{f}, dataFileNames{a}));  datafileLoaded = true;
 
                         axes(subPlotAxes(a)); % 4918
                         hold on; 
@@ -454,7 +460,22 @@ function generatePlot(event, obj, varargin)
 
             catch
                 % Unable to load metadata - no action
-                disp(sprintf('%s : Skipped. No matching data or event', metaData.operationName))
+                errormsg = '';
+                if ~timelineLoaded
+                    errormsg = strcat(errormsg, 'timeline.mat ');
+                end
+                if ~datafileLoaded
+                    errormsg = strcat(errormsg, 'FD Data file ');
+                end
+                if ~metadataLoaded
+                    errormsg = strcat(errormsg, 'metadata file ');
+                end
+                
+                if ~metadataLoaded
+                    fprintf('%s : Skipped. No matching: %s\n', dataFolders{f}, errormsg)
+                else
+                    fprintf('%s : Skipped. No matching: %s\n', metaData.operationName, errormsg)
+                end
                 
             end
 
