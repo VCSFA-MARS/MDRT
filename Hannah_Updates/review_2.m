@@ -9,8 +9,6 @@
 
 
 
-
-
 function varargout = review_2(varargin)
 %% Knock, Knock, Housekeeping!
 %general clean/organization stuff
@@ -28,6 +26,6 @@ close all hidden %prevents tab clutter
 %% GUI CALLreview_2
 
 
-run("updateGUI_v_2022.mlapp");
+run('updateGUI_v_2022.mlapp');
 
 end
