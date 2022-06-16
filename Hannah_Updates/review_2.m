@@ -26,6 +26,6 @@ close all hidden %prevents tab clutter
 %% GUI CALLreview_2
 
 
-run('updateGUI_v_2022.mlapp');
+run('GUI_v_2022.mlapp');
 
 end
