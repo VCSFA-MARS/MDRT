@@ -131,7 +131,7 @@ end
         
         eventFile = 'events.mat';
 
-% %   TODO: Implement start/stop time passing through getPlotParameters()
+% %   TODO: Implement start/stop time passing
 %         timeToPlot = struct('start',735495.296704555, ...
 %                             'stop',735496.029342311);
 %         t0 = datenum('September 18, 2013 14:58');
