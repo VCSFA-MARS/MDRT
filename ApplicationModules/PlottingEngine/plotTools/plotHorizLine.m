@@ -67,7 +67,11 @@ lh = addlistener(figureHandle, 'Close', @graphWindowClosed);
        
         % Pulls the name of the subplots to populate the drop down menu.
         for i = 1:numberOfSubplots
-            plotString(i,1) = axes(i,:).Title.String;
+            title = axes(i,:).Title.String;
+            if ischar(title)
+                title = {title};
+            end
+            plotString(i,1) = title;
         end
         
         plotString = flipud(plotString);
@@ -397,7 +401,10 @@ guidata(hl.fig,handles); % Creates structure of guidata based on tags
 
     % Cleanup: close tool when "parent" figure closes
     function graphWindowClosed(~, ~, varargin)
-        close(hl.fig);
+        try
+            close(hl.fig);
+        catch
+        end
     end
 
 end
