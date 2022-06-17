@@ -124,8 +124,6 @@ processDelimFiles(config, autoSkip);
 
 %% Start Indexing!
 
-% FDList = listAvailableFDs(config.workingDataPath, 'mat');
-
 [FDList, timeSpan] = indexTimeAndFDNames(config.workingDataPath);
 save(fullfile(config.workingDataPath, 'AvailableFDs.mat'), 'FDList');
 
