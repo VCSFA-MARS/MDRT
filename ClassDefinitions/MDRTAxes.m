@@ -75,6 +75,14 @@ classdef MDRTAxes < handle
                        
         end
         
+        function delete(self)
+            % delete() the destructor deltes the MATLAB Axes object to
+            % prevent orphaning prior to MDRTAxes destruction
+            if self.hAx.isvalid
+                self.hAx.delete;
+            end
+        end
+        
         %% Class Methods
         function addFD(self, fd)
             % addFD(fd) accepts an fd structure as an argument and plots
