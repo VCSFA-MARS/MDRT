@@ -1,4 +1,4 @@
-function [ hAaxes ] = CMDRTSubplot( plotsHigh, plotsWide, gap, marginWidth, marginHeight )
+function [ hAaxes, hMDRTAxes ] = CMDRTSubplot( plotsHigh, plotsWide, gap, marginWidth, marginHeight )
 %CMDRTSubplot creates MDRTAxes for MDRT Class-based plotting tools
 %   
 %   CMDRTSubplot( MDRTFig )
@@ -49,15 +49,16 @@ axwidth  = (1-sum(marginHeight) - (plotsWide-1) * gap(2)) / plotsWide;
 yPos = 1 - marginWidth(2) - axheight; 
 
 % Init empty cell array of axes handles
-hAaxes = {};
+hAaxes      = [];
+hMDRTAxes   = [];
 ii = 0;
 for ih = 1:plotsHigh
     xPos = marginHeight(1);
     
     for ix = 1:plotsWide
         ii = ii+1;
-        hAaxes = vertcat(hAaxes, ...
-            MDRTAxes('Units','normalized', ...
+            
+        thisMDRTAxes = MDRTAxes('Units','normalized', ...
                 'Position',[xPos yPos axwidth axheight], ...
                 'XTickLabel','', ...
                 'YTickLabel','', ...
@@ -71,7 +72,10 @@ for ih = 1:plotsHigh
                 'YMinorTick','on', ...
                 'YTickLabelMode', 'auto', ...
                 'Box', 'on', ...
-                'Tag', 'MDRTAxes') );
+                'Tag', 'MDRTAxes');
+        
+        hAaxes = vertcat(hAaxes, thisMDRTAxes.hAx);
+        hMDRTAxes = vertcat(hMDRTAxes, thisMDRTAxes);
             
         xPos = xPos+axwidth+gap(2);
     
