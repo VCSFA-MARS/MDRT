@@ -1,3 +1,20 @@
+function compareDrainBack
+%% compareDrainBack generates plots of a specific event across multiple data sets.
+%
+%   Each event is visualized as two subplots:
+%       - top: Pressure sensors
+%       - bot: Valve positions/commands
+%
+%   Each figure/page will contain up to three events, as 3 columns of two
+%   subplots, for a total of 6 subplots per page.
+%
+%   Every matching event instance that is found will generate one pair of
+%   subplots. 
+%
+%   Launching the tool opens a GUI dialog that allows you to edit the
+%   datasets that will be included and to customize the FDs that are
+%   included in each subplot.
+
 %% Create tool window
 
 config = MDRTConfig.getInstance;
@@ -57,7 +74,11 @@ hs.run = uicontrol( 'style',                'pushbutton', ...
                     'Units',                'normalized', ...
                     'position',             [0.808 0.058 0.159 0.336], ...
                     'HorizontalAlignment',  'center', ...
-                    'Callback',             '', ...
+                    'Callback',             {@generatePlots, ...
+                                              hs.mis, ...
+                                              hs.top, ...
+                                              hs.bot, ...
+                                              hs.evt}, ...
                     'FontUnits',            'normalized' ...
                     );
                 
@@ -94,9 +115,8 @@ hs.run = uicontrol( 'style',                'pushbutton', ...
                   '5070 GN2 PT-5070 Press Sensor Mon.mat' };
 
     valveFiles = {'2031 LO2 DCVNC-2031 State.mat';
-                  '2031 LO2 DCVNC-2031 Ball Valve Ctl Param.mat';
                   '2097 LO2 DCVNC-2097 State.mat';
-                  '2097 LO2 DCVNC-2097 Ball Valve Ctl Param.mat'};
+                  '2029 LO2 PCVNO-2029 Globe Valve Mon.mat'};
 
     eventFD = 'LOLS Topoff Cmd';
 
@@ -114,30 +134,14 @@ hs.run = uicontrol( 'style',                'pushbutton', ...
 
 
 
+end
 
+function generatePlots(~, ~, dataFolders, dataFiles, valveFiles, eventFD)
 
-%% This chunk will get replaced by the menu!
-
-dataFolders = { '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
-                '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
-                '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
-                '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
-                '/Users/nick/data/archive/2019-11-01 - NG-12/data';
-                '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
-                '/Users/nick/data/archive/2018-11-16 - NG-10 Launch/data'
-                };
-            
-dataFiles = { '5903 GN2 PT-5903 Press Sensor Mon.mat';
-              '5070 GN2 PT-5070 Press Sensor Mon.mat' };
-
-valveFiles = {'2031 LO2 DCVNC-2031 State.mat';
-              '2031 LO2 DCVNC-2031 Ball Valve Ctl Param.mat';
-              '2097 LO2 DCVNC-2097 State.mat';
-              '2097 LO2 DCVNC-2097 Ball Valve Ctl Param.mat'};
-                
-
-eventFD = 'LOLS Topoff Cmd';
-eventSt = 'FGSE LOLS Top-Off Command';
+dataFolders = dataFolders.String;
+dataFiles = dataFiles.String;
+valveFiles = valveFiles.String;
+eventFD = eventFD.String;
 
 PageTitles = sprintf('%s Comparison Across Missions', eventFD);
 
@@ -160,6 +164,7 @@ for dfi = 1:numel(dataFolders)
     ms = load(metaFile);
     ts = load(timeFile);
     
+    DataSet(dfi).datafolder = dataFolders{dfi};
     DataSet(dfi).metadata = ms.metaData;
     DataSet(dfi).timeline = ts.timeline;
     DataSet(dfi).Mission = ms.metaData.operationName;
@@ -207,7 +212,7 @@ end
     
 %% Generate Figures and Subplots
 
- [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots(numel(PlotParam)*2, PageTitles );
+ [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots(numel(PlotParam)*2, PageTitles, 'newStyle', true , 'mdrtpairs', true);
 
 
 %% Generate Plots
@@ -224,7 +229,7 @@ for pi = 1:numel(PlotParam)
     % Muscle Pressure Plots: Top Axes
         
     for p = 1:numel(thisDataSet.PTFDs)
-        topAx.addFD(thisDataSet.PTFDs(p));
+        topAx.addFD( thisDataSet.PTFDs(p) );
     end
                     
 
@@ -238,13 +243,19 @@ for pi = 1:numel(PlotParam)
     
     % Valve Position Plots: Bottom Axes
     
-    for s = 1:numel(thisDataSet.ValveFDs)
-        botAx.addFD(thisDataSet.ValveFDs(s));
-    end
+    
+    valveStateBar({thisDataSet.ValveFDs.FullString}', botAx.hAx, ...
+        'DataFolder', thisDataSet.datafolder)
+    
+%     for s = 1:numel(thisDataSet.ValveFDs)
+%         botAx.addFD(thisDataSet.ValveFDs(s));
+%     end
+    
+    
     
 	dynamicDateTicks(botAx.hAx);
     setDateAxes(botAx.hAx, 'XLim', [thisPlot.t0 thisPlot.tf] ) ;
-    setDateAxes(botAx.hAx, 'YLim', [-0.1, 2.1]);
+%     setDateAxes(botAx.hAx, 'YLim', [-0.1, 2.1]);
                 
     botAx.title = thisPlot.Title;
     MDRTEvent(thisPlot.event, botAx);
@@ -255,6 +266,7 @@ for pi = 1:numel(PlotParam)
     
 end
 
+assignin('base', 'axPairArray', axPairArray);
 
 return
 %% Save all these damn plots
@@ -262,7 +274,7 @@ return
 
 path = '/Users/nick/Downloads'
 
-for f = 1:axPairArray(end).hAx.Parent.Number
+for f = axPairArray(1).hAx.Parent.Number:axPairArray(end).hAx.Parent.Number
     
     fh = figure(f);
     
@@ -280,3 +292,5 @@ end
 
 
 PlotTitleString = sprintf('%s Flight Comparison', eventFD);
+
+end
