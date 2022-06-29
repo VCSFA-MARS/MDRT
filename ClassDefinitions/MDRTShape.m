@@ -36,51 +36,136 @@ classdef MDRTShape < handle
     
     
     methods
-        function this = MDRTShape()
-            this.shape = fill(0, 0, 'g') ;
-
-            this.XBaseData = this.VALVE(:,1);
-            this.YBaseData = this.VALVE(:,2);
+        function this = MDRTShape(varargin)
+            % MDRTShape() creates an MDRTShape object for use in FGSE
+            % displays. The default constructor, with no arguments, creates
+            % a valve symbol at location [0,0]. Other shapes are not
+            % supported through the constructor at this time, and the
+            % MDRTShape XBaseData and YBaseData will need to be modified to
+            % produce other shapes.
+            %
+            % Several key/value pairs are implemented to customize the
+            % MDRTShape object at instantiation:
+            %
+            %   'Position'  - [x, y] sets the offset for the initial shape
+            %   'FillColor' - Accepts an MDRTColor object
+            %   'EdgeColor' - Accepts an MDRTColor object
+            %   'Scale`     - A scalar multiplier for the vertices
             
-            this.listener_position  = addlistener(this, 'position', 'PostSet', @updateShape);
+            % Counts 2022
+            
+            offsetVect = [0, 0];
+            
+            for vi = 1:numel(varargin)
+                arg = varargin{vi};
+                if iscellstr(arg)
+                    arg = arg{1};
+                elseif isnumeric(arg)
+                    continue
+                end
+                
+                if vi+1 <= numel(varargin)
+                    val = varargin{vi + 1};
+                else
+                    continue
+                end
+                
+                switch lower(arg)
+                    case {'position' 'center'}
+                        offsetVect = val;
+                    case 'fillcolor'
+                        if isa(val, 'MDRTColor')
+                            this.fillColor = val;
+                        end
+                    case 'edgecolor'
+                        if isa(val, 'MDRTColor')
+                            this.edgeColor = val;
+                        end
+                    case {'scale' 'scalefactor'}
+                        if isnumeric(val)
+                            this.scale = val;
+                        end
+                end
+                
+            end
+            
+            xOffset = offsetVect(1);
+            yOffset = offsetVect(2);
+            
+            this.shape = fill(0 , 0, 'g');
+%                 EdgeColor', this.edgeColor.colorVect, ...
+%                 'FaceColor', this.fillColor.colorVect, ...
+%                 'FaceAlpha', this.fillColor.Alpha ) ;
+
+            this.XBaseData = this.VALVE(:,1) + xOffset;
+            this.YBaseData = this.VALVE(:,2) + yOffset;
 
             this.updateShape;
             this.redrawShape;
             
         end
-        
+
+
         function this = set.rotation(this, angle)
             this.rotation = angle;
             this.updateShape;
             this.redrawShape;
         end
-        
+
+
         function this = set.scale(this, scale)
             this.scale = scale;
             this.updateShape;
             this.redrawShape;
         end
-        
+
+
         function this = set.fillColor(this, color)
             this.fillColor = color;
             this.redrawShape;
         end
-        
+
+
         function this = set.edgeColor(this, color)
             this.edgeColor = color;
             this.redrawShape;
         end
-        
-        function this = set.draggable(this, canDrag)
+
+
+        function this = set.isDraggable(this, canDrag)
             if ~islogical(canDrag)
                 return
             end
             
-            this.draggable = canDrag;
-            if canDrag
+            this.isDraggable = canDrag;
+            
+            if ~ canDrag
+                draggable(this.shape, 'off')
+                return
+            end
+            
+            if isempty(this.dragCompletedCallback)
                 draggable(this.shape);
             else
-                draggable(this.shape, 'off')
+                draggable(this.shape, 'endfcn', this.dragCompletedCallback)
+            end
+        end
+
+        
+        function repositionByDragging(this, varargin)
+            % initiates a one-time drag-n-drop reposition. On release, the 
+            % shape base position is updated.
+            
+            if this.isDraggable
+                % repositionByDragging is called after a click-drag
+                this.dragCompletedCallback = [];
+                this.isDraggable = false;
+                this.rebaseShape;
+                
+            else
+                % outside caller starts the "reposition" sequence
+                this.dragCompletedCallback = @this.repositionByDragging;
+                this.isDraggable = true;
             end
         end
             
