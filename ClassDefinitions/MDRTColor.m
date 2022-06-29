@@ -1,4 +1,4 @@
-classdef MDRTColor < handle
+classdef MDRTColor
     %MDRTColor is a class that manages colors for MDRT Graphics objects
     %   This class allows setting colors by either numeric values or by
     %   selecting by color name.
