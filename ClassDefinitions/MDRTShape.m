@@ -3,14 +3,14 @@ classdef MDRTShape < handle
     %   Detailed explanation goes here
     
     properties (SetObservable)
-        position = [0, 0]   % Typically shape's center (x,y)
+        % position = [0, 0]   % Typically shape's center (x,y)
         scale    = 1        % Scale factor. 1 = 100%
         rotation = 0        % In degrees. 0 = "north"
         
         fillColor = MDRTColor('lightBlue') % MDRTColor object - shape fill
         edgeColor = MDRTColor('black')     % MDRTColor object - shape edges
         
-        draggable = false
+        isDraggable = false
                
     end
     
@@ -20,13 +20,12 @@ classdef MDRTShape < handle
         XBaseData = []      % XData for shape before Transformation
         YBaseData = []      % YData for shape before Transformation
         
-        listener_draggable
-        listener_position
     end
     
     properties (SetAccess = protected, Hidden = true)
         XData               % XData for shape after transformation
-        YData               % YData for shape after transformation            
+        YData               % YData for shape after transformation
+        dragCompletedCallback = []  % When populated, passed to draggable() to be called after buttonUp
     end
     
     properties (Constant)
@@ -189,7 +188,8 @@ classdef MDRTShape < handle
             this.YData = V(2,:)';
             
         end
-        
+
+
         function redrawShape(this, varargin)
             % redrawShape() updates the XData and YData (vertices) of the
             % underlying patch object from the MDRTShape XData and YData 
@@ -213,7 +213,8 @@ classdef MDRTShape < handle
             % modifications on the current position.
             
             this.updateShape
-                        
+            this.XBaseData = this.XData;
+            this.YBaseData = this.YData;
         end
         
     end
