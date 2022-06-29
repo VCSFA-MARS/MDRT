@@ -3,7 +3,6 @@ classdef MDRTShape < handle
     %   Detailed explanation goes here
     
     properties (SetObservable)
-        % position = [0, 0]   % Typically shape's center (x,y)
         scale    = 1        % Scale factor. 1 = 100%
         rotation = 0        % In degrees. 0 = "north"
         
@@ -16,7 +15,6 @@ classdef MDRTShape < handle
     
     properties (SetAccess = protected)
         shape               % Handle to shape patch object
-        
         XBaseData = []      % XData for shape before Transformation
         YBaseData = []      % YData for shape before Transformation
         
@@ -92,9 +90,6 @@ classdef MDRTShape < handle
             yOffset = offsetVect(2);
             
             this.shape = fill(0 , 0, 'g');
-%                 EdgeColor', this.edgeColor.colorVect, ...
-%                 'FaceColor', this.fillColor.colorVect, ...
-%                 'FaceAlpha', this.fillColor.Alpha ) ;
 
             this.XBaseData = this.VALVE(:,1) + xOffset;
             this.YBaseData = this.VALVE(:,2) + yOffset;
