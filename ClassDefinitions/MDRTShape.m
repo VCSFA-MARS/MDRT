@@ -10,13 +10,14 @@ classdef MDRTShape < handle
         edgeColor = MDRTColor('black')     % MDRTColor object - shape edges
         
         isDraggable = false
-               
+        
+        
     end
     
     properties (SetAccess = protected)
         shape               % Handle to shape patch object
-        XBaseData = []      % XData for shape before Transformation
-        YBaseData = []      % YData for shape before Transformation
+        XBaseData = [ 0 ]      % XData for shape before Transformation
+        YBaseData = [ 0 ]      % YData for shape before Transformation
         
     end
     
@@ -50,6 +51,8 @@ classdef MDRTShape < handle
             %   'Scale`     - A scalar multiplier for the vertices
             
             % Counts 2022
+            
+            this.shape = fill(this.XBaseData , this.YBaseData, 'g');
             
             offsetVect = [0, 0];
             
@@ -88,8 +91,6 @@ classdef MDRTShape < handle
             
             xOffset = offsetVect(1);
             yOffset = offsetVect(2);
-            
-            this.shape = fill(0 , 0, 'g');
 
             this.XBaseData = this.VALVE(:,1) + xOffset;
             this.YBaseData = this.VALVE(:,2) + yOffset;
