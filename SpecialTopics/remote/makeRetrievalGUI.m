@@ -117,15 +117,11 @@ function hs = makeRetrievalGUI(varargin)
 
 %% Populate GUI with stuff from dataIndex
 
-% TAMFDs = getTAMcontents([]);
-TAMFDs = [];
-
-disp('pause')
-
+TAMFDs = getTAMcontents([]);
 
 % Set appdata
-    setappdata(hs.fig, 'fdMasterList',      'TAMFDs.FD');
-    setappdata(hs.fig, 'TAMFDs',            'TAMFDs');
+    setappdata(hs.fig, 'fdMasterList',      TAMFDs.FD);
+    setappdata(hs.fig, 'TAMFDs',            TAMFDs);
     setappdata(hs.fig, 'targetOpFDList',    hs.listSelectedFDs);
                         
 % Populate fd list
