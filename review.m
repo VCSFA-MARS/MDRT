@@ -414,7 +414,6 @@ function uiButton_updateFDList_Callback(hObject, ~, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Calls helper function to list the FDs
-%     FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
     FDList = updateFDListFromDir(handles.configuration.dataFolderPath, ...
                                     'save',         'yes', ...
                                     'prompt',       'yes');

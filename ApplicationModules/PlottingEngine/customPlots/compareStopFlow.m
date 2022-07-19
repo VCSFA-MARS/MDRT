@@ -1,3 +1,9 @@
+%% compareStopFlow - plots each stop flow event with calculated timing
+%
+%   loops through all matching events, looks at flow rate to determine
+%   timing to triggering "stop flow state", calculates the time, and plots
+%   an annotation arrow.
+
 dataFolder = {
 %     '/Users/nick/data/archive/2016-20-17 OA-5 LA1/data/';
 %     '/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
@@ -8,14 +14,17 @@ dataFolder = {
 %     '/Users/nick/data/archive/2020-02-09_NG-13/data';
 %     '/Users/nick/data/archive/2020-02-15 - NG-13 Launch/data';
 %     '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
-    '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
-    '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
-    '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
+%     '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
+%     '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
+%     '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
 
     % '/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
     % '/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data';
     % '/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
     % '/Users/nick/data/imported/2021-07-23 - Stop Flow Dry Cycles ITR-2174 OP-10/data';
+    % '/Users/nick/data/imported/2021-12-06 - LO2 Flow Test LOLS-16/data';
+%     '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
+    '/Users/nick/data/archive/2022-02-18 - NG-17 Launch/data';
 }
 
 dataFiles = { '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
@@ -46,7 +55,7 @@ onemin = onehr/60;
 onesec = onemin/60;
 
 topPlotYLim = [ 0, 275];
-topPlotYLim = [ 75 101];
+% topPlotYLim = [ 75 101];
 
 
 %% Find All Events in data sets -----------------------------------------------
@@ -136,8 +145,10 @@ for ind = 1:numel(stopEvents)
     end
 
     % Numerical Analysis
-    f1ts = thisFDs(1).ts.getsampleusingtime(t0, tf + onesec*10); % Search up to 10 seconds after the plot window
-    f2ts = thisFDs(2).ts.getsampleusingtime(t0, tf + onesec*10);
+    f1ts = thisFDs(1).ts.getsampleusingtime(t0, tf + onemin*10); % Search up to 10 minutes after the plot window
+    f2ts = thisFDs(2).ts.getsampleusingtime(t0, tf + onemin*10); % This ensures refresh data are used for interpolation
+    
+    
     
     f1idx = f1ts.Data < 10;
     f2idx = f2ts.Data < 10;
@@ -155,26 +166,39 @@ for ind = 1:numel(stopEvents)
     B1ts=b1ts.resample(newTime, 'zoh');
     B2ts=b2ts.resample(newTime, 'zoh');
     
+    B1ts=B1ts.getsampleusingtime(t0, tf + onesec*10); % Grab only the relevant time window
+    B2ts=B2ts.getsampleusingtime(t0, tf + onesec*10); % for valid stop flow states
+    
     Bts = B1ts; Bts.Data = B1ts.Data & B2ts.Data;
     
     matches=find(diff(Bts.Data)==1)+1;
     
-    P1 = [tc(1) + 4*onesec,    150 ];
-    P2 = [newTime(matches(1)),  10 ];
-
-    timeToStopFlow = {datestr(newTime(matches) - tc, 'SS.FFF')};
-
- 
-    
     fprintf('\nResults for Stop Flow Command %d\n', ind )
+    
+    if isempty(matches)
+        P1 = [tc(1) + 4*onesec,	150 ];
+        P2 = [tc(1) + 4*onesec,	 90 ];
+        
+        timeToStopFlow = { '??.???' };
+        fprintf('\tCondition met in %s seconds', timeToStopFlow{1})
+    else
+   
+        P1 = [tc(1) + 4*onesec,    150 ];
+        P2 = [newTime(matches(1)),  10 ];
 
-    if ~isempty(matches)
-        for tempInd = 1:length(matches)
-            disp(sprintf('\tCondition met in %s seconds', ...
-                datestr(newTime(matches(tempInd)) - tc, 'SS.FFF')))
+        timeToStopFlow = {datestr(newTime(matches) - tc, 'SS.FFF')};
+        
+        if ~isempty(matches)
+            for tempInd = 1:length(matches)
+                disp(sprintf('\tCondition met in %s seconds', ...
+                    datestr(newTime(matches(tempInd)) - tc, 'SS.FFF')))
+            end
         end
+        
     end
 
+ 
+  
     thisResult = struct;
     thisResult.annotationP1     = P1;
     thisResult.annotationP2     = P2;
@@ -195,7 +219,8 @@ end
 %% Generate Figures and Subplots ----------------------------------------------
 
 [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots( numel(allResults) * 2, ...
-                                                            PlotTitleString ); 
+                                                            PlotTitleString, ...
+                                                            'plotsWide', 3); 
 
 
     % PageTitleString = sprintf('%s - %s - Page %d', PlotTitleString, thisOp, figCount);    

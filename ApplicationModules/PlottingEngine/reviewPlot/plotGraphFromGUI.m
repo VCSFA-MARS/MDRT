@@ -131,7 +131,7 @@ end
         
         eventFile = 'events.mat';
 
-% %   TODO: Implement start/stop time passing through getPlotParameters()
+% %   TODO: Implement start/stop time passing
 %         timeToPlot = struct('start',735495.296704555, ...
 %                             'stop',735496.029342311);
 %         t0 = datenum('September 18, 2013 14:58');
@@ -155,18 +155,27 @@ for graphNumber = 1:numberOfGraphs
 % -------------------------------------------------------------------------
     numberOfSubplots = length(graph(graphNumber).subplots);
     numberOfSubplots
-    
+    events = [];
 % -------------------------------------------------------------------------
 % Generate new figure and handle. Set up for priting
 % -------------------------------------------------------------------------
     UserData.graph = graph;
     
-    figureHandle(graphNumber) = makeMDRTPlotFigure(UserData.graph, graphNumber);
+%     figureHandle(graphNumber) = makeMDRTPlotFigure(UserData.graph, graphNumber);
+%     figureHandle(graphNumber) = MDRTFigure(UserData.graph, graphNumber);
     
-    subPlotAxes = MDRTSubplot(numberOfSubplots,1,graphsPlotGap, ... 
-                                GraphsPlotMargin,GraphsPlotMargin);
+%     subPlotAxes = MDRTSubplot(numberOfSubplots,1,graphsPlotGap, ... 
+%                                 GraphsPlotMargin,GraphsPlotMargin);
                             
+	[subPlotAxes, thisFig] = makeManyMDRTSubplots(graph(graphNumber).subplots, ...
+                                graph(graphNumber).name, ...
+                                'newStyle',     true, ...
+                                'plotsHigh',    numberOfSubplots, ...
+                                'groupAxesBy',  numberOfSubplots);
+                            
+    figureHandle(graphNumber) = thisFig;
     
+                            
     % TODO: Insert code to parse graph title meta tags!
     %     graphName = parseGraphTitle(graph(graphNumber).name);                      
     
@@ -254,7 +263,12 @@ for graphNumber = 1:numberOfGraphs
                         axes(subPlotAxes(subPlotNumber));
 
                         % Crappy workaround to still have timeline events
+                        
                         if useTimeline
+%                             for t = 1:numel(timeline.milestone)
+%                                 events = vertcat(events,  MDRTEvent(timeline.milestone(t), gca));
+%                             end
+%                             setappdata(thisFig, 'MDRTEvents', events);
                             reviewPlotAllTimelineEvents(timeline);
                         end
 
@@ -378,7 +392,7 @@ for graphNumber = 1:numberOfGraphs
         end
 
     % Fix paper orientation for saving
-        orient(figureHandle(graphNumber), 'landscape');
+%         orient(figureHandle(graphNumber), 'landscape');
 
     % Pause execution to allow user to adjust plot prior to saving?
     
