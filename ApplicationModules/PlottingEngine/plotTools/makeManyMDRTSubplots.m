@@ -39,10 +39,16 @@ function [subPlotAxes,  varargout] = makeManyMDRTSubplots(InputTitleArray, Figur
 %       margin          numeric - set the margin between subplots and figure (normalized units)
 %       groupAxesBy     numeric - the grouping for the 'axPairs' array. Default is 2
 %       mdrtpairs       true or fales - use true to return MDRTAxes pairs. Default is false
-
-
-% TODO: Add parameter parsing to let the user configure height, width,
-% title format string, etc
+%       graphStruct     graph structure - pass the MDRT graph struct to be added as appdata for other tools
+%       graphNumber     graph number - the index/number of the graph config structure
+%
+%
+%   EXAMPLE:
+%
+%       makeManyMDRTSubplots({'valve 1', 'valve 2', 'valve 3', 'valve 4'}, ...
+%                            'figure title', 'plotsWide', 2)
+%
+%       [hax, ~, hap] = makeManyMDRTSubplots(8, 'Demo Plots', 'plotsWide', 4)
 
 
 %% Input Parameters
@@ -91,6 +97,9 @@ end
 
 USE_MDRTAxes = false;
 RETURN_MDRTAxes_Pairs = false;
+APPEND_GRAPH_STRUCT = false;
+graphStruct = [];
+graphNum = [];
 graphsPlotGap = 0.05;
 GraphsPlotMargin = 0.06;
 numberOfSubplots = 1; % Change this to define the groupings! (Shouldn't be larger than spHigh)
@@ -123,7 +132,12 @@ for K = 1:2:numel(varargin)
             reshapeParam = Val;
         case 'mdrtpairs'
             RETURN_MDRTAxes_Pairs = true;
-           
+        case {'graphstruct' 'graph'}
+            APPEND_GRAPH_STRUCT = true;
+            graphStruct = Val;
+        case {'graphnumber' 'graphnum'}
+            graphNum = Val;
+
     end
 end
 
@@ -214,6 +228,22 @@ else
     axPairs = reshape(subPlotAxes, length(expectedSubplots)*spHigh/reshapeParam, reshapeParam);
 	suptitle(FigureTitleString);
 end
+
+
+
+if APPEND_GRAPH_STRUCT
+    for nfig = 1:length(fig) 
+        if USE_MDRTAxes
+            adTarget = fig(nfig).hfig;
+        else
+            adTarget = fig(nfig);
+        end
+        setappdata(adTarget, 'graph',          graphStruct);
+        setappdata(adTarget, 'graphNumber',    graphNum);
+    end
+end
+
+
 
 switch nargout
     case 2
