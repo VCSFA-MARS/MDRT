@@ -4,14 +4,15 @@ classdef MDRTColor
     %   selecting by color name.
     
     properties
+        Alpha
         R
         G
         B
-        Alpha
     end
     
     properties (Dependent = true)
         colorVect
+    
     end
     
     methods
@@ -32,6 +33,18 @@ classdef MDRTColor
         
         function value = get.colorVect(this)
             value = [this.R, this.G, this.B];
+        end
+        
+        function this = setColorVect(this, vect)
+            this.R = vect(1);
+            this.G = vect(2);
+            this.B = vect(3);
+        end
+    end
+    
+    methods (Static)
+        function value = colorNames
+            value = cellstr(enumeration('MDRTColor'));
         end
     end
     
@@ -61,6 +74,8 @@ classdef MDRTColor
         SpringGreen (   0/255, 255/255, 127/255,       1 )
         DarkGreen   (    0.42,    0.59,    0.24,       1 )
         
+        Pink        ( 255/255, 192/255, 203/255,       1 )
+        
         Blueish     (  18/255, 104/255, 179/255,       1 )
         Reddish     ( 237/255,  36/255,  38/255,       1 )
         Greenish    ( 155/255, 190/255,  61/255,       1 )
@@ -68,6 +83,8 @@ classdef MDRTColor
         Yellowish   (       1, 199/255,       0,       1 )
         
         Gold        (       1, 215/255,       0,       1 )
+        
+        Custom      (     0.5,     0.5,     0.5,       1 )
     end
     
 end
