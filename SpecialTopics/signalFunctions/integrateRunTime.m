@@ -27,7 +27,7 @@ end
 
 unit = lower(unit);
 switch unit
-    case {'gpm' 'min' 'minute' 'gal/m' 'gal/min' 'gallons per minute' 'cfm' 'scfm'}
+    case {'gpm' 'm' 'min' 'minute' 'gal/m' 'gal/min' 'gallons per minute' 'cfm' 'scfm'}
         % set timestep as one minute.
         deltat = 0.000694444;
     case {'gph' 'hr' 'hour' 'gal/h' 'gal/hr' 'gallons per hour'}
