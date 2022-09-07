@@ -1,6 +1,20 @@
 classdef MDRTShape < handle
     %MDRTShape Class that draws and manages primitive shapes (fill objects)
-    %   Detailed explanation goes here
+    % MDRTShape() creates an MDRTShape object for use in FGSE
+    % displays. The default constructor, with no arguments, creates
+    % a valve symbol at location [0,0]. Other shapes are not
+    % supported through the constructor at this time, and the
+    % MDRTShape XBaseData and YBaseData will need to be modified to
+    % produce other shapes.
+    %
+    % Several key/value pairs are implemented to customize the
+    % MDRTShape object at instantiation:
+    %
+    %   'Position'  - [x, y] sets the offset for the initial shape
+    %   'FillColor' - Accepts an MDRTColor object
+    %   'EdgeColor' - Accepts an MDRTColor object
+    %   'Scale`     - A scalar multiplier for the vertices
+    %   'Shape'     - An MDRTShapeCoord object
     
     properties (SetObservable)
         scale    = 1        % Scale factor. 1 = 100%
@@ -15,9 +29,9 @@ classdef MDRTShape < handle
     end
     
     properties (SetAccess = protected)
-        shape               % Handle to shape patch object
-        XBaseData = [ 0 ]      % XData for shape before Transformation
-        YBaseData = [ 0 ]      % YData for shape before Transformation
+        shape                                               % Handle to shape patch object
+        XBaseData = MDRTShapeCoords.CenteredSquare.XData    % XData for shape before Transformation
+        YBaseData = MDRTShapeCoords.CenteredSquare.YData    % YData for shape before Transformation
         
     end
     
@@ -28,27 +42,17 @@ classdef MDRTShape < handle
     end
     
     properties (Constant)
-        VALVE = [0  50  50 0 -50 -50  0;
-                 0  25 -25 0 -25  25  0]';
+
     end
     
     
     methods
         function this = MDRTShape(varargin)
-            % MDRTShape() creates an MDRTShape object for use in FGSE
-            % displays. The default constructor, with no arguments, creates
-            % a valve symbol at location [0,0]. Other shapes are not
-            % supported through the constructor at this time, and the
-            % MDRTShape XBaseData and YBaseData will need to be modified to
-            % produce other shapes.
-            %
-            % Several key/value pairs are implemented to customize the
-            % MDRTShape object at instantiation:
-            %
             %   'Position'  - [x, y] sets the offset for the initial shape
             %   'FillColor' - Accepts an MDRTColor object
             %   'EdgeColor' - Accepts an MDRTColor object
             %   'Scale`     - A scalar multiplier for the vertices
+            %   'Shape'     - An MDRTShapeCoord object
             
             % Counts 2022
             
@@ -85,6 +89,13 @@ classdef MDRTShape < handle
                         if isnumeric(val)
                             this.scale = val;
                         end
+                    case {'shape'}
+                        if ~ isa(val, 'MDRTShapeCoords')
+                            continue
+                        end
+                        this.XBaseData = val.XData;
+                        this.YBaseData = val.YData;
+                        disp('set shape')
                 end
                 
             end
@@ -92,8 +103,8 @@ classdef MDRTShape < handle
             xOffset = offsetVect(1);
             yOffset = offsetVect(2);
 
-            this.XBaseData = this.VALVE(:,1) + xOffset;
-            this.YBaseData = this.VALVE(:,2) + yOffset;
+            this.XBaseData = this.XBaseData + xOffset;
+            this.YBaseData = this.YBaseData + yOffset;
 
             this.updateShape;
             this.redrawShape;
