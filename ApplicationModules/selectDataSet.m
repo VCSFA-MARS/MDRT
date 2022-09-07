@@ -6,6 +6,11 @@ function [ dataPath, setPath ] = selectDataSet
 % (dataPath) and the full path to its parent folder (setPath). This
 % function uses MDRTConfig.
 %
+% The user can select either the root data set folder or the actual `data`
+% folder and this function will determine the appropriate paths. Note: this
+% function will be fooled by a folder named `data` that does not contain
+% actual MDRT Data
+%
 %   dataPath - path to folder containing .mat files
 %   setPath  - path to "data set" master folder, containing data, delim,
 %              and plot folders. Usually named by date and operation
@@ -26,11 +31,6 @@ switch result
     case 'Yes'     
 
     case 'Select New'
-        hbox = msgbox('Select the ''data'' folder that contains the .mat files.', 'Directions');
-        
-        % auto-close popup after 5 seconds
-        uiwait(hbox, 5);
-        if exist('hbox', 'var') && isgraphics(hbox); close(hbox); end
         
         defaultpath = config.dataArchivePath;
         pth = uigetdir(defaultpath); % No checking implemented yet!;
@@ -39,8 +39,23 @@ switch result
             disp('Quitting Valve Analysis tool');
             return
         end
-        
+                
         [pth, fldr, ~] = fileparts(pth);
+        
+        % Try to fix selection if the root folder was selected
+        if ~strcmp(fldr, 'data')
+            d = dir(fullfile(pth,fldr));
+            nameMask = strcmp({d.name},'data');
+            dirMask = [d.isdir];
+            dataFolderMask = all([nameMask', dirMask'],2);
+            if any(dataFolderMask)
+                pth = fldr;
+                fld = 'data';
+            else
+                disp('Unknown folder selection')
+                return
+            end
+        end
         
     case 'Quit'    
         disp('Quitting plot tool');
