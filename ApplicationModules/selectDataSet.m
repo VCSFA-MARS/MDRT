@@ -49,8 +49,8 @@ switch result
             dirMask = [d.isdir];
             dataFolderMask = all([nameMask', dirMask'],2);
             if any(dataFolderMask)
-                pth = fldr;
-                fld = 'data';
+                pth = fullfile(pth, fldr);
+                fldr = 'data';
             else
                 disp('Unknown folder selection')
                 return
