@@ -129,26 +129,10 @@ filesPressure = {
 %% Load All Command Data
 
 filesCommand    = unique(sort([filesCommand; propCommand]));
-
-keyboard
-
 filesCommand = AnyRowContaining(filesCommand, filters);
-
-
-
-
-
-
-
 
 totalValves = numel(filesCommand);
 
-
-
-
-
-
-% allData = cell(totalValves,1);
 allData = [];
 
 for fi = 1:totalValves
