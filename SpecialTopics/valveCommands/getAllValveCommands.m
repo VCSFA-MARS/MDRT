@@ -137,7 +137,7 @@ allData = [];
 
 for fi = 1:totalValves
     
-    [s, e] = regexp(filesCommand{fi}, '[DP]CVN[CO]-\d*');
+    [s, e] = regexp(filesCommand{fi}, '([DP]CVN[CO]|RV)-\d*');
     findNumber = filesCommand{fi}(s:e);
     
     thisFile = fullfile(dataFolders, filesCommand{fi});
@@ -162,7 +162,7 @@ dataStruct = [];
 numAllData = length(allData);
 oneData = 1/numAllData;
 
-progressbar('Valve', 'Command');
+progressbar('Valves', 'Commands');
 for di = 1:length(allData)
     
     thisCommand = allData(di).Data;
@@ -173,7 +173,7 @@ for di = 1:length(allData)
                     find([0;diff(thisCommand)]) ; 
                     length(thisCommand) ];
 
-    valveProg = di / length(allData) - oneData;
+    valveProg = (di / length(allData)) - oneData;
     
     for n = 1:length(changeInds)
 
