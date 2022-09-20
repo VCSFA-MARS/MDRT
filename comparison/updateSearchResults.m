@@ -98,7 +98,7 @@ function updateSearchResults(hObj, event, varargin)
         % create an index of matches for each token
         for i = 1:numel(searchToks)
 
-            sind = [ind, cellfun(@(x)( ~isempty(x) ), regexpi(masterList, searchToks{i}))];
+            ind = [ind, cellfun(@(x)( ~isempty(x) ), regexpi(masterList, searchToks{i}))];
 
         end 
         % combine matches (and searching, not or)
