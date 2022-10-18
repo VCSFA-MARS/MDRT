@@ -1,14 +1,12 @@
 function plotRP1valves
 
-% dataPath = '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data'
-% dataPath = '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data'
-% dataPath = '/Users/nick/data/archive/2019-11-01 - NG-12/data'
-% dataPath = '/Users/nick/data/archive/2019-04-16 - NG-11 Launch/data';
-% dataPath = '/Users/nick/data/archive/2018-11-16 - NG10 Topoff/data';
-% dataPath = '/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
+
+flowData = '1016 RP1 FM-1016 Coriolis Meter Filtered.mat'
 
 config = getConfig;
 dataPath = config.dataFolderPath;
+
+
 % dataPath = uigetdir(dataPath, 'Select data folder');
 % 
 % % [x,y,button] = ginput(1)
@@ -18,8 +16,48 @@ dataPath = config.dataFolderPath;
 % dataPath = uigetdir(dataPath, 'Select data folder')
 
 I = imread('RP1 System.png');
+
+
+onehr = 1/24;
+onemin = onehr/60;
+onesec = onemin/60;
+
+
+%% Load Data
+
+t0 = [];
+eventStruct = [];
+
+try
+    t = load(fullfile(dataPath, 'timeline.mat'),'-mat');
+
+    if t.timeline.uset0
+        t0 = t.timeline.t0.time;
+    end
+
+    eventStruct = t.timeline.milestones;
+
+catch
+    warning('%s %s\n%s', 'Unable to read timeline file', ...
+        'Check file permissions.' ...
+       );
+end
+
+
+
+m = load(fullfile(dataPath, 'metadata.mat'), '-mat');
+metadata = m.metaData;
+
+    
+
+
+%% Figure Setup
+
 hf = figure;
 addToolButtonsToPlot(hf);
+
+
+%% Axes Setup
 
 hap = axes();
 hap.Units = 'normalized';
@@ -27,9 +65,46 @@ hap.Position(2) = 0.28
 
 hi = imagesc(I);
 
-p = hap.Position;
-% had = axes('Position', [0,0, 1, p(2)]);
-had = axes('Position', [0,0, 1, 0.28]);
+
+%% Axes Setup - Master Plot Placement
+
+had = axes('Position', [0.02 ,0.02, 0.96, 0.26]);
+plotStyle;
+dynamicDateTicks;
+
+hdd = uicontrol('Style',    'popup', ...
+                'Units',    'normalized', ...
+                'Position', [0.01 0.28 0.2 0.02], ...
+                'String',   {'', 'Dummy Value'}, ...
+                'Callback', @selectNewFD );
+
+                FDList = {};
+
+                try
+                    load(fullfile(dataPath, 'AvailableFDs.mat'),'-mat');
+                
+                    % Add the loaded list to the GUI handles structure
+                    FDList;
+                
+                    % add the list to the GUI menu
+                    hdd.String = FDList(:,1);
+                catch
+                    warning('%s %s\n%s', 'Unable to read FD List.', ...
+                        'Check file permissions.', ...
+                        'Select "Update FD List" as a temporary workaround.');
+                end
+                
+                dropIndex = [];
+                [dropIndex, ~ ] = find(ismember(FDList, flowData));
+                
+                if dropIndex
+                    hdd.Value = dropIndex;
+                end
+
+
+
+
+%% Figure Setup - Widget Placement
 
 valveCenters = [ 330.9, 358.6819;
                  472.9, 358.6819;
@@ -117,7 +192,6 @@ end
 
 %% Plot Data Stream
 
-flowData = '1016 RP1 FM-1016 Coriolis Meter Filtered.mat'
 % flowData = '2015 LO2 FM-2015 Coriolis Meter Mon.mat';
 % flowData = '2909 LO2 PT-2909 Press Sensor Mon.mat';
 % flowData = '4919 Ghe PT-4919 Press Sensor Mon.mat';
@@ -126,10 +200,19 @@ flowData = '1016 RP1 FM-1016 Coriolis Meter Filtered.mat'
 % statData = 'LO2TopOffStatus.mat';
 % stopData = 'StopLO2Top-Off.mat';
 
-temp = load(fullfile(dataPath, flowData));
+try
+    temp = load(fullfile(dataPath, flowData));
+catch
+    temp.fd = newFD;
+    temp.fd.ts = timeseries([1 1]', metadata.timeSpan');
+    
+end
+
 axes(had)
 hold on
 hdat = plot(had, temp.fd.ts.Time, temp.fd.ts.Data);
+
+timeLimits = [temp.fd.ts.Time(1), temp.fd.ts.Time(end)];
 
 % temp = load(fullfile(dataPath, statData));
 % hold on
@@ -139,12 +222,12 @@ hdat = plot(had, temp.fd.ts.Time, temp.fd.ts.Data);
 % hold on
 % hstop = stairs(had, temp.fd.ts.Time, temp.fd.ts.Data * 400);
 
-tl = load(fullfile(dataPath, 'timeline.mat'));
-reviewPlotAllTimelineEvents(tl.timeline);
+if eventStruct
+    reviewPlotAllTimelineEvents(eventStruct);
+end
 
-setDateAxes(had, 'XLim', [temp.fd.ts.Time(1), temp.fd.ts.Time(end)]);
-% had.YLim = [0, 1200];
-% had.YLim = [-10, 60];
+setDateAxes(had, 'XLim', timeLimits);
+
 
 %% Make Time Marker
 
@@ -233,7 +316,8 @@ dpHeight = 0.066;
 dpAxes = [];
 
 for i = 1:size(detailPlots, 1)
-    
+    debugout(sprintf('Detail Plot Loop # : %d', i))
+
     thisX    = detailPlots{i, 1};
     thisY    = detailPlots{i, 2};
     thisName = detailPlots{i, 3};
@@ -242,7 +326,12 @@ for i = 1:size(detailPlots, 1)
     thisFind = detailPlots{i, 6};
     thisFD   = fd.(thisName);
     
-%     [figX, figY] = ds2nfu(hap, thisX, thisY);
+    if strcmp(thisFD.ts.Name, 'unnamed')
+        % Looking at bogus data (failed to load)
+        % Skip generation and continue?
+        continue
+    end
+    
     [figX, figY] = figCoordFromAxes(thisX, thisY, hap);
         
     dp.(detailPlots{i, 3}) = axes('position', [-1 -1 0.5 0.5]);
@@ -282,6 +371,7 @@ end
 
     linkaxes([dpAxes; had], 'x');
     dynamicDateTicks(dpAxes, 'linked');
+    setDateAxes(had, 'XLim', timeLimits);
 
 %% Create Slider
 
@@ -321,6 +411,25 @@ htime = uicontrol(hf, 'Style',              'text',...
 
     function updateGUIfromTime(timeIndex)
         htime.String = datestr(timeIndex, 'HH:MM:SS.FFF');
+        
+        if t0
+            tdelta = timeIndex - t0;
+            htime.String = sprintf('%s UTC: %s  CDT: %s \t (NG Times: %s hrs or %s min or %s sec)', ...
+                datestr(timeIndex, 'yyyy mmm dd'), ...
+                datestr(timeIndex, 'HH:MM:SS.FFF'),...
+                datestr(tdelta,    'HH:MM:SS.FFF'),...
+                sprintf('%4.2f',    tdelta/onehr), ...
+                sprintf('%5.2f',    tdelta/onemin), ...
+                sprintf('%.2f',       tdelta/onesec)  ...
+            );
+        
+        else
+%             htime.String = sprintf('%s UTC: %s', ...
+%                 datestr(timeIndex, 'yyyy mmm dd'), ...
+%                 datestr(timeIndex, 'HH:MM:SS.FFF'));
+            
+        end
+
         for k = 1:n
             ts = getsampleusingtime(fd.(links{k,2}).ts, 0,timeIndex);
             
@@ -330,6 +439,8 @@ htime = uicontrol(hf, 'Style',              'text',...
                         % valves.(links{k,2}).FaceAlpha = ts.Data(end);
                         if (ts.Data(end) == 0)
                             valves.(links{k,2}).FaceColor = [1 0 0];
+                        elseif (ts.Data(end) == 2)
+                            valves.(links{k,2}).FaceColor = [1 1 0];
                         else
                             valves.(links{k,2}).FaceColor = [0 1 0];
                         end
@@ -371,8 +482,16 @@ htime = uicontrol(hf, 'Style',              'text',...
 
 
 
-
-
+    function selectNewFD(hobj, event)
+        
+        t = load(fullfile(dataPath, FDList{hobj.Value,2}));
+        
+        hdat.XData = t.fd.ts.Time;
+        hdat.YData = t.fd.ts.Data;
+        hdat.DisplayName = displayNameFromFD(t.fd);
+        hMark.YData = had.YLim;
+        
+    end
 
 
 
