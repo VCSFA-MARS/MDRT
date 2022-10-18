@@ -82,7 +82,7 @@ switch class(valveNumArray)
         % error('valveArray must be a cell array or single char');
 end
 
-fprintf('%d valve numbers passed\n', numel(valveNum) )
+debugout(sprintf('%d valve numbers passed\n', numel(valveNum) ))
 
 useNewAxes = false;
 
@@ -120,23 +120,22 @@ COL_OTHER   = 'm';
 
 %% Deal with Axes if needed
 
-numValves = numel(valveNum);
-YTickLabels = {};
-YTicks = [1:numValves] - 0.5 ;
-
 valveNum = flip(valveNum); % flip order since we plot bottom-up
 
-for vn = 1:numValves
+justNumberPattern = '[0-9]{4,}' ;
+searchStr = regexp(valveNum, justNumberPattern, 'match'); 
+searchStr = unique(vertcat(searchStr{:}));
 
-    justNumberPattern = '[0-9]{4,}' ;
-       
-    searchStr = regexp(valveNum{vn}, justNumberPattern, 'match');
-    switch class(searchStr)
-        case 'cell'
-            searchStr = searchStr{1,1};
-    end
+
+numValves = numel(searchStr);
+
+debugout(sprintf('Processing %d unique valves', numValves))
+
+YTickLabels = {};
+YTicks = [1:numValves] - 0.5 ;
+for vn = 1:numValves
     
-    searchTerm = sprintf('*%s*',searchStr );
+    searchTerm = sprintf('*%s*',searchStr{vn} );
     debugout(sprintf('Finding all data matching: %s', searchTerm))
 
     
