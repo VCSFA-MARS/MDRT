@@ -278,10 +278,16 @@ function plotProportional
        
     plotOffset = vn - 1;
             
-    X = [posTimes(1); posTimes; posTimes(end)];
-    Y = [0;           position; 0] ./100 + plotOffset;
+%     X = [posTimes(1); posTimes; posTimes(end)];
+%     Y = [0;           position; 0] ./100 + plotOffset;
     
-    YClosed = [100; position; 100]./100 + plotOffset;
+    tt = doubleElems(posTimes);
+    yy = doubleElems(position);
+
+    X = [ tt; posTimes(end)  ];
+    Y = [ 0;  yy(1:end-1);  0] ./100 + plotOffset;
+    
+    YClosed = [100; yy(1:end-1); 100] ./100 + plotOffset;
     
     hax.NextPlot = 'add';
     
@@ -395,6 +401,11 @@ function plotDiscrete
 
     end
 end
+
+
+    function doubled = doubleElems(vect)
+        doubled = reshape(repmat(vect', 2, 1), numel(vect)*2,1);
+    end
 
 end
 
