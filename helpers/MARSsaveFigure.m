@@ -13,6 +13,9 @@ function MARSsaveFigure(varargin)
 
 %   Counts, VCSFA, 2020 - convert to function for improved fault tolerance.
 
+eventLabelSize = 4;
+
+
 config = getConfig;
 
 if nargin == 3
@@ -52,6 +55,17 @@ end
 % Open UI for save name and path
     [file,path] = uiputfile('*.pdf','Save Plot to PDF as:',fullfile(config.outputFolderPath, defaultName));
 
+
+% Get Number of Axes for intelligent font sizing
+ax = findobj( get(fh,'Children'), '-depth', 1, 'type', 'axes');
+numAxes = sum(~ strcmp({ax.Tag}, 'suptitle'));
+
+if numAxes > 2
+    eventLabelSize = 5.5;
+else
+    eventLabelSize = 8;
+end
+    
 % Check the user didn't "cancel"
 if file ~= 0
     
@@ -94,7 +108,7 @@ if file ~= 0
     
     if ~(isempty(labels))
         oldLabelFontSize = get(labels, 'FontSize'); progressbar(9/totalSteps);
-        set(labels, 'FontSize', 8);                 progressbar(10/totalSteps);
+        set(labels, 'FontSize', eventLabelSize);    progressbar(10/totalSteps);
     else
         oldLabelFontSize = {};                      progressbar(10/totalSteps);
     end
