@@ -95,14 +95,24 @@ if file ~= 0
     labels = findall(fh,'Tag','vlinetext');         progressbar(8/totalSteps);
     
     events = [];
+    labelSizeMethod = ''
     if isappdata(fh, 'MDRTEvents')
         events = getappdata(fh, 'MDRTEvents');
         oldEventFontSize = events(1).FontSize;
         newEventFontSize = 4;
+        labelSizeMethod = 'original';
+    elseif isappdata(fh, 'EventCollection')
+        EC = getappdata(fh, 'EventCollection');
+        labelSizeMethod = 'extra-crispy';
     end
     
-    if ~isempty(events)
-        [events.FontSize] = deal(newEventFontSize); progressbar(9/totalSteps);
+    switch labelSizeMethod
+        case 'original'            
+            if ~isempty(events)
+                [events.FontSize] = deal(newEventFontSize); progressbar(9/totalSteps);
+            end
+        case 'extra-crispy'
+            EC.makePrintSize(true);                         progressbar(9/totalSteps);
     end
     
     
@@ -142,7 +152,13 @@ if file ~= 0
     
     set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(12/totalSteps);
     set(legends, {'FontSize'}, oldLegendFontSize);  progressbar(13/totalSteps);
-    set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
+    
+    switch labelSizeMethod
+        case 'original'           
+            set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
+        case 'extra-crispy'
+            EC.makePrintSize(false);                        progressbar(14/totalSteps);
+    end
     
 else
     % Cancelled... not sure what the best behavior is... return to GUI
