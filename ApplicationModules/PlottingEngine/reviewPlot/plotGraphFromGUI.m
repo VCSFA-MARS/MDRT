@@ -18,6 +18,7 @@ function varargout = plotGraphFromGUI(graph, timeline, varargin)
 
 % temporary hack for non-timeline plots
     useTimeline = true;
+    isUseOriginalEventMarkers = true;
     
 % temporary hack to handle giant data sets
     isReduceThisPlot = true;
@@ -69,6 +70,20 @@ if any(size(varargin))
                                 ENABLE_REDUCE = false;
                         end
                         debugout(sprintf('ENABLE_REDUCE = %s', mat2str(ENABLE_REDUCE)))
+                    end
+                end
+            case {'disableoldevents'}
+                if islogical(val)
+                    isUseOriginalEventMarkers = val;
+                elseif ischar(val) || iscellstr(val)
+                    if iscellstr(val)
+                        val = val{1};
+                    end
+                    switch lower(val)
+                        case {'on', 'yes', 'true', 'use'}
+                            isUseOriginalEventMarkers = false;
+                        case {'off', 'no', 'false', 'not'}
+                            isUseOriginalEventMarkers = true;
                     end
                 end
                 
@@ -269,7 +284,10 @@ for graphNumber = 1:numberOfGraphs
 %                                 events = vertcat(events,  MDRTEvent(timeline.milestone(t), gca));
 %                             end
 %                             setappdata(thisFig, 'MDRTEvents', events);
-                            reviewPlotAllTimelineEvents(timeline);
+
+                            if isUseOriginalEventMarkers
+                                reviewPlotAllTimelineEvents(timeline);
+                            end
                         end
 
 
