@@ -14,6 +14,8 @@ Config = MDRTConfig.getInstance;
 figureName = 'Data Import GUI';
 overrideWindowDelete = true;
 
+MAX_TRYS = 10; % Lines of a .csv to read before giving up
+
 if nargin == 0
     % Run as standalone GUI for testing
     % Run as standalone GUI for testing
@@ -101,6 +103,7 @@ checkboxTags            = { 'checkbox_autoName';
                             'checkbox_autoSkipErrors';
                             'checkbox_combineDelims';
                             'checkbox_importRaw';
+                            'checkbox_pad_c_data'
                             };
                             
 
@@ -112,6 +115,7 @@ checkboxStrings         = { 'Auto-name folder';
                             'Auto-skip parsing errors';
                             '.delims are from different TAMs';
                             'Import RAW data';
+                            'Import Pad-0C .csv'
                             };
 
 
@@ -358,7 +362,7 @@ initialValues =    ...
         for j = 1:numel(files)
             finfo = dir(files{j});
             [~, ~, ext] = fileparts(finfo.name);
-            if strcmpi('.delim',ext) && (finfo.bytes > 0) % if delim and not empty
+            if any(strcmpi({'.csv', '.delim'}, ext)) && (finfo.bytes > 0) % if delim and not empty
                 guessFile{j} = files{j}; % fullfile path
             end           
         end
@@ -393,7 +397,6 @@ initialValues =    ...
                         % it had a non-zero size, and the text-parse still
                         % failed. File must be malformed.
                         warning(['delim file ' finfo.name ' was malformed.']);
-                        fclose(fid);
                     end
                     
                     fclose(fid); % cleanup your mess!
@@ -410,15 +413,25 @@ initialValues =    ...
                     end
                     
                 case '.csv'
-                    warning('.csv files are not currently supported for automatic import');
-                    fclose(fid);
-                    return
+                    debugout('Processing .csv file')
+                    RL_Time_RE = '\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}.\d+Z';
+                    RL_Time_fmt = 'yyyy-mm-ddTHH:MM:SS.FFF';
+                    
+                    for n = 1:MAX_TRYS
+                        this_line = fgetl(fid);
+                        if any(regexp(this_line, RL_Time_RE))
+                            time_str = regexp(this_line, RL_Time_RE, 'match');
+                            startTime(j, 1) = datenum(time_str, RL_Time_fmt);
+                            break
+                        end
+                    end
 
                 otherwise
                     warning(['The file ' finfo.name ' is of a type not currently supported for automatic import']);
                     fclose(fid);
                     return
             end
+            fclose(fid);
 
         end
         
@@ -458,6 +471,17 @@ initialValues =    ...
     function startImport(~, ~, varargin)
         
         updateFolderGuess;
+        
+        if hs.checkbox_pad_c_data.Value
+            % PLACEHOLDER for PAD-C import call
+            metaData.site = 'Pad-0C';
+            ImportPadCFromGUI(  flbManager.getFileCellArray, ... 
+                                metaData, ...
+                                hs.edit_folderName.String, ...
+                                hs.checkbox_autoSkipErrors.Value );
+            metaData = rmfield(metaData, 'site');
+            return
+        end
         
         ImportFromGUI(  flbManager.getFileCellArray, ... 
                         metaData, ...
