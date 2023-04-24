@@ -166,7 +166,7 @@ function MDRTbrushMenu(hobj, event)
                 hs.duration.String = trend.durations;
                 hs.delta.String = trend.delta;
                 hs.slope.String = trend.rate;
-                hs.r2value.String = trend.rsquare;
+                hs.r2value.String = trend.rsq;
                 
             end
             

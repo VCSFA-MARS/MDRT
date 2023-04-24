@@ -1,19 +1,22 @@
 dataFolders = {
-	'/Users/nick/data/archive/2016-20-17 OA-5 LA1';
-	'/Users/nick/data/archive/2017-11-11 - OA-8 Scrub';
-	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch';
-	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch';
-	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch';
-	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch';
-	'/Users/nick/data/archive/2019-11-01 - NG-12';
-	'/Users/nick/data/archive/2020-02-09_NG-13';
-	'/Users/nick/data/archive/2020-02-14_NG-13-2';
+% 	'/Users/nick/data/archive/2016-20-17 OA-5 LA1';
+% 	'/Users/nick/data/archive/2017-11-11 - OA-8 Scrub';
+% 	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch';
+% 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch';
+% 	'/Users/nick/data/archive/2018-11-16 - NG-10 Launch';
+% 	'/Users/nick/data/archive/2019-04-16 - NG-11 Launch';
+% 	'/Users/nick/data/archive/2019-11-01 - NG-12';
+% 	'/Users/nick/data/archive/2020-02-09_NG-13';
+% 	'/Users/nick/data/archive/2020-02-14_NG-13-2';
 	'/Users/nick/data/archive/2020-02-15 - NG-13 Launch';
     '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub';
     '/Users/nick/data/archive/2020-10-02 - NG-14 Launch'; ...
-};
-
-
+    '/Users/nick/data/archive/2021-02-19 - NG-15 Launch'; ...
+    '/Users/nick/data/archive/2021-08-09 - NG-16 Launch'; ...
+    '/Users/nick/data/archive/2022-02-18 - NG-17 Launch'; ...
+    '/Users/nick/data/archive/2022-11-05 - NG-18 Scrub'; ...
+    '/Users/nick/data/archive/2022-11-06 - NG-18 Launch'; ...
+    };
 
 sensorFiles = {	'1014 RP1 PCVNC-1014 Globe Valve Mon.mat';
                 '1015 RP1 PCVNC-1015 Globe Valve Mon.mat'; ...
