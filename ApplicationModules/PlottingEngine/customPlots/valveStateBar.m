@@ -211,8 +211,29 @@ for vn = 1:numValves
 
     %% Handle Discrete vs Proportional
 
-    if any(l_disCmd)
-        % Valve is discrete - good
+    if any(l_propCmd + l_proportional)
+        % Valve is proportional - not implemented :(
+        % sad. Sad, sad, sad
+        
+        try
+            % 
+            s = load(fullfile(DATA_FOLDER, filenames{l_propCmd}));
+            cmdParms = s.fd.ts.Data;
+            cmdTimes = s.fd.ts.Time;
+        catch
+            cmdParms = [];
+            cmdTimes = [];
+            disp('Proportional valve command data not found');
+        end
+        
+        s = load(fullfile(DATA_FOLDER, filenames{l_proportional}));
+        position = s.fd.ts.Data;
+        posTimes = s.fd.ts.Time;
+        
+        plotProportional;
+    
+    elseif any(l_disCmd + l_state)
+        % Valve is assumed discrete - good.
         
         % Load State
         s = load(fullfile(DATA_FOLDER,filenames{l_state}));
@@ -220,26 +241,18 @@ for vn = 1:numValves
         times = s.fd.ts.Time;
 
         % Load Command
-        s = load(fullfile(DATA_FOLDER,filenames{l_disCmd}));
-        cmdParms = s.fd.ts.Data;
-        cmdTimes = s.fd.ts.Time;
+        try
+            s = load(fullfile(DATA_FOLDER,filenames{l_disCmd}));
+            cmdParms = s.fd.ts.Data;
+            cmdTimes = s.fd.ts.Time;
+        catch
+            cmdParms = [];
+            cmdTimes = [];
+            disp('Discrete valve command data not found');
+        end
                 
         plotDiscrete;
 
-    elseif any(l_propCmd)
-        % Valve is proportional - not implemented :(
-        % sad. Sad, sad, sad
-        
-        s = load(fullfile(DATA_FOLDER, filenames{l_propCmd}));
-        cmdParms = s.fd.ts.Data;
-        cmdTimes = s.fd.ts.Time;
-        
-        s = load(fullfile(DATA_FOLDER, filenames{l_proportional}));
-        position = s.fd.ts.Data;
-        posTimes = s.fd.ts.Time;
-        
-        plotProportional;
-                
     else
         % No one knows what happened
         continue
@@ -311,7 +324,6 @@ end
 
 
 
-
 function plotDiscrete
     % plotDiscrete takes valve state and command data and plots rectangles
     % representing the open, closed, cautionary, and critical states.
@@ -370,6 +382,11 @@ function plotDiscrete
 
     hCmds = [];
     for n = 2:length(changeInds)
+        
+        if ~ any(cmdTimes)
+            disp('Skipping discrete command plot');
+            continue
+        end
 
         indL = changeInds(n-1);
         indR = changeInds(n);
