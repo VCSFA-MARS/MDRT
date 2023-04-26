@@ -91,7 +91,8 @@ checkboxPositions       = { [300 339 117 23];
                             [14 15 111 23];
                             [300 100 200 23];
                             [300  70 200 23];
-                            [300  40 200 23]
+                            [300  40 200 23];
+                            [300  10 200 23]
                             };
 
                         
@@ -127,6 +128,7 @@ checkboxParents         =   {   'fig';
                                 'fig';
                                 'fig';
                                 'fig';
+                                'fig';
                             };
                         
 checkboxValue           =   {   true;
@@ -135,6 +137,7 @@ checkboxValue           =   {   true;
                                 false;
                                 false;
                                 true;
+                                false;
                                 false;
                                 false;
                             };
@@ -431,7 +434,13 @@ initialValues =    ...
                     fclose(fid);
                     return
             end
-            fclose(fid);
+            
+            %This was throwing errors sometimes saying fid was already
+            %closed. Added a check to squash. Is there really a path 
+            % through the case statement that doesn't close the file?
+            if any(ismember(fopen('all'), fid))
+                fclose(fid);
+            end
 
         end
         
