@@ -95,7 +95,7 @@ if file ~= 0
     labels = findall(fh,'Tag','vlinetext');         progressbar(8/totalSteps);
     
     events = [];
-    labelSizeMethod = ''
+    labelSizeMethod = 'original'
     if isappdata(fh, 'MDRTEvents')
         events = getappdata(fh, 'MDRTEvents');
         oldEventFontSize = events(1).FontSize;
@@ -158,6 +158,8 @@ if file ~= 0
             set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
         case 'extra-crispy'
             EC.makePrintSize(false);                        progressbar(14/totalSteps);
+        otherwise
+            set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
     end
     
 else
