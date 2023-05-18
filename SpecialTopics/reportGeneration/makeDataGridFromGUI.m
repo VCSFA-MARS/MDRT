@@ -14,6 +14,14 @@ function outputCellArray = makeDataGridFromGUI (hobj, event, varargin)
 %   Counts 10-2017, VCSFA
 
 
+%% %%%%%%%%%%%%%%%%%%%%%%%%%
+% % Grid Setup Parameters %
+% %%%%%%%%%%%%%%%%%%%%%%%%%
+
+defaultHoursBefore = 8;
+defaultHoursAfter  = 8;
+defaultIntervalInMinutes = 15;
+
 %% Load app data from calling GUI
 
     mdrt = getappdata(hobj.Parent);
@@ -33,8 +41,18 @@ if exist(fullfile(path, 'timeline.mat'), 'file')
             
         else
             % No t0 specified. Ask?
-            error('No t0 time specified for this data set.');
             
+            try
+                s = load(fullfile(path, 'metadata.mat'));
+                t0 = s.metaData.timeSpan(end);
+                defaultHoursAfter  = 0;
+                
+                delta = abs(diff(s.metaData.timeSpan));
+                defaultHoursBefore = ceil(delta * 24);
+                
+            catch
+                error('No t0 or metadata for this data set.');
+            end
         end
         
     else
@@ -57,13 +75,7 @@ end
 
 %% Use timeHacks vector to generate the timesteps
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%
-% % Grid Setup Parameters %
-% %%%%%%%%%%%%%%%%%%%%%%%%%
 
-defaultHoursBefore = 8;
-defaultHoursAfter  = 8;
-defaultIntervalInMinutes = 15;
 
     prompt = {  'Grid Interval (minutes):', ...
                 'Start Hours before T0:', ...
