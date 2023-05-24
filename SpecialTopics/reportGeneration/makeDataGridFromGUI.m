@@ -29,7 +29,8 @@ defaultIntervalInMinutes = 15;
 
 %% Load Timeline Information from Data Set (with some error checking)
 
-path = mdrt.dataIndex(mdrt.selectedList{1,3}).pathToData;
+data_set_index = mdrt.hs.popup_dataSetMain.Value;
+path = mdrt.dataIndex(data_set_index).pathToData;
 
 if exist(fullfile(path, 'timeline.mat'), 'file')
     s = load(fullfile(path, 'timeline.mat'));
@@ -115,7 +116,7 @@ newTimeVector = t0 - timeHacks;
 
 %% Step through each data file
 
-filePaths = cell(size(mdrt.selectedList,1));
+filePaths = cell(size(mdrt.selectedList,1),1);
 
 
 for i = 1:length(filePaths)
@@ -167,6 +168,7 @@ end
 outputCellArray;
 
 hs.fig = figure;
+hs.fig.Name = sprintf('%s Data Grid', mdrt.dataIndex(data_set_index).metaData.operationName);
 hs.t = uitable(hs.fig, 'Data', outputCellArray, ...
     'units',        'normalized', ...
     'position',     [0.05 0.05 0.9 0.9]);
