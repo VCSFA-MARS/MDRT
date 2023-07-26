@@ -11,6 +11,17 @@ function varargout = plotGraphFromGUI(graph, timeline, varargin)
 %   the passed options structure. if options is left blank, uses default
 %   values to be defined leter
 %
+% Supported Key/Value pairs:
+%
+%     newValvePlot, valveBarPlot: [true|false|'on'|'off'|'true'|'false']
+%         - toggles the use of the bar-style valve plots. When used, all FDs in 
+%           a subplot should be valve data
+%     reducePlot, useReducePlot: [true|false|'on'|'off'|'true'|'false']
+%         - toggles the use of 'reducePlot' for easier browsing of high-frequency
+%           data sets
+%     disableOldEvents, useMdrtEvents: [true|false|'on'|'off'|'true'|'false']
+%         - toggles the use of original event markers or the class-based MDRTEvents
+%
 % Counts, 10-7-14 - Spaceport Support Services
 
 % Read in the plot info
@@ -72,7 +83,7 @@ if any(size(varargin))
                         debugout(sprintf('ENABLE_REDUCE = %s', mat2str(ENABLE_REDUCE)))
                     end
                 end
-            case {'disableoldevents'}
+            case {'disableoldevents', 'usemdrtevents'}
                 if islogical(val)
                     isUseOriginalEventMarkers = val;
                 elseif ischar(val) || iscellstr(val)
@@ -85,6 +96,9 @@ if any(size(varargin))
                         case {'off', 'no', 'false', 'not'}
                             isUseOriginalEventMarkers = true;
                     end
+                end
+                if strcmpi(val, 'usemdrtevents') % Flip value for this key
+                    isUseOriginalEventMarkers = ~isUseOriginalEventMarkers;
                 end
                 
             otherwise
@@ -176,19 +190,22 @@ for graphNumber = 1:numberOfGraphs
 % -------------------------------------------------------------------------
     UserData.graph = graph;
     
-%     figureHandle(graphNumber) = makeMDRTPlotFigure(UserData.graph, graphNumber);
-%     figureHandle(graphNumber) = MDRTFigure(UserData.graph, graphNumber);
-    
-%     subPlotAxes = MDRTSubplot(numberOfSubplots,1,graphsPlotGap, ... 
-%                                 GraphsPlotMargin,GraphsPlotMargin);
+    % Original struct-based figure/plot generation code
+    figureHandle(graphNumber) = makeMDRTPlotFigure(UserData.graph, graphNumber);    
+    subPlotAxes = MDRTSubplot(numberOfSubplots,1,graphsPlotGap, ... 
+                                GraphsPlotMargin,GraphsPlotMargin);
+
+    % New MDRT Class based figure/plot generation code:                                
                             
-	[subPlotAxes, thisFig] = makeManyMDRTSubplots(graph(graphNumber).subplots, ...
-                                graph(graphNumber).name, ...
-                                'newStyle',     true, ...
-                                'plotsHigh',    numberOfSubplots, ...
-                                'groupAxesBy',  numberOfSubplots);
+	% [subPlotAxes, thisFig] = makeManyMDRTSubplots(graph(graphNumber).subplots, ...
+    %                             graph(graphNumber).name, ...
+    %                             'newStyle',     false, ...
+    %                             'plotsHigh',    numberOfSubplots, ...
+    %                             'groupAxesBy',  numberOfSubplots, ...
+    %                             'graphStruct',  graph, ...
+    %                             'graphNumber',  graphNumber);
                             
-    figureHandle(graphNumber) = thisFig;
+    % figureHandle(graphNumber) = thisFig;
     
                             
     % TODO: Insert code to parse graph title meta tags!
@@ -206,6 +223,7 @@ for graphNumber = 1:numberOfGraphs
     for subPlotNumber = 1:numberOfSubplots
         debugout(sprintf('Subplot %d of %d', subPlotNumber, numberOfSubplots))
         iv = [];
+        axTimeLims = [];
         
         isNormalSubplot(subPlotNumber) = true;
         
@@ -243,7 +261,7 @@ for graphNumber = 1:numberOfGraphs
             
             isNormalSubplot(subPlotNumber) = false;
         else
-            populateSubplot;
+            axTimeLims = populateSubplot;
         end
 
         % Preallocate plot handles
@@ -301,10 +319,14 @@ for graphNumber = 1:numberOfGraphs
 
             % dynamicDateTicks
                 dynamicDateTicks(subPlotAxes, 'linked') 
+                
+                if axTimeLims
+                    subPlotAxes(subPlotNumber).XLim = axTimeLims;
+                end
 
-                xLim = get(subPlotAxes(subPlotNumber), 'XLim');
-%                     setDateAxes(subPlotAxes(subPlotNumber), 'XLim', [timeToPlot.start timeToPlot.stop]);
-                 setDateAxes(subPlotAxes(subPlotNumber), 'XLim', xLim);
+%                 xLim = get(subPlotAxes(subPlotNumber), 'XLim');
+% %                     setDateAxes(subPlotAxes(subPlotNumber), 'XLim', [timeToPlot.start timeToPlot.stop]);
+%                  setDateAxes(subPlotAxes(subPlotNumber), 'XLim', xLim);
 
 
             % Override the data cursor text callback to show time stamp
@@ -337,7 +359,7 @@ for graphNumber = 1:numberOfGraphs
                     
     end % subplot loop
     
-    
+%     This seems to break auto x-axis limits in 2017a
     % Link x axes?
         linkaxes(subPlotAxes(:),'x');
         
@@ -420,11 +442,15 @@ for graphNumber = 1:numberOfGraphs
 end % Graph Loop
 
 
-    function populateSubplot()
+    function xlims = populateSubplot()
+        
+        xlims = [100000000000 1];
 
-    % -----------------------------------------------------------------
-    % Main plotting loop.
-    % -----------------------------------------------------------------
+%{
+  +-----------------------------------------------------------------------------+
+  |                             Main plotting loop.                             |
+  +-----------------------------------------------------------------------------+
+%}
 
     % Initialize style loop variables
         iStyle = 1;
@@ -435,6 +461,8 @@ end % Graph Loop
         axes(subPlotAxes(subPlotNumber));
         
         for i = 1:length(toPlot)
+            
+            xlims = vertcat(xlims, [min(s(i).fd.ts.Time), max(s(i).fd.ts.Time)]);
 
             % Set useReducePlot based on FD length
             if (length(s(i).fd.ts.Time) > reducePlotThresholdLength) && ENABLE_REDUCE
@@ -486,7 +514,6 @@ end % Graph Loop
 %                     hDataPlot(graphNumber,subPlotNumber,i) = hThisPlot.h_plot;
 
                 else
-
                     hDataPlot(graphNumber,subPlotNumber,i) = stairs(s(i).fd.ts.Time, s(i).fd.ts.Data , ...
                                     'displayname', ...
                                     displayNameFromFD(s(i).fd));
@@ -537,6 +564,13 @@ end % Graph Loop
             isColorOverride = false;
 
         end % Data stream plots
+        
+        xlims = [ min(xlims(:,1)), max(xlims(:,2)) ];
+        
     end
+
+    % Hack to fix subplot axes Tag strings
+    [subPlotAxes.Tag] = deal('MDRTAxes');
+
 
 end
