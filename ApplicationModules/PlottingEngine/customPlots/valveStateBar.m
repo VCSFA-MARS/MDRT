@@ -99,7 +99,7 @@ catch
     hFig = figure;
     hax = axes;
     useNewAxes = true;
-    debugout('No valid axes handle passed: created new figure and axes')
+    warning('No valid axes handle passed: created new figure and axes')
 end
 
 axes(hax);
@@ -270,13 +270,29 @@ if useNewAxes
     dynamicDateTicks;
 end
 
-
-hax.YRuler.TickLabelGapOffset = TICK_LABEL_GAP_OFFSET;
-
-
+shiftYLabels
+% hax.YRuler.TickLabelGapOffset = TICK_LABEL_GAP_OFFSET;
 
 
 %% Plotting Functions
+
+function shiftYLabels
+    
+    % Save relevant info
+    old_tick_labels = hax.YTickLabels;
+    old_tick_vals = hax.YTick;
+    num_ticks = numel(old_tick_labels);
+    
+    old_y_label = hax.YLabel.String;
+    
+    % Clear the bad labels
+    hax.YTickLabels = {''};
+    hax.YLabel.String = {''};
+    
+    MDRTValveBarLabel(hax, old_tick_labels, old_tick_vals);
+
+end
+
 
 
 function plotProportional
@@ -420,9 +436,9 @@ function plotDiscrete
 end
 
 
-    function doubled = doubleElems(vect)
-        doubled = reshape(repmat(vect', 2, 1), numel(vect)*2,1);
-    end
+function doubled = doubleElems(vect)
+    doubled = reshape(repmat(vect', 2, 1), numel(vect)*2,1);
+end
 
 end
 
