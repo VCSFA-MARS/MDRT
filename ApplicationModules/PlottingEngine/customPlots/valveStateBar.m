@@ -351,6 +351,7 @@ function plotDiscrete
                     length(states) ];
 
     hFills = [];
+    hold on;
     for n = 2:length(changeInds)
 
         indL = changeInds(n-1);
@@ -385,9 +386,8 @@ function plotDiscrete
         thisFill = fill(X, Y, col, 'FaceAlpha', 0.5, 'EdgeColor', edgeCol);
         hFills = vertcat(hFills, thisFill);
 
-        hold on;
-
     end
+    hold off;
 
 
     % Plot Commands
@@ -397,6 +397,8 @@ function plotDiscrete
                     length(cmdParms) ];
 
     hCmds = [];
+    
+    hold on;
     for n = 2:length(changeInds)
         
         if ~ any(cmdTimes)
@@ -430,9 +432,8 @@ function plotDiscrete
 
         % clockwise from bottom-left
 
-        hold on;
-
     end
+    hold off;
 end
 
 
