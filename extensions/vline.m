@@ -146,10 +146,10 @@ else
         end
     end     
 
-    if(Zpos < 0)
-        uistack(th,'bottom');
-        uistack(h, 'bottom');
-    end
+%     if(Zpos < 0)
+%         uistack(th,'bottom');
+%         uistack(h, 'bottom');
+%     end
         
     if g==0
     hold off
