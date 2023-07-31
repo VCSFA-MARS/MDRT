@@ -26,7 +26,7 @@ onesec = onemin/60;
 %% Load Data
 
 t0 = [];
-eventStruct = [];
+% eventStruct = [];
 
 try
     t = load(fullfile(dataPath, 'timeline.mat'),'-mat');
@@ -35,12 +35,19 @@ try
         t0 = t.timeline.t0.time;
     end
 
-    eventStruct = t.timeline.milestones;
+    if ~ isempty(t.timeline.milestone)
+        hasMilestones = true;
+    end
+    
+%     eventStruct = t.timeline.milestone;
+    
+
 
 catch
     warning('%s %s\n%s', 'Unable to read timeline file', ...
         'Check file permissions.' ...
        );
+   hasMilestones = false;
 end
 
 
@@ -61,7 +68,7 @@ addToolButtonsToPlot(hf);
 
 hap = axes();
 hap.Units = 'normalized';
-hap.Position(2) = 0.28
+hap.Position(2) = 0.28;
 
 hi = imagesc(I);
 
@@ -222,8 +229,8 @@ timeLimits = [temp.fd.ts.Time(1), temp.fd.ts.Time(end)];
 % hold on
 % hstop = stairs(had, temp.fd.ts.Time, temp.fd.ts.Data * 400);
 
-if eventStruct
-    reviewPlotAllTimelineEvents(eventStruct);
+if hasMilestones
+    reviewPlotAllTimelineEvents(t.timeline);
 end
 
 setDateAxes(had, 'XLim', timeLimits);

@@ -30,6 +30,7 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 
 userPassedDataFolder = '';
 TICK_LABEL_GAP_OFFSET = -20;
+AX_LIMS = [today + 1,1];
 
 if any(size(varargin))
     if numel(varargin) == 1 && iscell(varargin(1))
@@ -99,7 +100,7 @@ catch
     hFig = figure;
     hax = axes;
     useNewAxes = true;
-    debugout('No valid axes handle passed: created new figure and axes')
+    warning('No valid axes handle passed: created new figure and axes')
 end
 
 axes(hax);
@@ -258,25 +259,43 @@ for vn = 1:numValves
         continue
     end
 
-end    
+end
 %% Update Y-Axis Labels with Valve IDs
 
 hax.YTick = YTicks;
 hax.YTickLabel = YTickLabels;
 hax.YLim = [0 numValves];
 
-if useNewAxes
+% if useNewAxes
     plotStyle;
-    dynamicDateTicks;
-end
+    dynamicDateTicks
+% end
 
+shiftYLabels
+% hax.YRuler.TickLabelGapOffset = TICK_LABEL_GAP_OFFSET;
 
-hax.YRuler.TickLabelGapOffset = TICK_LABEL_GAP_OFFSET;
-
-
+setDateAxes(hax, 'XLim', AX_LIMS);
 
 
 %% Plotting Functions
+
+function shiftYLabels
+    
+    % Save relevant info
+    old_tick_labels = hax.YTickLabels;
+    old_tick_vals = hax.YTick;
+    num_ticks = numel(old_tick_labels);
+    
+    old_y_label = hax.YLabel.String;
+    
+    % Clear the bad labels
+    hax.YTickLabels = {''};
+    hax.YLabel.String = {''};
+    
+    MDRTValveBarLabel(hax, old_tick_labels, old_tick_vals);
+
+end
+
 
 
 function plotProportional
@@ -319,6 +338,9 @@ function plotProportional
     cmdZ = ones(size(cmdX)).*COM_FLOAT_HEIGHT;
     
     cmdPlot = plot3(cmdX, cmdY, cmdZ, '-r');
+    
+    AX_LIMS(2) = max([X; cmdX; AX_LIMS(2)]);
+    AX_LIMS(1) = min([X; cmdX; AX_LIMS(1)]);
 
 end
 
@@ -335,6 +357,7 @@ function plotDiscrete
                     length(states) ];
 
     hFills = [];
+    hold on;
     for n = 2:length(changeInds)
 
         indL = changeInds(n-1);
@@ -369,9 +392,8 @@ function plotDiscrete
         thisFill = fill(X, Y, col, 'FaceAlpha', 0.5, 'EdgeColor', edgeCol);
         hFills = vertcat(hFills, thisFill);
 
-        hold on;
-
     end
+    hold off;
 
 
     % Plot Commands
@@ -381,6 +403,8 @@ function plotDiscrete
                     length(cmdParms) ];
 
     hCmds = [];
+    
+    hold on;
     for n = 2:length(changeInds)
         
         if ~ any(cmdTimes)
@@ -414,15 +438,16 @@ function plotDiscrete
 
         % clockwise from bottom-left
 
-        hold on;
-
     end
+    hold off;
+    AX_LIMS(2) = max([X; AX_LIMS(2)]);
+    AX_LIMS(1) = min([X; AX_LIMS(1)]);
 end
 
 
-    function doubled = doubleElems(vect)
-        doubled = reshape(repmat(vect', 2, 1), numel(vect)*2,1);
-    end
+function doubled = doubleElems(vect)
+    doubled = reshape(repmat(vect', 2, 1), numel(vect)*2,1);
+end
 
 end
 
