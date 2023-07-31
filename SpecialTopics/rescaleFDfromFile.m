@@ -126,7 +126,14 @@ hs.saveButton = uicomponent('style', 'pushbutton', ...
     'String', 'Save Rescaled Data', ...
     'position', [200 86 151 51], ...
     'callback', @rescaleAndSave);
+%%
+hs.resetButton = uicomponent('style', 'pushbutton', ...
+    'String', 'reset', ...
+    'position', [140 86 50 51], ...
+    'Visible', 'off', ...
+    'callback', @resetSaveButton);
 
+%%
 updateGUI;
 
 
@@ -176,6 +183,7 @@ updateGUI;
         if fileName
             save(fullfile(savePath, newFileName), 'fd');
             hs.saveButton.Enable = 'off';
+            hs.resetButton.Visible = 'on';
             updateFDListFromDir(model.originalFolder, ...
                                 'save',         'yes', ...
                                 'prompt',       'yes');
@@ -207,5 +215,10 @@ updateGUI;
         end
     end
 
+
+    function resetSaveButton(~,~)
+        hs.saveButton.Enable = 'on';
+        hs.resetButton.Visible = 'off';
+    end
 
 end
