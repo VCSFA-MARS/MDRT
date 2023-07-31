@@ -30,6 +30,7 @@ function valveStateBar(valveNumArray, targetAxes, varargin)
 
 userPassedDataFolder = '';
 TICK_LABEL_GAP_OFFSET = -20;
+AX_LIMS = [today + 1,1];
 
 if any(size(varargin))
     if numel(varargin) == 1 && iscell(varargin(1))
@@ -258,20 +259,22 @@ for vn = 1:numValves
         continue
     end
 
-end    
+end
 %% Update Y-Axis Labels with Valve IDs
 
 hax.YTick = YTicks;
 hax.YTickLabel = YTickLabels;
 hax.YLim = [0 numValves];
 
-if useNewAxes
+% if useNewAxes
     plotStyle;
-    dynamicDateTicks;
-end
+    dynamicDateTicks
+% end
 
 shiftYLabels
 % hax.YRuler.TickLabelGapOffset = TICK_LABEL_GAP_OFFSET;
+
+setDateAxes(hax, 'XLim', AX_LIMS);
 
 
 %% Plotting Functions
@@ -335,6 +338,9 @@ function plotProportional
     cmdZ = ones(size(cmdX)).*COM_FLOAT_HEIGHT;
     
     cmdPlot = plot3(cmdX, cmdY, cmdZ, '-r');
+    
+    AX_LIMS(2) = max([X; cmdX; AX_LIMS(2)]);
+    AX_LIMS(1) = min([X; cmdX; AX_LIMS(1)]);
 
 end
 
@@ -434,6 +440,8 @@ function plotDiscrete
 
     end
     hold off;
+    AX_LIMS(2) = max([X; AX_LIMS(2)]);
+    AX_LIMS(1) = min([X; AX_LIMS(1)]);
 end
 
 
