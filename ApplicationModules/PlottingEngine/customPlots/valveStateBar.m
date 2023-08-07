@@ -440,8 +440,8 @@ function plotDiscrete
 
     end
     hold off;
-    AX_LIMS(2) = max([X; AX_LIMS(2)]);
-    AX_LIMS(1) = min([X; AX_LIMS(1)]);
+    AX_LIMS(2) = max([X'; AX_LIMS(2)]);
+    AX_LIMS(1) = min([X'; AX_LIMS(1)]);
 end
 
 
