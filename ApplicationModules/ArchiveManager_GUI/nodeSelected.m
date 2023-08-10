@@ -35,8 +35,8 @@ function [ output_args ] = nodeSelected( hobj, event, varargin )
     
     
     %% Update GUI Display ?
-    liveStrings = getappdata(hobj.Parent, 'liveStrings');
-    hlabel      = getappdata(hobj.Parent, 'hlabel');
+    liveStrings = getappdata(hobj.Parent.Parent, 'liveStrings');
+    hlabel      = getappdata(hobj.Parent.Parent, 'hlabel');
     
     for n = 1:length(liveStrings)
     
