@@ -35,7 +35,14 @@ end
 
 %% GUI Setup
 
+if isa(graph, 'matlab.ui.container.Tab')
+    tl.fig = graph;
+    graph = newGraphStructure;
+    in_tab = true;
+else
     tl.fig = handles.figure1.Children(1).Children(2); % creates handle for the GUI tab
+    in_tab = false;
+end
     tl.fig.Units = 'characters'; 
     tl.setAxes = struct('start',graph.time.startTime,'stop',graph.time.stopTime);
 
@@ -466,8 +473,10 @@ guiStopPopulate()
         end
     end
 
-guidata(handles.figure1,handles)
-uiwait % Waits for user to click apply or switch tabs to resume
+if ~in_tab
+    guidata(handles.figure1,handles)
+    uiwait % Waits for user to click apply or switch tabs to resume
+end
  
 % Saves set time limits to the graph structure.
     function applyCallback (hObject, events, handles)
