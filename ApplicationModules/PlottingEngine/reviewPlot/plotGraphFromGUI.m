@@ -361,9 +361,11 @@ for graphNumber = 1:numberOfGraphs
     
 %     This seems to break auto x-axis limits in 2017a
     % Link x axes?
-        axChild = get(subPlotAxes, 'Children');
-        axChild = reshape([axChild{:}], numel([axChild{:}]), 1);
-        allCurves = findobj(axChild, 'Type', {'line', 'stairs', 'patch'});
+        axChild = []
+        for ax = 1:numel(subPlotAxes)
+            axChild = vertcat(axChild, get(subPlotAxes(ax), 'Children'));
+        end
+        allCurves = findobj([axChild], 'Type', 'stair', '-or', 'Type', 'patch', '-or', 'Type', 'line');
         set(allCurves, 'visible', 'off');
         linkaxes(subPlotAxes(:),'x'); % this line was BRUTALLY slow with visible objects
         set(allCurves, 'visible', 'on');
