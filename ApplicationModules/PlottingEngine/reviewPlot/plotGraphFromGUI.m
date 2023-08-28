@@ -36,7 +36,7 @@ function varargout = plotGraphFromGUI(graph, timeline, varargin)
     ENABLE_REDUCE = true; % Default value for argument (passed)
     
 % Flag to supress warning dialogs
-    supressWarningDialogs = false;
+    supressWarningDialogs = true;
 
 % Number of points in FD to trigger "reduce plot" routine
     reducePlotThresholdLength = 1500000;
@@ -361,7 +361,12 @@ for graphNumber = 1:numberOfGraphs
     
 %     This seems to break auto x-axis limits in 2017a
     % Link x axes?
-        linkaxes(subPlotAxes(:),'x');
+        axChild = get(subPlotAxes, 'Children');
+        axChild = reshape([axChild{:}], numel([axChild{:}]), 1);
+        allCurves = findobj(axChild, 'Type', {'line', 'stairs', 'patch'});
+        set(allCurves, 'visible', 'off');
+        linkaxes(subPlotAxes(:),'x'); % this line was BRUTALLY slow with visible objects
+        set(allCurves, 'visible', 'on');
         
         
     % Automatic X axis scaling:
