@@ -267,7 +267,7 @@ guidata(hl.fig,handles); % Creates structure of guidata based on tags
        
         if ~isempty(y)  % if the y value was entered and stored, proceed
             
-            if ~strcmp(data.label,data.list) | isempty(data.label)
+            if ~any(strcmp(data.label,data.list)) | isempty(data.label)
                
                 % Store the data label in the displayname as well to match
                 % the line to the list and text items (tag is already
@@ -324,6 +324,9 @@ guidata(hl.fig,handles); % Creates structure of guidata based on tags
                 
                 handles = guidata(hl.fig);
                 handles.listbox.String = data.list; % update listbox with data labels of plotted lines
+                if ~ handles.listbox.Value
+                    handles.listbox.Value = 1;
+                end
                 drawnow
                 guidata(hl.fig, handles)
             
@@ -373,13 +376,24 @@ guidata(hl.fig,handles); % Creates structure of guidata based on tags
         data.list(delListIndex) = []; % Deletes that line from LIST
         handles.listbox.String = data.list; % Updates listbox
         
-        % Resets the active selection to the listbox item just above the
-        % deleted item.
-        if delListIndex ~= 1
-            handles.listbox.Value = delListIndex -1;
-        else
-            handles.listbox.Value = 1;
+        % Fix listbox selection after deletion
+        if handles.listbox.Value > numel(data.list)
+            handles.listbox.Value = numel(data.list);
+        elseif ~numel(data.list)
+            handles.listbox.Value = [];
+            data.select = {};
         end
+        
+        
+            
+        
+%         % Resets the active selection to the listbox item just above the
+%         % deleted item.
+%         if delListIndex ~= 1
+%             handles.listbox.Value = delListIndex -1;
+%         else
+%             handles.listbox.Value = 1;
+%         end
         
         guidata(hl.fig, handles)
         drawnow % Refreshes listbox and uicontrols
