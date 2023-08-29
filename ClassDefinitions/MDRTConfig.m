@@ -95,10 +95,11 @@ classdef MDRTConfig < handle
         applicationName = 'mdrt';
 
         linuxPrefix = '.';
-        configFileName = 'config_linux.txt';
+        configFileName = 'mdrt_config.txt';
 
         macConfigFile = 'config_mac.txt';
         winConfigFile = 'config_windows.txt'
+        nixConfigFile = 'config_linux.txt';
 
         fontScaleFactorMac      = 1.0;
         fontScaleFactorPC       = 0.8;
@@ -759,7 +760,7 @@ classdef MDRTConfig < handle
 
             elseif isunix
                 pathToConfig = fullfile('~', [self.linuxPrefix, self.applicationName] );
-                defaultConfigFile = self.macConfigFile;
+                defaultConfigFile = self.nixConfigFile;
 
             end
 
