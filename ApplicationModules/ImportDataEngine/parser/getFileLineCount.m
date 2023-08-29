@@ -1,10 +1,10 @@
 function [ lineCount ] = getFileLineCount( fileNameAndPath )
 %getFileLineCount returns the number of lines in a file
 %   Returns the number of lines in a data file.
-%   Will ultimately be platform independant but requires a perl script for
-%   winows machines.
+%   Is now platform independant with two methods for windows machines. If
+%   the command line option fails, uses a perl script as a fallback.
 %
-% Counts, Spaceport Support Services, 2014
+% Counts, Spaceport Support Services, 2014, 2023
 
 
 % -------------------------------------------------------------------------
@@ -21,7 +21,19 @@ if (isunix) %# Linux, mac
     lineCount = str2num(numlines{1}{1});
     
 elseif (ispc) %# Windows
-    lineCount = str2num( perl('countlines.pl', 'your_file') );
+    try
+        [status, cmdout] = system(['find /c /v "" ', filename]);
+        if(status~=1)
+            scanCell = textscan(cmdout,'%s %s %u');
+            lineCount = scanCell{3};
+            disp(['Found ', num2str(lineCount), ' lines in the file']);
+        else
+            disp('Unable to determine number of lines in the file');
+        end
+        
+    catch
+        lineCount = str2num( perl('countlines.pl', 'your_file') );
+    end
 
 else
     error('...');
