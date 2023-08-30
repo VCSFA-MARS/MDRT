@@ -211,24 +211,6 @@ debugout(fileName);
     
     debugout(uniqueFDs)
 
-% %% Legacy code that handled valves as a combined entity
-% % -----------------------------------------------------------------------
-% find all FDs that are valve related - returns cell array of cells of
-% strings
-% -------------------------------------------------------------------------
-%     valveFDs = regexp(uniqueFDs, '[DP]CVN[CO]-[0-9]{4}','match');
-
-
-% % Include System ID String
-%     valveFDs = regexp(uniqueFDs, '\w* [DP]CVN[CO]-[0-9]{4}','match');
-%     
-%     debugout('Valve FDs for combined processing:')
-%     debugout(valveFDs)
-% 
-%     % Make FD List for grep without any valve data
-%     FDlistForGrep = uniqueFDs(cellfun('isempty',valveFDs));
-    
-    % Patch to stop combining valve data
     FDlistForGrep = uniqueFDs;
     
     debugout(FDlistForGrep)
@@ -237,30 +219,6 @@ debugout(fileName);
     % combining FDs that share the same ending.
     FDlistForGrep = cellfun(@(c)[',' c ','], FDlistForGrep, 'uni', false);
 
-% % make cell array of strings containing all unique valve identifiers
-% % -------------------------------------------------------------------------
-%     uniqueValves = unique(cat(1,valveFDs{:}));
-%     
-%     debugout(uniqueValves)
-    
-% % % Generate cell array of cell array of strings (listing FDs for each valve)
-% % % -------------------------------------------------------------------------
-% %     valveFDBundle = cell(length(uniqueValves),1);
-% % 
-% %     for i = 1:length(uniqueValves)
-% % 
-% %         temp = regexp(fds, uniqueValves{i},'match');
-% % 
-% %         valveFDBundle{i,1} = cat(1, temp{:});
-% % 
-% %     end
-    
-    
-% Combine Valve FDs with uniqueFDs for .delim grep
-% -------------------------------------------------------------------------
-%     % Disabling combined valve processing
-%     FDlistForGrep = cat(1,FDlistForGrep, uniqueValves);
-    
 % Remove FDs with leading underscores
     FDlistForGrep(~cellfun('isempty',regexp(FDlistForGrep,'^_'))) = [];
     
@@ -312,6 +270,19 @@ reverseStr = '';
 
 
 %% GREP for each unique FD and dump to its own .delim file for parsing    
+
+    % Check for faster grep binary
+    if exist('/usr/local/bin/grep', 'file')
+        grepExecutable = '/usr/local/bin/grep -F ';
+    elseif exist('/usr/local/bin/ggrep', 'file')
+        grepExecutable = '/usr/local/bin/ggrep -F ';
+    elseif exist('/opt/homebrew/bin/ggrep', 'file')
+        grepExecutable = '/opt/homebrew/bin/ggrep -F ';
+    else
+        grepExecutable = 'grep -F ';
+    end
+
+    warn_about_grep(grepExecutable(1:end-2))
     
     for i = 1:length(FDlistForGrep)
         
@@ -355,17 +326,6 @@ reverseStr = '';
         outputFile = fullfile(delimPath, outName);
                                 
         % Generate grep command to split delim into parseable files
-        % time LC_ALL=C grep -F "TELHS_SYS1 PT33  Mon" ../original/TEL-mon-s.delim > test.delim
-        
-        % Check for faster grep binary
-        if exist('/usr/local/bin/grep', 'file')
-            grepExecutable = '/usr/local/bin/grep -F ';
-        elseif exist('/usr/local/bin/ggrep', 'file')
-            grepExecutable = '/usr/local/bin/ggrep -F ';
-        else
-            grepExecutable = 'grep -F ';
-        end
-        
         if concatinateDelimFiles
             egrepCommand = [grepExecutable , '"', FDlistForGrep{i}, '" "',fileName, '" | ' , grepExecutable , grepFilterRAW , ' >> "', outputFile , '"'];
         else
@@ -374,7 +334,7 @@ reverseStr = '';
         
         debugout(egrepCommand)
         
-        [status,result] = system(egrepCommand);
+        [~,result] = system(egrepCommand);
         
         progressbar(i/length(FDlistForGrep));
         
@@ -395,3 +355,15 @@ reverseStr = '';
 
 end
 
+function warn_about_grep(executable)
+    [~, result] = system([executable, ' --version']);
+    
+    if ~contains(result, '(GNU grep)')
+        msg = { 'MDRT uses grep in the import process.';
+                'Be sure you have the GNU grep installed.';
+                'Your current grep appears to be a slower version: %s'};
+        warning(strjoin(msg,'\n'), executable)
+    end
+    
+
+end
