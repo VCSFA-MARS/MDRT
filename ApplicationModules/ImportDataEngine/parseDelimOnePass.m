@@ -4,8 +4,8 @@ function [ output_args ] = parseDelimOnePass( data_file, output_folder )
 %   
 
 % Defaults
-
-CHUNK_SIZE = 50000;
+tic
+CHUNK_SIZE = 100000;
 DEFAULT_OUTPUT_FOLDER = fullfile(getuserdir,'Downloads','importdata');
 
 
@@ -54,6 +54,7 @@ progressbar(percent_file_imported(n, lines, CHUNK_SIZE), []);
     FD_names_in_chunk = unique(shortNameCell);
     num_FDs_in_chunk = numel(FD_names_in_chunk);
     
+    
 %% Create FD variable to hold this chunk
     for fn = 1:num_FDs_in_chunk
         this_FD_string      = FD_names_in_chunk{fn};
@@ -73,12 +74,13 @@ progressbar(percent_file_imported(n, lines, CHUNK_SIZE), []);
             continue
         end
         
+        this_FD.DataType = valueTypeCell{this_index(1)};
         this_FD.Units = unitCell{this_index(1)};
         
         this_ts = parse_by_value_type( ...
                         makeMatlabTimeVector(timeCell(this_mask), false, false), ...
                         valueCell(this_mask), ...
-                        this_FD.Type, ...
+                        this_FD.DataType, ...
                         this_FD_string);
                     
         this_FD.ts = this_ts;
@@ -99,10 +101,10 @@ progressbar(percent_file_imported(n, lines, CHUNK_SIZE), []);
             save(this_fullfile, 'fd');
         else
 %% Append data to existing FD file
-            existing_file = load(this_fullfile);
-            new_ts = append(existing_file.fd.ts, this_ts);
-            existing_file.fd.ts = new_ts;
-            fd = existing_file.fd;
+            from_file = load(this_fullfile);
+            merged_ts = merge_timeseries(this_FD.ts, from_file.fd.ts);
+            from_file.fd.ts = merged_ts;
+            fd = from_file.fd;
             save(this_fullfile, 'fd');
         end
 
@@ -112,7 +114,7 @@ progressbar(percent_file_imported(n, lines, CHUNK_SIZE), []);
 end
 
 fclose(fid);
-
+toc
 
 end
 
@@ -129,7 +131,13 @@ function done = percent_of_fds_in_chunk(current_fd_ind, total_fds)
     done = current_fd_ind / total_fds;
 end
 
-
+function ts = merge_timeseries(ts1, ts2)
+    if ts1.Time(end) <= ts2.Time(1)
+        ts = append(ts1, ts2);
+    else
+        ts = append(ts2, ts1);
+    end
+end
 
 function new_ts = parse_by_value_type(time, data, type, fullstring)
     new_ts = [];
