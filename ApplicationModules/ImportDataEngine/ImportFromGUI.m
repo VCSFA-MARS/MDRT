@@ -1,4 +1,4 @@
-function ImportFromGUI( filesIn, metaData, folderName, autoSkip, catDelims, readRaw )
+function ImportFromGUI( filesIn, metaData, folderName, autoSkip, catDelims, readRaw, legacyParser )
 %ImportFromGUI 
 %   Automates the data importing process.
 %
@@ -24,7 +24,7 @@ function ImportFromGUI( filesIn, metaData, folderName, autoSkip, catDelims, read
 % [filename, pathname] = uigetfile('*.*',  'All Files (*.*)','MultiSelect','on')
 
 
-
+tic
 
 config = MDRTConfig.getInstance;
 
@@ -38,7 +38,9 @@ if ~iscell(folderName)
     folderName = {folderName};
 end
 
-
+if ~exist('legacyParser', 'var')
+    legacyParser = false;
+end
 
 
 %% Make sure to handle the file type. and EXIT if bad filetype
@@ -93,8 +95,8 @@ for i = 1:numel(filesIn)
         warningMsg = sprintf('Moving file: %s failed', filesIn{i});
         warning(warningMsg)
         badCopyIndex = vertcat(badCopyIndex, i);
-%         return
-    end
+        % return
+	end
                                            
 end
 
@@ -111,16 +113,19 @@ end
 for i = 1:numel(workingFiles)
     
     % Eventually add try/catch for error handling?
-    splitDelimFiles( workingFiles{i}, config, catDelims, readRaw )
-    
+    if legacyParser
+        splitDelimFiles( workingFiles{i}, config, catDelims, readRaw )
+    else
+        parseDelimOnePass( workingFiles{i}, config.workingDataPath, readRaw)
+    end
 end
 
 
 
 %% Parse stripped .delim files
-
-processDelimFiles(config, autoSkip);
-
+if legacyParser
+    processDelimFiles(config, autoSkip);
+end
 
 %% Start Indexing!
 
@@ -134,7 +139,7 @@ metaData.timeSpan = timeSpan;
 % % save(fullfile(dataPath, 'metadata.mat'), 'metaData');
 save(fullfile(config.workingDataPath, 'metadata.mat'), 'metaData');
 
-
+toc
 
 
 

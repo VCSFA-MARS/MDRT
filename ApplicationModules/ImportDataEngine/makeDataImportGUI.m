@@ -89,6 +89,7 @@ checkboxPositions       = { [300 339 117 23];
                             [14 81 111 23];
                             [14 48 111 23];
                             [14 15 111 23];
+                            [300 130 200 23];
                             [300 100 200 23];
                             [300  70 200 23];
                             [300  40 200 23];
@@ -104,7 +105,8 @@ checkboxTags            = { 'checkbox_autoName';
                             'checkbox_autoSkipErrors';
                             'checkbox_combineDelims';
                             'checkbox_importRaw';
-                            'checkbox_pad_c_data'
+                            'checkbox_pad_c_data';
+                            'checkbox_legacy_importer';
                             };
                             
 
@@ -116,7 +118,8 @@ checkboxStrings         = { 'Auto-name folder';
                             'Auto-skip parsing errors';
                             '.delims are from different TAMs';
                             'Import RAW data';
-                            'Import Pad-0C .csv'
+                            'Import Pad-0C .csv';
+                            'Use legacy parser';
                             };
 
 
@@ -129,6 +132,7 @@ checkboxParents         =   {   'fig';
                                 'fig';
                                 'fig';
                                 'fig';
+                                'fig';
                             };
                         
 checkboxValue           =   {   true;
@@ -137,6 +141,7 @@ checkboxValue           =   {   true;
                                 false;
                                 false;
                                 true;
+                                false;
                                 false;
                                 false;
                                 false;
@@ -325,6 +330,7 @@ initialValues =    ...
         'checkbox_isMARS',          'Value',    hs.checkbox_isMARS.Value;
         'checkbox_hasUID',          'Value',    hs.checkbox_hasUID.Value;
         'checkbox_vehicleSupport',  'Value',    hs.checkbox_vehicleSupport.Value;
+        'checkbox_legacy_importer', 'Value',    hs.checkbox_legacy_importer.Value;
         
         'edit_folderName',          'String',   hs.edit_folderName.String;
         'edit_operationName',       'String',   hs.edit_operationName.String;
@@ -481,10 +487,12 @@ initialValues =    ...
         
         updateFolderGuess;
         
+        delim_list = flbManager.getFileCellArray;
+        
         if hs.checkbox_pad_c_data.Value
             % PLACEHOLDER for PAD-C import call
             metaData.site = 'Pad-0C';
-            ImportPadCFromGUI(  flbManager.getFileCellArray, ... 
+            ImportPadCFromGUI(  delim_list, ... 
                                 metaData, ...
                                 hs.edit_folderName.String, ...
                                 hs.checkbox_autoSkipErrors.Value );
@@ -492,12 +500,16 @@ initialValues =    ...
             return
         end
         
-        ImportFromGUI(  flbManager.getFileCellArray, ... 
+
+        ImportFromGUI(  delim_list, ... 
                         metaData, ...
                         hs.edit_folderName.String, ...
                         hs.checkbox_autoSkipErrors.Value, ...
                         hs.checkbox_combineDelims.Value, ...
-                        hs.checkbox_importRaw.Value );
+                        hs.checkbox_importRaw.Value, ...
+                        hs.checkbox_legacy_importer.Value);
+        return
+
         
     end
 
