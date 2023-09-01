@@ -25,13 +25,13 @@ switch hobj.Style
                 targetOnMode  = 'inactive';
 
             case 'checkbox_isOperation'
-                target = findobj('Tag', 'edit_operationName');
+                target = findobj(gcf, 'Tag', 'edit_operationName');
                 
             case 'checkbox_isMARS'
-                target = findobj('Tag', 'edit_procedureName');
+                target = findobj(gcf, 'Tag', 'edit_procedureName');
                 
             case 'checkbox_hasUID'
-                target = findobj('Tag', 'edit_UID');
+                target = findobj(gcf, 'Tag', 'edit_UID');
                 
             case 'checkbox_vehicleSupport'
                 
