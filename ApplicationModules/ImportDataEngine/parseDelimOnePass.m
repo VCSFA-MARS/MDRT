@@ -1,4 +1,4 @@
-function parseDelimOnePass( data_file, output_folder, parse_raw )
+function parseDelimOnePass( data_file, output_folder, parse_raw, console_output )
 %PARSEDELIMONEPASS imports a .delim file with mixed FDs wihtout external
 %tools.
 %   
@@ -19,7 +19,7 @@ function parseDelimOnePass( data_file, output_folder, parse_raw )
 tic
 CHUNK_SIZE = 800000;
 DEFAULT_OUTPUT_FOLDER = fullfile(getuserdir,'Downloads','importdata');
-
+DEFAULT_CONSOLE_OUTPUT = false;
 
 %% Parse Arguments
 if ~exist('data_file', 'var')
@@ -35,13 +35,18 @@ if ~exist('parse_raw', 'var')
     parse_raw = false;
 end
 
+if ~exist('console_output', 'var')
+    console_output = DEFAULT_CONSOLE_OUTPUT;
+end
+
 %% Get File Info
 
 s = dir(data_file);
 file_size = s.bytes;
 
+disp('Pre-scanning file for line count');
 lines_in_file = getFileLineCount(data_file);
-
+disp('Opening file to parse');
 fid = fopen(data_file);
 
 %% Get/Create output folder
@@ -62,7 +67,8 @@ lines_parsed = 0;
 %% Read File in Chunks
 for n = 1:CHUNK_SIZE:lines_in_file
 
-    Q = textscan(fid, '%s %*s %*s %s %s %s %*s %s %s', CHUNK_SIZE, 'Delimiter', ',');
+    Q = textscan(fid, '%s %*s %*s %s %s %s %*s %s %s', CHUNK_SIZE, ...
+                    'Delimiter',        ',');
     
     timeCell        = Q{1};
     shortNameCell   = Q{2};
@@ -104,6 +110,24 @@ for n = 1:CHUNK_SIZE:lines_in_file
         if numel(this_index) == 0
             continue
         end
+        
+        if console_output
+            sample_line = strjoin( ...
+                {   timeCell{this_index(1)};
+                    shortNameCell{this_index(1)};
+                    valueTypeCell{this_index(1)};
+                    longNameCell{this_index(1)};
+                    valueCell{this_index(1)};
+                    unitCell{this_index(1)};
+                }, ',');
+        
+            disp(sample_line)
+        end
+        
+        if isempty(this_FD_string)
+            continue
+        end
+            
         
         %% Parse the FD Data From This Chunk
         % Extract the data type (for parsing method) and any engineering
