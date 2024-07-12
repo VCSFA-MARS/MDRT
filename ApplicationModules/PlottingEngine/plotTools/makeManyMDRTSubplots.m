@@ -220,12 +220,21 @@ else
     % NOTE: This code DOES NOT WORK for 2 stop flow events! Must correctly
     % implement the generation of the axPairs array
     fig = makeMDRTPlotFigure;
-    
-    subPlotAxes = MDRTSubplot(spHigh,       length(expectedSubplots), ... 
-                        graphsPlotGap,      GraphsPlotMargin, ...
-                        GraphsPlotMargin);
-                    
-    axPairs = reshape(subPlotAxes, length(expectedSubplots)*spHigh/reshapeParam, reshapeParam);
+    plotCols = length(expectedSubplots);
+
+    if USE_MDRTAxes
+        [spa, MDRA] = CMDRTSubplot( spHigh, plotCols,	graphsPlotGap, ... 
+                            GraphsPlotMargin,   GraphsPlotMargin);
+    else
+        spa = MDRTSubplot(  spHigh, plotCols,	graphsPlotGap, ... 
+                            GraphsPlotMargin,   GraphsPlotMargin);
+    end
+
+    axPairs = reshape(spa, length(expectedSubplots)*spHigh/reshapeParam, reshapeParam);
+    if USE_MDRTAxes && RETURN_MDRTAxes_Pairs
+        axPairs = reshape(MDRA, plotCols*spHigh/reshapeParam, reshapeParam);
+    end
+    subPlotAxes = spa;             
 	suptitle(FigureTitleString);
 end
 
