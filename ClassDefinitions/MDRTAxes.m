@@ -85,17 +85,29 @@ classdef MDRTAxes < handle
         end
         
         %% Class Methods
-        function addFD(self, fd)
+        function addFD(self, fd, varargin)
             % addFD(fd) accepts an fd structure as an argument and plots
             % the FD.ts timeseries data to the axis, automatically
             % selecting the line style and retaining handles and data
             % stream "fullstrings"
+
+            disp_name = [fd.Type '-' fd.ID];
             
+            for K = 1:2:numel(varargin)
+                key = lower(varargin{K});
+                val = varargin{K+1};
+
+                switch lower(key)
+                    case 'displayname'
+                        disp_name = val;
+                end
+            end
+
             self.streams = vertcat(self.streams, fd.FullString);
             
             self.hLines = vertcat(self.hLines, ...
                 stairs(self.hAx, fd.ts.Time, fd.ts.Data, ...
-                        'displayname',  [fd.Type '-' fd.ID], ...
+                        'displayname',  disp_name, ...
                         self.lineColorStyle{:} ) ...
                     );
         end
