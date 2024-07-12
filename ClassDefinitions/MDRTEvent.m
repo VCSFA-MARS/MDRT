@@ -21,7 +21,7 @@ classdef MDRTEvent < handle
         hAxes =[]               % The Parent Axes object for this Event Marker
         
         FontSize = 10           % The font size of the event label as displayed in the plot
-        FontSizePrint = 5.5       % The font size of the event label when exported to pdf
+        FontSizePrint = 5.5     % The font size of the event label when exported to pdf
         FontColor = 'black'     % The font color of the event label. Default is black
         LineColor = 0.6*[1,1,1] % The color of the event marker line. Default is black
         LineStyle = '--'        % The style of the event marker line. Default is solid
@@ -260,6 +260,10 @@ classdef MDRTEvent < handle
         function self = refreshAnnotations(self)
             % Redraws annotation objects, deleting abandoned objects if
             % required. Maintains MDRTEvent's handle to annotation objects
+            if isempty(self.YLim)
+                self.YLim = self.hAxes.YLim;
+            end
+            
             self.hLine = self.makeLine(self.Time, self.YLim, self.hAxes, self.LineColor, self.LineStyle);    
             self.hText = self.makeText(self.Time, self.YLim, self.MarkerLabel, self.hAxes, self.FontSize, self.FontColor);
         end
@@ -285,15 +289,16 @@ classdef MDRTEvent < handle
         function AxisLimitsChanged(self, ~, event)
             % AxisLimitsChanged is called whenever the listeners detect that an axis object has panned or zoomed.
             
-%             XLim = event.AffectedObject.XLim;
-%             YLim = event.AffectedObject.YLim;
+            self.XLim = event.Source.Limits;
+            self.YLim = event.Source.Parent.YLim;
 
-            self.hLine.YData = self.hLine.YLim;
-            self.hText.Position(2) = self.labelYCoordFromLimits(self.hLine.YLim);
+            % self.hLine.YData = self.hLine.YLim;
+            % self.hText.Position(2) = self.labelYCoordFromLimits(self.hLine.YLim);
+            % 
+            % self.Visible = ~self.isVarOutsideInterval(self.Time, self.XLim);
+            % self.XLim = event.Source.Limits;
             
-            self.Visible = ~self.isVarOutsideInterval(self.Time, self.XLim);
-            
-%             self.UpdateEventFromNewLimits(XLim, [])
+            self.UpdateEventFromNewLimits();
             
         end
         
