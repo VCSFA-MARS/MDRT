@@ -92,7 +92,7 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
             continue
         end
 
-        fd = makeFdFromChanStr(chans{c});
+        [fd, unit_str] = makeFdFromChanStr(chans{c});
         
         data_type = getChanType(chans{c});
         if strcmpi(data_type, 'TYPE_STRING')
@@ -102,6 +102,7 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
         dataVect = makeDataVect(data(c), data_type);
         
         fd.ts = timeseries(dataVect, timeVect, 'Name', fd.FullString);
+        fd.ts.DataInfo.Units = unit_str;
         
         filename = fullfile(saveTo, makeFileNameForFD(fd));
         
@@ -118,7 +119,7 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
 
 end
 
-function fd = makeFdFromChanStr(chan_str)
+    function [fd, unit_str] = makeFdFromChanStr(chan_str)
     fd = newFD;
     entries = split(chan_str, ';');
 
