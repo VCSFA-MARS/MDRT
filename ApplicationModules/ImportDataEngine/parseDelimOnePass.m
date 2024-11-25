@@ -135,13 +135,14 @@ for n = 1:CHUNK_SIZE:lines_in_file
         % generation
         
         % Handle RAW Value Parsing
-        this_raw_mask = strcmp(valueTypeCell, 'RAW');
+        this_raw_mask = strcmp(unitCell, 'RAW');
         this_raw_index = find(this_raw_mask);
         
         if parse_raw
             this_mask = this_mask & this_raw_mask;
-            this_FD_string = strjoin(this_FD_string, 'RAW');
-            this_FD.DataType = valueTypeCell{this_index(1)};
+            % this_FD_string = strcat(this_FD_string, ' RAW');
+            % this_FD.Fullstring = this_FD_string;
+            this_FD.DataType = 'RAW';
             this_FD.Units = unitCell{'RAW'};
         else
             this_mask = this_mask & ~this_raw_mask;
@@ -175,9 +176,12 @@ for n = 1:CHUNK_SIZE:lines_in_file
         % Add new timeseries to the fd struct
         this_FD.ts = this_ts;
 
+        % Update FD Fullstring from timeseries (handles RAW case)
+        this_FD.FullString = this_ts.Name;
+
 
 %% Create file to hold them if needed
-        this_filename = makeFileNameForFD(this_FD_string);
+        this_filename = makeFileNameForFD(this_FD.FullString);
         this_fullfile = strcat(fullfile(output_folder, this_filename), '.mat');
         
         if ~exist(this_fullfile, 'file')
@@ -304,10 +308,10 @@ function new_ts = parse_by_value_type(time, data, type, fullstring)
         case { 'RAW' }
             % convert hex to decimal - byte swap happens
             % after conversion.
-            RAW_SUFFIX = 'RAW';
+            RAW_SUFFIX = ' RAW';
             
             debugout('Importing RAW data');
-            fullstring = strcat(fullstring, RAW_Suffix);
+            fullstring = strcat(fullstring, RAW_SUFFIX);
             new_ts = timeseries(swapbytes(uint16( hex2dec( data(:) ) ) ), ...
                             time, ...
                             'Name', fullstring );
