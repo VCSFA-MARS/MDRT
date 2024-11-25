@@ -248,6 +248,7 @@ function fix_csv_newline(original_file, temp_file, start_date_strs, header_lines
 
     % Write header lines straight through:
     fprintf('Writing to temporary file %s\n', fopen(temp_file))
+    assignin("base", "temp_file_name", fopen(temp_file));
     start_ind = 1;
     for ind = 1:header_lines
         this_line = contents(start_ind:newline_locs(ind));
