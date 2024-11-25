@@ -17,13 +17,13 @@ if ~ exist(filename, 'file')
     return
 end
 
-delimFolderPath = uigetdir(fullfile('~', 'data'));
+dataFolderPath = uigetdir(fullfile('~', 'data'));
 
 % Make sure the user selected something!
-if delimFolderPath ~= 0
+if dataFolderPath ~= 0
     % We got a path selection. Now append the trailing / for linux
     % Note, we are not implementing OS checking at this time (isunix, ispc)
-    delimFolderPath = [delimFolderPath '/'];
+    dataFolderPath = [dataFolderPath '/'];
 else
     return
 end
@@ -50,19 +50,22 @@ plecuexport = readcell(filename);
 %% Create Metadata Vectors for FD creation
 
 % Extract channel names
-chan_names = plecuexport(ch_name_row,data_start_col:end);
-mask = ~ cellfun(@all, cellfun(@ismissing,chan_names, 'UniformOutput',false));
-chan_names = chan_names(mask);
+chan_name_row = plecuexport(ch_name_row,data_start_col:end);
+mask = ~ cellfun(@all, cellfun(@ismissing,chan_name_row, 'UniformOutput',false));
+chan_names = chan_name_row(mask);
+chan_name_row = plecuexport(ch_name_row,:);
 
 % Extract Channel Tags
-chan_tags = plecuexport(ch_tag_row, data_start_col:end);
-mask = ~ cellfun(@all, cellfun(@ismissing,chan_tags, 'UniformOutput',false));
-chan_tags = chan_tags(mask);
+chan_tag_row = plecuexport(ch_tag_row, data_start_col:end);
+mask = ~ cellfun(@all, cellfun(@ismissing,chan_tag_row, 'UniformOutput',false));
+chan_tags = chan_tag_row(mask);
+chan_tag_row = plecuexport(ch_tag_row, :);
 
 % Extract Channel Units
-chan_units = plecuexport(ch_unit_row, data_start_col:end);
-mask = ~ cellfun(@all, cellfun(@ismissing, chan_units, 'UniformOutput',false));
-chan_units = chan_units(mask);
+chan_unit_row = plecuexport(ch_unit_row, data_start_col:end);
+mask = ~ cellfun(@all, cellfun(@ismissing, chan_unit_row, 'UniformOutput',false));
+chan_units = chan_unit_row(mask);
+chan_unit_row = plecuexport(ch_unit_row, :);
 
 %% Generate Time Vector from Strings
 
@@ -85,10 +88,15 @@ tot_cols = size(plecuexport,2)
 
 invalids = {'NA' '' -99 NaN Inf missing() '-OVER', 'OVER'};
 progressbar('Saving PLECU Channels')
+last_chan_col = find(strcmp(chan_name_row, chan_names{end}));
 
-for ind = 1:numel(chan_tags)
-    data_col_min = data_start_col + ind;
-    data_col_max = data_start_col + ind + 1;
+for col = data_start_col:2:last_chan_col
+    data_col_min = col;
+    data_col_max = col + 1;
+    
+    this_chan_name = chan_name_row{col};
+    this_chan_tag = chan_tag_row{col};
+    this_chan_unit = chan_unit_row{col};
 
     this_data = plecuexport(data_start_row:end,data_col_min);
     invalid_mask = cellfun(@all,cellfun(@ismissing, this_data, 'UniformOutput',false));
@@ -99,20 +107,25 @@ for ind = 1:numel(chan_tags)
     ts = timeseries( ...
         cell2mat(this_data), ...
         time_vector,...
-        "Name", chan_names{ind}  );
+        "Name", this_chan_name );
+
+    if ~ isempty(this_chan_unit)
+        ts.DataInfo.Units = this_chan_unit;
+    end
 
     thisFd = newFD;
     thisFd.System = "PLECU";
-    thisFd.ID = chan_names{ind};
+    thisFd.ID = this_chan_tag;
     thisFd.Type = 'Yoko';
-    thisFd.FullString = ['PLECU Yoko-' chan_names{ind} ' ' chan_tags{ind}];
+    thisFd.FullString = ['PLECU Yoko-' this_chan_name ' ' this_chan_tag];
     thisFd.ts = ts;
     thisFileName = makeFileNameForFD(thisFd);
 
     fd = thisFd;
 
-    save(fullfile(delimFolderPath, thisFileName), 'fd')
-    progressbar(ind/numel(chan_tags))
+    save(fullfile(dataFolderPath, thisFileName), 'fd')
+
+    progressbar((col - data_start_col)/( last_chan_col - data_start_col ))
 
 end
 

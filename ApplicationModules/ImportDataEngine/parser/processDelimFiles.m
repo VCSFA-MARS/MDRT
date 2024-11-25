@@ -478,7 +478,12 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
 
             % TODO: Implement error checking for custom FD list file and 
             %       handle it if this file doesn't exist.
-            load('processDelimFiles.cfg','-mat');
+            temp_var = load('processDelimFiles.cfg','-mat');
+            if contains(fields(temp_var), 'customFDnames')
+                customFDnames = temp_var.customFDnames;
+            else
+                customFDnames = {};
+            end
 
             if ismember(fd.FullString,customFDnames(:,1))
 
