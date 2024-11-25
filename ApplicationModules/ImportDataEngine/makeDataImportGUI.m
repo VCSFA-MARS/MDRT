@@ -444,7 +444,13 @@ initialValues =    ...
             %This was throwing errors sometimes saying fid was already
             %closed. Added a check to squash. Is there really a path 
             % through the case statement that doesn't close the file?
-            if any(ismember(fopen('all'), fid))
+            if verLessThan('matlab', '24')
+                all_open_fileIDs = ismember(fopen('all'), fid);
+            else
+                all_open_fileIDs = openedFiles;
+            end
+            
+            if any(all_open_fileIDs == fid)
                 fclose(fid);
             end
 
