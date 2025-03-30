@@ -17,7 +17,7 @@ function parseDelimOnePass( data_file, output_folder, parse_raw, console_output 
 
 % Defaults
 tic
-CHUNK_SIZE = 800000;
+CHUNK_SIZE = 6400000;
 DEFAULT_OUTPUT_FOLDER = fullfile(getuserdir,'Downloads','importdata');
 DEFAULT_CONSOLE_OUTPUT = false;
 
@@ -44,10 +44,18 @@ end
 s = dir(data_file);
 file_size = s.bytes;
 
-disp('Pre-scanning file for line count');
-lines_in_file = getFileLineCount(data_file);
+encoding = "US-ASCII"; % Default guess
+
+if ismac
+    [exit_code, stdout] = system(sprintf('file -I %s', data_file));
+    if + ~exit_code
+        str_ind = strfind(stdout, 'charset=') + 8;
+        encoding = strip(stdout(str_ind:end));
+    end
+end
+
 disp('Opening file to parse');
-fid = fopen(data_file);
+fid = fopen(data_file, "r", "n", encoding);
 
 %% Get/Create output folder
 if ~ exist(output_folder, 'dir')
@@ -65,7 +73,8 @@ lines_parsed = 0;
 
 
 %% Read File in Chunks
-for n = 1:CHUNK_SIZE:lines_in_file
+while ~feof(fid)
+    bytes_parsed = ftell(fid); % Ensure we are perfectly in sync
 
     Q = textscan(fid, '%s %*s %*s %s %s %s %*s %s %s', CHUNK_SIZE, ...
                     'Delimiter',        ',');
@@ -76,6 +85,12 @@ for n = 1:CHUNK_SIZE:lines_in_file
     longNameCell    = Q{4};
     valueCell       = Q{5};
     unitCell        = Q{6};
+
+    % We will take a percentage of these bytes, using the length of the
+    % parsed vectors as the number of lines. That should keep us mostly in
+    % sync as the parsing continues
+    chunk_bytes_read = ftell(fid) - bytes_parsed;
+    chunk_total_lines = length(unitCell);
 
 
 %% Get Unique FDs in This Chunk
@@ -105,6 +120,11 @@ for n = 1:CHUNK_SIZE:lines_in_file
         this_lines_to_parse = sum(this_mask);
         lines_parsed = lines_parsed + this_lines_to_parse;
         
+        %% Update parsed bytes total for progress calculation
+        this_parse_percent = sum(this_mask) / chunk_total_lines;
+        this_parse_bytes = floor(chunk_bytes_read * this_parse_percent);
+        bytes_parsed = bytes_parsed + this_parse_bytes;
+
 
         %% Skip this FD if index is empty
         if numel(this_index) == 0
@@ -160,8 +180,8 @@ for n = 1:CHUNK_SIZE:lines_in_file
         
         % Parsing complete, update progress calculation and display
         progressbar( ...
-            percent_file_imported(lines_parsed, lines_in_file), ...
-            percent_of_fds_in_chunk(fdn, num_FDs_in_chunk))
+            percent_file_imported(bytes_parsed, file_size), ...
+            this_parse_percent);
                     
         % Don't write to disk if timeseries is empty (bad parsing)
         if isempty(this_ts)
@@ -190,6 +210,9 @@ for n = 1:CHUNK_SIZE:lines_in_file
         else
 %% Append data to existing FD file
             from_file = load(this_fullfile);
+            % matfiles do not support indexing into struct fields
+            % mfile = matfile(this_fullfile, "Writable",true);
+            
             merged_ts = merge_timeseries(from_file.fd.ts, this_FD.ts);
             
             if isempty(merged_ts)
@@ -209,6 +232,8 @@ for n = 1:CHUNK_SIZE:lines_in_file
 end
 
 fclose(fid);
+% Parsing complete, update progress calculation and display
+progressbar( 1, 1);
 toc
 
 end
@@ -219,9 +244,9 @@ end
 
 
 
-function done = percent_file_imported(lines_parsed, total_lines)
+function done = percent_file_imported(bytes_read, file_size)
 %percent_file_imported returns a progress calculation for the progress bar
-    done = lines_parsed / total_lines;
+    done = bytes_read / file_size;
 end
 
 function done = percent_of_fds_in_chunk(current_fd_ind, total_fds)
@@ -240,7 +265,7 @@ function ts = merge_timeseries(ts_orig, ts_add)
         ts = ts_orig.append(ts_add);
     else
         
-        % setdiff(N, O) retirns elements from N not found in O
+        % setdiff(N, O) returns elements from N not found in O
         [times_to_add, inds] = elements_from_not_in(ts_add.Time, ts_orig.Time);
         
         % If nothing new (like in a re-parse) then skip and return empty
@@ -326,7 +351,7 @@ function new_ts = parse_by_value_type(time, data, type, fullstring)
             try
                 new_ts = timeseries( sscanf(sprintf('%s ', data{:,1}),'%f'), time, 'Name', fullstring);
             catch ME
-%                 handleParseFailure(ME)
+                handleParseFailure(ME)
             end
     end
                    
