@@ -45,14 +45,18 @@ s = dir(data_file);
 file_size = s.bytes;
 
 encoding = "US-ASCII"; % Default guess
-
-if ismac
-    [exit_code, stdout] = system(sprintf('file -I %s', data_file));
-    if + ~exit_code
-        str_ind = strfind(stdout, 'charset=') + 8;
-        encoding = strip(stdout(str_ind:end));
-    end
-end
+% On MacOS 15+ there is a Java/Corretto issue that causes system calls to
+% hang. Reference bug report: https://www.mathworks.com/matlabcentral/answers/2162900-system-command-hangs-on-mac-os-sequoia-15-0-1
+%
+% Disabling this check and relying on sane defaults until it is resolved.
+%
+% if ismac
+%     [exit_code, stdout] = system(sprintf('file -I %s', data_file));
+%     if + ~exit_code
+%         str_ind = strfind(stdout, 'charset=') + 8;
+%         encoding = strip(stdout(str_ind:end));
+%     end
+% end
 
 disp('Opening file to parse');
 fid = fopen(data_file, "r", "n", encoding);
