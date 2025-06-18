@@ -21,19 +21,21 @@ clear;clc;
 
 
 % -------------------------------------------------------------------------
-% The following code will attempt to read a struct file generated from the
-% review.m script.
+% We define file paths specifying the location of the I/O Code Directory
+% (DirectoryPath) and the folder containing the FCS data (DataPath).
 % -------------------------------------------------------------------------
-%filename = 'C:\Users\AustinThomas\Desktop\data\import\Test Folder\data\01C301-PROX';
-%
-%currStruct = load(filename);
-%
-%if isfield(currStruct,'fd') == 1
-%    fd = currStruct.fd;
-%    disp(fd)
-%else
-%    fprintf('ERROR: %s does not contain an fd field',filename)
-%end
+DirectoryPath = ['C:\Users\AustinThomas\Desktop\Pad 0C\Projects\' ...
+    'Valve Timing Script [MP-00434]\Pad 0C Component List'];
+DataPath = 'C:\Users\AustinThomas\Desktop\data\import\Test Folder\data';
+% -------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------
+% We import the I/O Code Directory (importing .xslx, storing as table).
+% -------------------------------------------------------------------------
+Directory = readtable(DirectoryPath,'PreserveVariableNames',true, ...
+    'Sheet','Channel List');
+QuickSearch = Directory{:,'I/O Code'};
 % -------------------------------------------------------------------------
 
 
@@ -41,25 +43,39 @@ clear;clc;
 % We following code will attempt to read all struct files generated from
 % the review.m script.
 % -------------------------------------------------------------------------
-folder_path = 'C:\Users\AustinThomas\Desktop\data\import\Test Folder\data';
-files = dir(folder_path);
+files = dir(DataPath);
+
+% We create an error table to store information regarding which files
+% could not be processed.
+ErrorTable = table('Size',[length(files) 2],'VariableTypes', ...
+    {'string' 'string'},'VariableNames',{'Tag' 'Error'});
 
 for i = 1:length(files)
 
-    % We pull the file name and data from relevant .mat files in the
-    % specified folder.
-    if files(i).isdir == 1
-        continue
+    % We pull the name of the current .mat file.
+    currName = erase(files(i).name,".mat");
+
+    % We pull the structure data from the current .mat file.
+    if files(i).isdir == 0
+        currStruct = load(strcat(DataPath,'\',files(i).name));
     else
-        currName = erase(files(i).name,".mat");
-        currStruct = load(strcat(folder_path,'\',files(i).name));
+        continue
+    end
+
+    % We filter against the Pad 0C I/O Code Directory.
+    if max(strcmp(currName,QuickSearch)) == 0
+        ErrorTable.Tag(i) = currName;
+        ErrorTable.Error(i) = 'Tag is not found in the I/O Code Directory.';
+        continue
     end
     
-    % We pull fd structures from those files which contain them.
+    % We pull the fd structure.
     if isfield(currStruct,'fd') == 1
         currTag = currStruct.fd;
         currTime = files(i).datenum;
     else
+        ErrorTable.Tag(i) = currName;
+        ErrorTable.Error(i) = 'Tag does not contain an fd structure.';
         continue
     end
 
@@ -67,11 +83,15 @@ for i = 1:length(files)
     % separate structure, for manipulation outside of the for-loop, OR run
     % valve timing computations within the for-loop and save data within 
     % the for-loop as well.
-    figure(i)
-    plot(currTag.ts)
-    hold off
-    %title('')
 
     % Need to additionally sort for whether data is from a valve or
     % something else (currTag contains an isValve field)
 end
+% -------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------
+% We delete unused rows in the error tracking table.
+% -------------------------------------------------------------------------
+ErrorTable = rmmissing(ErrorTable);
+% -------------------------------------------------------------------------
