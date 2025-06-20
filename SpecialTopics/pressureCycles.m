@@ -2,7 +2,14 @@
 % This can be stuffed into a function/gui for easier analysis in the future
 % but for now it is a fairly manual process.
 %
-% Point the tool at an archive
+% Point the tool at an archive that contains the data file you want and
+% select the data file from the GUI prompt.
+%
+% NOTE: if you are performing this on data that are joined from multiple
+% TAM files, you should run the manually_clean_data_file script to clean
+% out any data artifacts like zeros from project recycles or sensor
+% calibrations, which do not represent actual pressure cycles on a storage
+% vessel.
 
 
 %% Load the data file and generate the time and data variables
