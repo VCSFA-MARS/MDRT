@@ -43,11 +43,12 @@ fd = struct('ID',           '',...
     'version',      version);
 
 %% Generate v2 Struct
-
-fd.Data = [];
-fd.Time = [];
-fd.Units = '';
-
+if ~strcmpi(version, 'v1')
+    fd.version = version;   % add the selected version and the field
+    fd.Data = [];           % create the root Data field
+    fd.Time = [];           % create the root Time field
+    fd.Units = '';          % create the root Units field
+end
 
 end
   

@@ -41,6 +41,8 @@ structureTypeString = [];
 
 
 fdPrototype             = newFD;
+fd1Prototype            = newFD('version', 'v1'); % Legacy FD Support
+fd2Prototype            = newFD('version', 'v2'); % Legacy FD Support
 graphPrototype          = newGraphStructure;
 timelinePrototype       = newTimelineStructure;
 metadataPrototype       = newMetaDataStructure;
@@ -48,9 +50,14 @@ configPrototype         = newConfig;
 searchResultPrototype   = newSearchResult;
 masterFDListPrototype   = newMasterFDListStruct;
 
+% Legacy FD support - remove optional 'version' field from v1
+fd1Prototype = rmfield(fd1Prototype, 'version');
+
 % Create a cell array where each row is {'structure name', {'field list'}}
 
 prototypes = {  'fd',           fieldnames(fdPrototype)';
+                'fd1',          fieldnames(fd1Prototype)';
+                'fd2',          fieldnames(fd2Prototype)';
                 'graph',        fieldnames(graphPrototype)';
                 'timeline',     fieldnames(timelinePrototype)';
                 'metadata',     fieldnames(metadataPrototype)';
@@ -84,6 +91,8 @@ prototypes = {  'fd',           fieldnames(fdPrototype)';
         
             
     for n = 1:length(prototypes)
+        proto_str = prototypes{n,1};
+        this_proto = prototypes{n,2};
     
     
     % Using switch statement for readability - lots of duplicated code
@@ -91,45 +100,45 @@ prototypes = {  'fd',           fieldnames(fdPrototype)';
     
     % TODO: change this to automatically return the structure type using
     % the prototypes cell array?
-    
-        switch prototypes{n, 1}
-            case 'fd'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+        
+        switch proto_str
+            case {'fd', 'fd1', 'fd2'}
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'fd';
                     break 
                 end
 
             case 'graph'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'graph';
                     break
                 end
 
             case 'timeline'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'timeline';
                     break
                 end
 
             case 'metadata'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'metadata';
                     break
                 end
                 
             case 'config'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'config';
                     break
                 end
                 
             case 'searchResult'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'searchResult';
                     break
                 end
             case 'masterFDList'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'masterFDList';
                     break
                 end
