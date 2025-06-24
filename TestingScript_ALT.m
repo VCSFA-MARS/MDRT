@@ -197,33 +197,57 @@ for i = 1:height(GroupList)
     currCommandData = MasterStructure(currCommandCode == ...
         CodeCheck).TimeSeries;
 
-    % We plot for reference (TESTING ONLY)
-    figure(1)
-    plot(currOpenData)
-    title('Open State')
-    figure(2)
-    plot(currClosedData)
-    title('Closed State')
-    figure(3)
-    plot(currCommandData)
-    title('Command')
+    % We normalize open state data, as necessary.
+    if max(currOpenData.Data) > 1
+        currOpenData.Data = currOpenData.Data ./ max(currOpenData.Data);
+    end
 
+    % We normalize closed state data, as necessary.
+    if max(currClosedData.Data) > 1
+        currClosedData.Data = currClosedData.Data ./ max( ...
+            currClosedData.Data);
+    end
+
+    % We normalize command data, as necessary.
+    if max(currCommandData.Data) > 1
+        currCommandData.Data = currCommandData.Data ./ max( ...
+            currCommandData.Data);
+    end
+
+    % We plot for reference (TESTING ONLY)
+    if strcmp(currValve,'02C324') == 1
+    figure(1)
+    plot(currOpenData,'r')
+    hold on
+    plot(currClosedData,'b')
+    hold on
+    plot(currCommandData,'m')
+    title('FN: 02C324')
+    end
+    
+    % We verify that all three time series begin at the same time stamp.
+    if currOpenData.Time(1) ~= currCommandData.Time(1) || ...
+            currClosedData.Time(1) ~= currCommandData.Time(1)
+        ExportError = ['Datum times are inconsistent across data. ' ...
+            'Cannot compute timing.'];
+        ExportData.Errors(i) = convertCharsToStrings(ExportError);
+        continue
+    end
 
     % We look for instances of OPEN -> CLOSE commands.
     CommandCloseIndices = find(currCommandData.Data == 0);
     ClosedStateOpenIndices = find(currClosedData.Data == 0);
-    CommandSwitchTimes = zeros(1,3);
-    StateSwitchTimes = zeros(1,3);
+    CommandSwitchIndices = zeros(1,3);
+    StateSwitchIndices = zeros(1,3);
     AveragingVector = zeros(1,3);
 
     for j = 1:length(CommandCloseIndices)
         if CommandCloseIndices(j) == 1
             continue
         elseif currCommandData.Data(CommandCloseIndices(j) - 1) == 1
-            for k = 1:length(CommandSwitchTimes)
-                if CommandSwitchTimes(k) == 0
-                    CommandSwitchTimes(k) = currCommandData.Time( ...
-                        CommandCloseIndices(j) - 1);
+            for k = 1:length(CommandSwitchIndices)
+                if CommandSwitchIndices(k) == 0
+                    CommandSwitchIndices(k) = CommandCloseIndices(j) - 1;
                 end
             end
         end
@@ -233,36 +257,35 @@ for i = 1:height(GroupList)
         if ClosedStateOpenIndices(j) == 1
             continue
         elseif currClosedData.Data(ClosedStateOpenIndices(j) - 1) == 1
-            for k = 1:length(StateSwitchTimes)
-                if StateSwitchTimes(k) == 0
-                    StateSwitchTimes(k) = currClosedData.Time( ...
-                        ClosedStateOpenIndices(j) - 1);
+            for k = 1:length(StateSwitchIndices)
+                if StateSwitchIndices(k) == 0
+                    StateSwitchIndices(k) = ClosedStateOpenIndices(j);
                 end
             end
         end
     end
 
     for j = 1:length(AveragingVector)
-        AveragingVector(j) = StateSwitchTimes(j) - CommandSwitchTimes(j);
+        AveragingVector(j) = 0.1*(StateSwitchIndices(j) - ...
+            CommandSwitchIndices(j));
     end
 
     ExportData{i,'Close Time [s]'} = mean(AveragingVector);
 
     % We look for instances of CLOSE -> OPEN commands.
     CommandOpenIndices = find(currCommandData.Data == 1);
-    OpenStateOpenIndices = find(currClosedData.Data == 0);
-    CommandSwitchTimes = zeros(1,3);
-    StateSwitchTimes = zeros(1,3);
+    OpenStateOpenIndices = find(currOpenData.Data == 0);
+    CommandSwitchIndices = zeros(1,3);
+    StateSwitchIndices = zeros(1,3);
     AveragingVector = zeros(1,3);
 
     for j = 1:length(CommandOpenIndices)
         if CommandOpenIndices(j) == 1
             continue
-        elseif currCommandData.Data(CommandOpenIndices(j) - 1) == 1
-            for k = 1:length(CommandSwitchTimes)
-                if CommandSwitchTimes(k) == 0
-                    CommandSwitchTimes(k) = currCommandData.Time( ...
-                        CommandOpenIndices(j) - 1);
+        elseif currCommandData.Data(CommandOpenIndices(j) - 1) == 0
+            for k = 1:length(CommandSwitchIndices)
+                if CommandSwitchIndices(k) == 0
+                    CommandSwitchIndices(k) = CommandOpenIndices(j) - 1;
                 end
             end
         end
@@ -272,23 +295,28 @@ for i = 1:height(GroupList)
         if OpenStateOpenIndices(j) == 1
             continue
         elseif currClosedData.Data(OpenStateOpenIndices(j) - 1) == 1
-            for k = 1:length(StateSwitchTimes)
-                if StateSwitchTimes(k) == 0
-                    StateSwitchTimes(k) = currClosedData.Time( ...
-                        OpenStateOpenIndices(j) - 1);
+            for k = 1:length(StateSwitchIndices)
+                if StateSwitchIndices(k) == 0
+                    StateSwitchIndices(k) = OpenStateOpenIndices(j);
                 end
             end
         end
     end
 
     for j = 1:length(AveragingVector)
-        AveragingVector(j) = StateSwitchTimes(j) - CommandSwitchTimes(j);
+        AveragingVector(j) = 0.1*(StateSwitchIndices(j) - ...
+            CommandSwitchIndices(j));
     end
 
     ExportData{i,'Open Time [s]'} = mean(AveragingVector);
 
+    if strcmp(currValve,'02C324') == 1
+        keyboard
+    end
+
 end
 % -------------------------------------------------------------------------
+% v
 
 
 % -------------------------------------------------------------------------
