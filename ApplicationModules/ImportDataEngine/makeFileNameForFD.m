@@ -32,7 +32,7 @@ function fileName = makeFileNameForFD(fdStruct)
     switch class(fdStruct)
         case 'struct'
             %% TODO - fix non-existant handle issue
-            if ~isempty(fdStruct.ts.Name)
+            if isfield(fdStruct,'ts') && isa(fdStruct.ts, 'timeseries') && ~isempty(fdStruct.ts.Name)
                 % Prefer the full name of the timeseries for file
                 % names.
                 startingString = fdStruct.ts.Name;
