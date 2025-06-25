@@ -215,14 +215,14 @@ for i = 1:height(GroupList)
     end
 
     % We plot for reference (TESTING ONLY)
-    if strcmp(currValve,'02C324') == 1
+    if strcmp(currValve,'02C348') == 1
     figure(1)
     plot(currOpenData,'r')
     hold on
     plot(currClosedData,'b')
     hold on
     plot(currCommandData,'m')
-    title('FN: 02C324')
+    title('FN: 02C348')
     end
     
     % We verify that all three time series begin at the same time stamp.
@@ -248,6 +248,7 @@ for i = 1:height(GroupList)
             for k = 1:length(CommandSwitchIndices)
                 if CommandSwitchIndices(k) == 0
                     CommandSwitchIndices(k) = CommandCloseIndices(j) - 1;
+                    break
                 end
             end
         end
@@ -260,6 +261,7 @@ for i = 1:height(GroupList)
             for k = 1:length(StateSwitchIndices)
                 if StateSwitchIndices(k) == 0
                     StateSwitchIndices(k) = ClosedStateOpenIndices(j);
+                    break
                 end
             end
         end
@@ -286,6 +288,7 @@ for i = 1:height(GroupList)
             for k = 1:length(CommandSwitchIndices)
                 if CommandSwitchIndices(k) == 0
                     CommandSwitchIndices(k) = CommandOpenIndices(j) - 1;
+                    break
                 end
             end
         end
@@ -294,10 +297,11 @@ for i = 1:height(GroupList)
     for j = 1:length(OpenStateOpenIndices)
         if OpenStateOpenIndices(j) == 1
             continue
-        elseif currClosedData.Data(OpenStateOpenIndices(j) - 1) == 1
+        elseif currOpenData.Data(OpenStateOpenIndices(j) - 1) == 1
             for k = 1:length(StateSwitchIndices)
                 if StateSwitchIndices(k) == 0
                     StateSwitchIndices(k) = OpenStateOpenIndices(j);
+                    break
                 end
             end
         end
@@ -309,10 +313,6 @@ for i = 1:height(GroupList)
     end
 
     ExportData{i,'Open Time [s]'} = mean(AveragingVector);
-
-    if strcmp(currValve,'02C324') == 1
-        keyboard
-    end
 
 end
 % -------------------------------------------------------------------------
