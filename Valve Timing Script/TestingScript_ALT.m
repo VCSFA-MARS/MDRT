@@ -20,14 +20,10 @@ clear;clc;
 
 
 % -------------------------------------------------------------------------
-% We define file paths specifying the location of the I/O Code Directory
-% (DirectoryPath), Valve Grouping List (GroupingPath), and the folder
-% containing the FCS data (DataPath).
+% We define the location of the processe data (.mat files returned by
+% review.m from an input of .csv files). In final iteration, this ought to
+% refer to whatever variable name review.m assigns these .mat files.
 % -------------------------------------------------------------------------
-DirectoryPath = ['C:\Users\AustinThomas\Desktop\Pad 0C\Projects\' ...
-    'Valve Timing Script [MP-00434]\Pad0C_ValveDirectory'];
-GroupingPath = ['C:\Users\AustinThomas\Desktop\Pad 0C\Projects\' ...
-    'Valve Timing Script [MP-00434]\Pad0C_ValveGrouping'];
 DataPath = 'C:\Users\AustinThomas\Desktop\data\import\Test Folder\data';
 % -------------------------------------------------------------------------
 
@@ -36,11 +32,12 @@ DataPath = 'C:\Users\AustinThomas\Desktop\data\import\Test Folder\data';
 % We import the I/O Code Directory and Valve Grouping List (importing
 % .xslx files, storing as tables).
 % -------------------------------------------------------------------------
-Directory = readtable(DirectoryPath,'PreserveVariableNames',true, ...
-    'Sheet','Channel List');
-QuickSearch = Directory{:,'I/O Code'};
+Directory = readtable('Pad0C_ValveDirectory.xlsx', ...
+    'PreserveVariableNames',true,'Sheet','Channel List');
+GroupList = readtable('Pad0C_ValveGrouping.xlsx', ...
+    'PreserveVariableNames',true);
 
-GroupList = readtable(GroupingPath,'PreserveVariableNames',true);
+QuickSearch = Directory{:,'I/O Code'};
 % -------------------------------------------------------------------------
 
 
@@ -48,6 +45,10 @@ GroupList = readtable(GroupingPath,'PreserveVariableNames',true);
 % We following code will attempt to read all struct files generated from
 % the review.m script.
 % -------------------------------------------------------------------------
+% We generate a progress bar for the import process.
+ImportProgressBar = waitbar(0,'Importing and Organizing Data', ...
+    'WindowStyle','modal');
+
 % We list the folder contents from the specified folder location.
 files = dir(DataPath);
 
@@ -96,8 +97,9 @@ for i = 1:length(files)
     MasterStructure(end+1).Code = find(strcmp(currName,QuickSearch) == 1);
     MasterStructure(end).TimeSeries = currTag.ts;
 
-    % Need to additionally sort for whether data is from a valve or
-    % something else (currTag contains an isValve field)
+    % We update the progress bar.
+    waitbar(i/length(files))
+
 end
 
 % We remove empty rows from the error table.
@@ -107,6 +109,9 @@ ErrorTable = rmmissing(ErrorTable);
 MasterStructure(1) = [];
 [~,orderMasterStructure] = sort([MasterStructure(:).Code],'ascend');
 MasterStructure = MasterStructure(orderMasterStructure);
+
+% We close the progress bar.
+close(ImportProgressBar)
 % -------------------------------------------------------------------------
 
 
@@ -144,6 +149,14 @@ ExportData = convertvars(ExportData,'Errors','string');
 % ------------------------------------------------------------------------- 
 
 
+% ------------------------------------------------------------------------- 
+% We introduce a wait bar to track calculations being done on each valve.
+% ------------------------------------------------------------------------- 
+ProcessProgressBar = waitbar(0,'Beginning Computational Process', ...
+    'WindowStyle','modal');
+% ------------------------------------------------------------------------- 
+
+
 % -------------------------------------------------------------------------
 % For each valve defined by the Valve Grouping List, we: (a) verify that
 % data exists for all three required valves in the Master Structure,
@@ -154,22 +167,22 @@ ExportData = convertvars(ExportData,'Errors','string');
 for i = 1:height(GroupList)
 
     % We define currValve and currCode for the
+    currType = string(GroupList{i,'Valve Type'});
     currValve = string(GroupList{i,'Valve FN'});
     currOpenCode = GroupList{i,'Open I/O'};
     currClosedCode = GroupList{i,'Closed I/O'};
     currCommandCode = GroupList{i,'Command I/O'};
+
+    % We update the progress bar.
+    waitbar(i/height(GroupList),ProcessProgressBar, ...
+        strcat('Computing For:',{' '},currType,'-',currValve));
 
     % We confirm that all three codes are present in MasterStructure.
     CodeCheck = transpose([MasterStructure.Code]);
     OpenCheck = ismember(currOpenCode,CodeCheck);
     ClosedCheck = ismember(currClosedCode,CodeCheck);
     CommandCheck = ismember(currCommandCode,CodeCheck);
-    CheckVector = [OpenCheck ClosedCheck CommandCheck];
     ExportError = 'The following I/O Codes are missing data:';
-
-    % We implement a makeshift progress bar.
-    fprintf('Currently Calculating for %s-%s: [%d/%d]\n\n', ...
-        string(GroupList{i,'Valve Type'}),currValve,i,height(GroupList))
 
     % We list in the export file which I/O codes are missing.
     if OpenCheck == 0 || ClosedCheck == 0 || CommandCheck == 0
@@ -212,17 +225,6 @@ for i = 1:height(GroupList)
     if max(currCommandData.Data) > 1
         currCommandData.Data = currCommandData.Data ./ max( ...
             currCommandData.Data);
-    end
-
-    % We plot for reference (TESTING ONLY)
-    if strcmp(currValve,'02C348') == 1
-    figure(1)
-    plot(currOpenData,'r')
-    hold on
-    plot(currClosedData,'b')
-    hold on
-    plot(currCommandData,'m')
-    title('FN: 02C348')
     end
     
     % We verify that all three time series begin at the same time stamp.
@@ -316,7 +318,13 @@ for i = 1:height(GroupList)
 
 end
 % -------------------------------------------------------------------------
-% v
+
+
+% -------------------------------------------------------------------------
+% We close the progress bar.
+% -------------------------------------------------------------------------
+close(ProcessProgressBar)
+% -------------------------------------------------------------------------
 
 
 % -------------------------------------------------------------------------
