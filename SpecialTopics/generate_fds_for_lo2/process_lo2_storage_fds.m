@@ -64,8 +64,14 @@ for n = 1:numel(data_configs)
     switch this_cal_curve.type
         case 'DiscreteValve'
             fprintf('Processing %s\n', this_json_str)
-            open_fd = load_fd_by_name(this_json_fd.cal_curve.fd_open);
-            close_fd = load_fd_by_name(this_json_fd.cal_curve.fd_close);
+            try
+                open_fd = load_fd_by_name(this_json_fd.cal_curve.fd_open);
+                close_fd = load_fd_by_name(this_json_fd.cal_curve.fd_close);
+            catch
+                % Unable to load one of the needed FD files
+                % Skipping
+                continue
+            end
             fd = make_state_fd_from_inds(this_fd_str, open_fd, close_fd);
             save_fd_to_disk(fd);
             processed_state_finds = vertcat(processed_state_finds, fd.ID);
@@ -337,9 +343,11 @@ for n = 1:numel(to_process)
     this_output_units = to_process(n).output_units;
 
     this_cal_curve = this_continer.cal_curve;
-
-    fd = load_fd_by_name(this_fd_to_load);
-
+    try
+        fd = load_fd_by_name(this_fd_to_load);
+    catch
+        continue
+    end
     % Use the FD struct that's loaded and build the correct metadata for
     % the output FD. The `proc_vals` will be added to the fd.ts at the end
     % of the switch statement.
