@@ -15,32 +15,20 @@ classdef StructIDTests < matlab.unittest.TestCase
             testCase.verifyEqual(actSolution, expSolution);
         end
 
-        function testCheckLegacyFDStruct(testCase)
-            fd = newFD('version', 'v1');
-            if isfield(fd, 'version')
-                fd = rmfield(fd, 'version');
-            end
-
-            actSolution = checkStructureType(fd);
-            expSolution = 'fd';
-
-            testCase.verifyEqual(actSolution, expSolution);
-        end
-        
-        function testCheckFDStructV2(testCase)
-            fd = newFD('version', 'v2');
-
-            actSolution = checkStructureType(fd);
-            expSolution = 'fd';
-
-            testCase.verifyEqual(actSolution, expSolution);
-        end
-
         function testCheckFDStructWithNameArg(testCase)
             fd = newFD('FullString', 'MyFullstring');
 
             actSolution = checkStructureType(fd);
             expSolution = 'fd';
+
+            testCase.verifyEqual(actSolution, expSolution);
+        end
+
+        function testGraphStruct(testCase)
+            graph = newGraphStructure;
+
+            actSolution = checkStructureType(graph);
+            expSolution = 'graph';
 
             testCase.verifyEqual(actSolution, expSolution);
         end

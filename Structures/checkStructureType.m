@@ -41,8 +41,6 @@ structureTypeString = [];
 
 
 fdPrototype             = newFD;
-fd1Prototype            = newFD('version', 'v1'); % Legacy FD Support
-fd2Prototype            = newFD('version', 'v2'); % Legacy FD Support
 graphPrototype          = newGraphStructure;
 timelinePrototype       = newTimelineStructure;
 metadataPrototype       = newMetaDataStructure;
@@ -50,14 +48,9 @@ configPrototype         = newConfig;
 searchResultPrototype   = newSearchResult;
 masterFDListPrototype   = newMasterFDListStruct;
 
-% Legacy FD support - remove optional 'version' field from v1
-fd1Prototype = rmfield(fd1Prototype, 'version');
-
 % Create a cell array where each row is {'structure name', {'field list'}}
 
 prototypes = {  'fd',           fieldnames(fdPrototype)';
-                'fd1',          fieldnames(fd1Prototype)';
-                'fd2',          fieldnames(fd2Prototype)';
                 'graph',        fieldnames(graphPrototype)';
                 'timeline',     fieldnames(timelinePrototype)';
                 'metadata',     fieldnames(metadataPrototype)';
@@ -102,7 +95,7 @@ prototypes = {  'fd',           fieldnames(fdPrototype)';
     % the prototypes cell array?
         
         switch proto_str
-            case {'fd', 'fd1', 'fd2'}
+            case 'fd'
                 if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'fd';
                     break 

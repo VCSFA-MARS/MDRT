@@ -20,6 +20,23 @@ function fd = load_fd_by_name(fd_str, varargin)
 %will be discarded in favor of the current data set or the 'folder'
 %argument.
 
+%% Disk Format
+%
+% A 'version 2' disk format is now in use for exporting data to customers
+% and for some large-import tasks. The legacy (version 1) disk format has
+% no version identifier. This tool will treat any .mat file with a somewhat
+% valid fd structure as 'version 1' if it is explicitely tagged, or if
+% there is no version information.
+%
+% This function loads data from disk and stuffs it into the standard fd
+% structure that all MDRT tools use. The intention is to keep the in-memory
+% fd struct consistent and to abstract away from the on-disk
+% representation.
+ 
+%TODO
+% .mat file compression should be off for faster writes, but maybe on for
+% best file size and performance? Not sure what to do here
+
 %% Defaults
 
 use_filename = false;
@@ -78,25 +95,42 @@ if ~exist(filename, "file")
     error('Tried to load non-existant FD: %s', fd_str)
 end
 
+%% Create matfile() link to file and read stored variables
+mf = matfile(filename);
+fields = fieldnames(mf);
+assert(~isempty(fields));
+
 %% Determine version of .mat file
 
-fd = whos('-file', filename);
-is_v1 = ismember('fd', {fd.name});
+disk_version = 'v1'; % default
+
+if any(ismember(fields, 'disk_version')) && strcmpi(mf.disk_version, 'v2')
+    disk_version = 'v2';
+end
 
 
 %% Perform loading based on version
-if is_v1
-    s = load(filename);
-    fd = s.fd;
-else
-    fd = load(filename);
+switch disk_version
+    case 'v1'
+        fd = mf.fd;
+        
+    case 'v2'
+        fd = newFD();
 
-    % Build timeseries (converting back to v1 shape
-    fd.ts = timeseries(fd.Data, fd.Time);
-    fd.ts.Name = fd.FullString;
-    fd.ts.DataInfo.Units = fd.Units;
+        % Build timeseries (converting back to v1 shape
+        fd.ts = timeseries(mf.Data, mf.Time);
+        
+        if ismember(fields, 'Name')
+            fd.ts.Name = mf.Name;
+        else
+            fd.ts.Name = mf.FullString;
+        end
 
-    % Clean out Time and Data to save memory
-    fd = rmfield(fd, {'Data', 'Time'});
-
+        fd.ts.DataInfo.Units = mf.Units;
+    
+    otherwise
+        error('Unknown data file structure in %s\n%s', filename, mf);
 end
+
+
+
