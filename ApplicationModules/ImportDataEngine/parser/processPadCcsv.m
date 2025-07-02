@@ -104,9 +104,7 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
         fd.ts = timeseries(dataVect, timeVect, 'Name', fd.FullString);
         fd.ts.DataInfo.Units = unit_str;
         
-        filename = fullfile(saveTo, makeFileNameForFD(fd));
-        
-        save(filename, 'fd');
+        save_fd_to_disk(fd, 'folder', saveTo); % defaulting to v1 disk
         
         if use_prog
             pp.set_completed(pp_ind, c);

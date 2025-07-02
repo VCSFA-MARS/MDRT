@@ -210,25 +210,26 @@ while ~feof(fid)
         
         if ~exist(this_fullfile, 'file')
             fd = this_FD;
-            save(this_fullfile, 'fd');
-        else
-%% Append data to existing FD file
-            from_file = load(this_fullfile);
-            % matfiles do not support indexing into struct fields
-            % mfile = matfile(this_fullfile, "Writable",true);
-            
-            merged_ts = merge_timeseries(from_file.fd.ts, this_FD.ts);
-            
-            if isempty(merged_ts)
-                % empty merged_ts means no work to do, skip writing to disk
-                % since no change is made.
-                continue
-            end
-                
-            from_file.fd.ts = merged_ts;
-            fd = from_file.fd;
-            save(this_fullfile, 'fd');
+            save_fd_to_disk(fd, 'folder', output_folder);
+            continue
         end
+
+%% Append data to existing FD file
+        from_file = load(this_fullfile);
+        % matfiles do not support indexing into struct fields
+        % mfile = matfile(this_fullfile, "Writable",true);
+        
+        merged_ts = merge_timeseries(from_file.fd.ts, this_FD.ts);
+        
+        if isempty(merged_ts)
+            % empty merged_ts means no work to do, skip writing to disk
+            % since no change is made.
+            continue
+        end
+            
+        from_file.fd.ts = merged_ts;
+        fd = from_file.fd;
+        save(this_fullfile, 'fd');
 
         
     end
