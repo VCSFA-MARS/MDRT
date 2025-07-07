@@ -1,10 +1,74 @@
-function ValveTimingFunc(DataPath)
+function ValveTimingFunc(DataPath,ExportFileName)
 % -------------------------------------------------------------------------
 
 
 % -------------------------------------------------------------------------
+%   This function automatically performs valve timing calculations for
+% discrete valves on Pad 0C. The function is intended for integration with
+% the 'review.m' data review tool, but may operate independently. The
+% function takes as an input the file location of .mat files intended for 
+% processing; these .mat files are attained through the Data Review GUI 
+% tool in 'review.m'.
+%   The function processes and organizes the fd structures associated with 
+% these .mat files. The function compares the data provided against a 
+% directory of I/O Codes and then again to a list of MARS FN's and their 
+% associated I/O Codes. This allows for the funamental .mat data to be 
+% associated with the appropriate signals (command, open, closed) for the 
+% appropriate valves. If data for a specific valve is not provided, the
+% function will note that in its output.
+%   Once the provided data is organized, computation of valve timing is
+% done for each valve. 'Open Time [s]' returns the time difference between
+% the command signal turning FALSE and the open state signal turning TRUE.
+% 'Close Time [s]' returns the tiem difference between the command signal
+% turning TRUE and the close state signal turning TRUE. These times are
+% written to a .xlsx file with a name provided by the user.
+%
+% Important Notes for User...
+%   -> Be wary of changes made to the .xlsx or .xltx files listed below in
+%       'Supporting Files' -- this function is sensitive to the formatting
+%       of those files, and changes to the files may necessitate changes to
+%       the code. Additional rows may be added to Valve Directory or Valve 
+%       Grouping so long as all columns are populated correctly.
+%   -> If a 'The following I/O Codes afre missing data:' error is returned
+%       unexpectedly, you may look at the Error Table for a more detailed
+%       explanation of the issue (i.e. if a certain .mat file provided bad
+%       data). This table must be accessed in MATLAB, from the Workspace.
+%
+% Inputs...
+%   DataPath: the location (folder or single files) of the .mat files
+%             processed by review.m; should be formatted as a string
+%   ExportFileName: the desired name of the .xlsx files returned by the
+%                   function; should be formatted as a string
+%
+% Outputs...
+%   ExportData: a table (exported as a .xlsx file) of the formatting of the
+%               .xltx file listed below in 'Supporting Files'; contains
+%               valve timing computational results and any relevant errors
+%   ErrorTable: a table (not exported) containing any errors found during
+%               the data importation and organization process; this
+%               identifies errors with specific .mat files provided to the
+%               function, and may only be accessed through the Workspace
+%
+% Supporting Files...
+%   Pad0C_ValveDirectory.xlsx
+%       -> associates the .mat file names to Rocket Lab I/O Code Numbers
+%   Pad0C_ValveGrouping.xlsx
+%       -> associates specific valve FN's with the I/O Code Numbers of the
+%          valve's command, open state, and closed state signals
+%   Pad0C_ValveTimingExportTemplate.xltx
+%       -> provided a clean template for the data to be written to, rather
+%          than the default Excel worksheet
+%
+% -------------------------------------------------------------------------
 
 
+% -------------------------------------------------------------------------
+% REVISION LOG
+% -------------------------------------------------------------------------
+% Rev0: Austin Leo Thomas - July 7, 2025
+%   -> placeholder
+%   -> adjust date when finally published
+% -------------------------------------------------------------------------
 
 
 % -------------------------------------------------------------------------
@@ -97,9 +161,8 @@ close(ImportProgressBar)
 % -------------------------------------------------------------------------
 % We create the export file.
 % -------------------------------------------------------------------------
-% We define the name of the output file (will be user input in GUI in final
-% version).
-ExportFileName = 'ValveTimingTestResults';
+% We remove any file extension included in the provided export file name.
+[~,ExportFileName,~] = fileparts(ExportFileName);
 
 % We add a .xlsx designator to the export file name.
 ExportName = strcat(ExportFileName,'.xlsx');
