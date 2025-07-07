@@ -45,21 +45,18 @@ folderName = strtrim(folderName);
 if isempty(folderName)
     % User cancelled
     return
-else
-    
-    rootPath = fullfile(config.importDataPath, folderName);
-    
-    mkdir( rootPath{1} );
-    
-    config.userWorkingPath = rootPath{1};
-    
-    config.makeWorkingDirectoryStructure;
-    
-    config.writeConfigurationToDisk;
-    
-    
-    
 end
+    
+rootPath = fullfile(config.importDataPath, folderName);
+
+mkdir( rootPath{1} );
+
+config.userWorkingPath = rootPath{1};
+
+config.makeWorkingDirectoryStructure;
+
+config.writeConfigurationToDisk;
+
 
 
 %% Move files to location to process

@@ -234,7 +234,7 @@ for graphNumber = 1:numberOfGraphs
         % --> CHANGE TO CHECK FOR FULLFILE PATH <------------
         try
             for i = 1:length(toPlot)
-                s(i)  = load([dataPath toPlot{i} '.mat'],'fd');
+                s(i).fd = load_fd_by_name(toPlot{i}, 'byFileName', true);
                 iv(i) = isFDValve(s(i).fd);
             end
             
