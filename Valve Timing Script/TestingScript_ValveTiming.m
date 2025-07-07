@@ -24,7 +24,7 @@ clear;clc;
 % review.m from an input of .csv files). In final iteration, this ought to
 % refer to whatever variable name review.m assigns these .mat files.
 % -------------------------------------------------------------------------
-DataPath = 'C:\Users\AustinThomas\Desktop\data\import\Test Folder\data';
+DataPath = 'C:\Users\AustinThomas\Desktop\data\import\TestData_Morning\data';
 % -------------------------------------------------------------------------
 
 
@@ -226,6 +226,19 @@ for i = 1:height(GroupList)
         currCommandData.Data = currCommandData.Data ./ max( ...
             currCommandData.Data);
     end
+
+    % TESTING
+    if strcmp(currValve,'04C345') == 1
+        figure(1)
+        plot(currCommandData.Time,currCommandData.Data,'m')
+        hold on
+        plot(currClosedData.Time,currClosedData.Data,'r')
+        plot(currOpenData.Time,currOpenData.Data,'g')
+        legend('Command','Closed','Open')
+        title(strcat('Data For',{' '},currType,'-',currValve))
+        datetick('x','HH:MM:SS.FFF AM')
+        hold off
+    end
     
     % We verify that all three time series begin at the same time stamp.
     if currOpenData.Time(1) ~= currCommandData.Time(1) || ...
@@ -236,9 +249,14 @@ for i = 1:height(GroupList)
         continue
     end
 
+    % We assign logical values to TRUE and FALSE states depending on the
+    % state signal structure, which may vary from valve-to-valve.
+    TRUE = GroupList{i,'TRUE State Signal'};
+    FALSE = TRUE == 0;
+
     % We look for instances of OPEN -> CLOSE commands.
     CommandCloseIndices = find(currCommandData.Data == 0);
-    ClosedStateOpenIndices = find(currClosedData.Data == 0);
+    ClosedStateOpenIndices = find(currClosedData.Data == TRUE);
     CommandSwitchIndices = zeros(1,3);
     StateSwitchIndices = zeros(1,3);
     AveragingVector = zeros(1,3);
@@ -259,7 +277,7 @@ for i = 1:height(GroupList)
     for j = 1:length(ClosedStateOpenIndices)
         if ClosedStateOpenIndices(j) == 1
             continue
-        elseif currClosedData.Data(ClosedStateOpenIndices(j) - 1) == 1
+        elseif currClosedData.Data(ClosedStateOpenIndices(j) - 1) == FALSE
             for k = 1:length(StateSwitchIndices)
                 if StateSwitchIndices(k) == 0
                     StateSwitchIndices(k) = ClosedStateOpenIndices(j);
@@ -278,7 +296,7 @@ for i = 1:height(GroupList)
 
     % We look for instances of CLOSE -> OPEN commands.
     CommandOpenIndices = find(currCommandData.Data == 1);
-    OpenStateOpenIndices = find(currOpenData.Data == 0);
+    OpenStateOpenIndices = find(currOpenData.Data == TRUE);
     CommandSwitchIndices = zeros(1,3);
     StateSwitchIndices = zeros(1,3);
     AveragingVector = zeros(1,3);
@@ -299,7 +317,7 @@ for i = 1:height(GroupList)
     for j = 1:length(OpenStateOpenIndices)
         if OpenStateOpenIndices(j) == 1
             continue
-        elseif currOpenData.Data(OpenStateOpenIndices(j) - 1) == 1
+        elseif currOpenData.Data(OpenStateOpenIndices(j) - 1) == FALSE
             for k = 1:length(StateSwitchIndices)
                 if StateSwitchIndices(k) == 0
                     StateSwitchIndices(k) = OpenStateOpenIndices(j);

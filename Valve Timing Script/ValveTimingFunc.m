@@ -1,44 +1,111 @@
-function ValveTimingProcessFunc(MasterStructure,ExportFileName)
-
-% This function comprises the computational processes involved in valve
-% timing calculations on Pad 0C.
-%
-% Input...
-%   -> MasterStructure
-%       -> structure containing I/O Code Numbers and their associated time 
-%          series data sets
-%       -> formatting is significant...
-%           -> 1st Column: titled 'Code', contains I/O Code numbers
-%           -> 2nd Column: titled 'TimeSeries', contains time series data 
-%                          sets associated with each I/O Code
-%       -> attained as output of ValveTimingInputFunc.m
-%   -> Export
-%
-% Output...
-%   -> writes valve timing results and any discovered errors to a
-%      pre-formatted Excel worksheet; this worksheet is then saved to the
-%      folder
+function ValveTimingFunc(DataPath)
 % -------------------------------------------------------------------------
 
 
-% ------------------------------------------------------------------------- 
-% We import the template Excel sheet used for formatting the export data
-% and the Excel workbook containing I/O code pairings.
-% ------------------------------------------------------------------------- 
-TemplateName = 'Pad0C_ValveTimingExportTemplate.xltx';
+% -------------------------------------------------------------------------
+
+
+
+
+% -------------------------------------------------------------------------
+% We import the I/O Code Directory and Valve Grouping List (importing
+% .xslx files, storing as tables).
+% -------------------------------------------------------------------------
+Directory = readtable('Pad0C_ValveDirectory.xlsx', ...
+    'PreserveVariableNames',true,'Sheet','Channel List');
 GroupList = readtable('Pad0C_ValveGrouping.xlsx', ...
     'PreserveVariableNames',true);
+
+QuickSearch = Directory{:,'I/O Code'};
+% -------------------------------------------------------------------------
+
+
+% -------------------------------------------------------------------------
+% We following code will attempt to read all struct files generated from
+% the review.m script.
+% -------------------------------------------------------------------------
+% We generate a progress bar for the import process.
+ImportProgressBar = waitbar(0,'Importing and Organizing Data', ...
+    'WindowStyle','modal');
+
+% We list the folder contents from the specified folder location.
+files = dir(DataPath);
+
+% We generate an empty structure for the extracted time series.
+MasterStructure = struct('Code',[],'TimeSeries',[]);
+
+% We create an error table to store information regarding which files
+% could not be processed.
+ErrorTable = table('Size',[length(files) 2],'VariableTypes', ...
+    {'string' 'string'},'VariableNames',{'Tag' 'Error'});
+
+for i = 1:length(files)
+
+    % We pull the name of the current .mat file.
+    currName = erase(files(i).name,".mat");
+
+    % We pull the structure data from the current .mat file.
+    if files(i).isdir == 0
+        currStruct = load(strcat(DataPath,'\',files(i).name));
+    else
+        continue
+    end
+
+    % We filter against the Pad 0C I/O Code Directory.
+    if max(strcmp(currName,QuickSearch)) == 0
+        ErrorTable.Tag(i) = currName;
+        ErrorTable.Error(i) = ['Tag is not found in the I/O Code ' ...
+            'Directory.'];
+        continue
+    else
+    end
+    
+    % We pull the fd structure.
+    if isfield(currStruct,'fd') == 1
+        currTag = currStruct.fd;
+    else
+        ErrorTable.Tag(i) = currName;
+        ErrorTable.Error(i) = 'Tag does not contain an fd structure.';
+        continue
+    end
+
+    % Here: either save the data (currName, currTag, and currTime) in a 
+    % separate structure, for manipulation outside of the for-loop, OR run
+    % valve timing computations within the for-loop and save data within 
+    % the for-loop as well.
+    MasterStructure(end+1).Code = find(strcmp(currName,QuickSearch) == 1);
+    MasterStructure(end).TimeSeries = currTag.ts;
+
+    % We update the progress bar.
+    waitbar(i/length(files))
+
+end
+
+% We remove empty rows from the error table.
+ErrorTable = rmmissing(ErrorTable);
+
+% We organize the master structure.
+MasterStructure(1) = [];
+[~,orderMasterStructure] = sort([MasterStructure(:).Code],'ascend');
+MasterStructure = MasterStructure(orderMasterStructure);
+
+% We close the progress bar.
+close(ImportProgressBar)
 % -------------------------------------------------------------------------
 
 
 % -------------------------------------------------------------------------
 % We create the export file.
 % -------------------------------------------------------------------------
-% We remove the file extension from ExportFileName, if one exists.
-[~,ExportFileName,~] = fileparts(ExportFileName);
+% We define the name of the output file (will be user input in GUI in final
+% version).
+ExportFileName = 'ValveTimingTestResults';
 
 % We add a .xlsx designator to the export file name.
 ExportName = strcat(ExportFileName,'.xlsx');
+
+%We define the folder path of the results template Excel sheet.
+TemplateName = 'Pad0C_ValveTimingExportTemplate.xltx';
 
 % We create a copy of the template with the desired name.
 copyfile(TemplateName,ExportName)
@@ -48,7 +115,7 @@ ExportData = readtable(TemplateName,'PreserveVariableNames',true);
 
 % We specify that the Errors variable required string data.
 ExportData = convertvars(ExportData,'Errors','string');
-% -------------------------------------------------------------------------
+% ------------------------------------------------------------------------- 
 
 
 % ------------------------------------------------------------------------- 
@@ -138,9 +205,14 @@ for i = 1:height(GroupList)
         continue
     end
 
+    % We assign logical values to TRUE and FALSE states depending on the
+    % state signal structure, which may vary from valve-to-valve.
+    TRUE = GroupList{i,'TRUE State Signal'};
+    FALSE = TRUE == 0;
+
     % We look for instances of OPEN -> CLOSE commands.
     CommandCloseIndices = find(currCommandData.Data == 0);
-    ClosedStateOpenIndices = find(currClosedData.Data == 0);
+    ClosedStateOpenIndices = find(currClosedData.Data == TRUE);
     CommandSwitchIndices = zeros(1,3);
     StateSwitchIndices = zeros(1,3);
     AveragingVector = zeros(1,3);
@@ -161,7 +233,7 @@ for i = 1:height(GroupList)
     for j = 1:length(ClosedStateOpenIndices)
         if ClosedStateOpenIndices(j) == 1
             continue
-        elseif currClosedData.Data(ClosedStateOpenIndices(j) - 1) == 1
+        elseif currClosedData.Data(ClosedStateOpenIndices(j) - 1) == FALSE
             for k = 1:length(StateSwitchIndices)
                 if StateSwitchIndices(k) == 0
                     StateSwitchIndices(k) = ClosedStateOpenIndices(j);
@@ -180,7 +252,7 @@ for i = 1:height(GroupList)
 
     % We look for instances of CLOSE -> OPEN commands.
     CommandOpenIndices = find(currCommandData.Data == 1);
-    OpenStateOpenIndices = find(currOpenData.Data == 0);
+    OpenStateOpenIndices = find(currOpenData.Data == TRUE);
     CommandSwitchIndices = zeros(1,3);
     StateSwitchIndices = zeros(1,3);
     AveragingVector = zeros(1,3);
@@ -201,7 +273,7 @@ for i = 1:height(GroupList)
     for j = 1:length(OpenStateOpenIndices)
         if OpenStateOpenIndices(j) == 1
             continue
-        elseif currOpenData.Data(OpenStateOpenIndices(j) - 1) == 1
+        elseif currOpenData.Data(OpenStateOpenIndices(j) - 1) == FALSE
             for k = 1:length(StateSwitchIndices)
                 if StateSwitchIndices(k) == 0
                     StateSwitchIndices(k) = OpenStateOpenIndices(j);
@@ -235,11 +307,8 @@ close(ProcessProgressBar)
 writetable(ExportData,ExportName,'PreserveFormat',true)
 % -------------------------------------------------------------------------
 
-
-
-
 % -------------------------------------------------------------------------
-% We close the function.
+% We terminate the function.
 % -------------------------------------------------------------------------
 end
 % -------------------------------------------------------------------------

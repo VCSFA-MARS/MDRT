@@ -654,6 +654,9 @@ function populateFDlistFromDataFolder(hObject, handles, folder)
 function ui_newDataButton_Callback(hObject, eventdata, handles)
 
     rootGuess = handles.configuration.dataFolderPath;
+
+    % Austin Thomas: TESTING
+    disp(rootGuess)
     
     if exist(fullfile(rootGuess),'dir')
         
