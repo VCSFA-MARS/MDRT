@@ -347,12 +347,12 @@ for i = 1:height(GroupList)
     end
 
     for j = 1:length(AveragingVector)
-        AveragingVector(j) = 0.1*(StateSwitchIndices(j) - ...
-            CommandSwitchIndices(j));
-    end
-
-    ExportData{i,'Open Time [s]'} = mean(AveragingVector);
-
+    AveragingVector(j) = 0.1*(StateSwitchIndices(j) - ...
+      CommandSwitchIndices(j));
+  end
+  debugout(sprintf('%s %s', currValve, AveragingVector))
+  ExportData{i,'Open Time [s]'} = mean(AveragingVector);
+  
 end
 % -------------------------------------------------------------------------
 
