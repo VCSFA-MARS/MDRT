@@ -53,10 +53,10 @@ metaData = newMetaDataStructure;
 
 %% Button Parameters
 
-buttonPositions = { 
-    [50  351 151 49];
-    [15  280 101 21];
-    [500  19 151 49];
+buttonPositions = {
+  [50  351 151 49];
+  [15  280 101 21];
+  [500  19 151 49];
   };
 
 buttonTags          =   {   'button_newSession';
@@ -85,7 +85,7 @@ buttonParents       =   {   'fig';
 
 %% Checkbox Parameters
 
-checkboxPositions       = { 
+checkboxPositions       = {
   [300 369 117 23];
   [14  114 111 23];
   [14   81 111 23];
@@ -192,9 +192,9 @@ editParents             =   {   'fig';
 
 %% Panel Properties
 
-panelPositions      =   {   
-    [50   13 234 331];
-    [300 182 351 156]
+panelPositions      =   {
+  [50   13 234 331];
+  [300 182 351 156]
   };
 
 panelStrings        =   {   'Raw data file selection';
@@ -332,6 +332,8 @@ el(5) = addlistener(hs.checkbox_autoName,  'Value',  'PostSet', @updateFolderGue
 
 %% Set Initial Value Cell Array from GUI Generation Results
 
+controllerDataImportGUI(hs.checkbox_pad_c_data, [], []);
+
 initialValues =    ...
   {   'checkbox_autoName',        'Value',    hs.checkbox_autoName.Value;
   'checkbox_isOperation',     'Value',    hs.checkbox_isOperation.Value;
@@ -339,6 +341,8 @@ initialValues =    ...
   'checkbox_hasUID',          'Value',    hs.checkbox_hasUID.Value;
   'checkbox_vehicleSupport',  'Value',    hs.checkbox_vehicleSupport.Value;
   'checkbox_legacy_importer', 'Value',    hs.checkbox_legacy_importer.Value;
+  'checkbox_pad_c_data',      'Value',    hs.checkbox_pad_c_data.Value;
+  'checkbox_pad_c_valves',    'Enable',   hs.checkbox_pad_c_valves.Enable;
   
   'edit_folderName',          'String',   hs.edit_folderName.String;
   'edit_operationName',       'String',   hs.edit_operationName.String;
@@ -348,7 +352,7 @@ initialValues =    ...
   'edit_folderName',          'Enable',   hs.edit_folderName.Enable;
   'edit_operationName',       'Enable',   hs.edit_operationName.Enable;
   'edit_procedureName',       'Enable',   hs.edit_procedureName.Enable;
-  'edit_UID',                 'Enable',   hs.edit_UID.Enable
+  'edit_UID',                 'Enable',   hs.edit_UID.Enable;
   };
 
 
@@ -503,9 +507,13 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
     
     delim_list = flbManager.getFileCellArray;
     
+    do_padc_valves = hs.checkbox_pad_c_data.Value && ...
+      hs.checkbox_pad_c_valves.Value && ...
+      hs.checkbox_pad_c_valves.Enable == 'on';
+    
     if hs.checkbox_pad_c_data.Value
       % Prompt user for valve timing output file
-      if hs.checkbox_pad_c_valves.Value
+      if do_padc_valves
         [file, ~] = uiputfile('*.xlsx', 'Save valve timing results as');
       end
       
@@ -517,13 +525,11 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
         hs.checkbox_autoSkipErrors.Value );
       metaData = rmfield(metaData, 'site');
       
-      if file
-        
+      if do_padc_valves && file
         valve_save_path = fullfile(Config.importDataPath, hs.edit_folderName.String, file);
         valve_data_path = fullfile(Config.importDataPath, hs.edit_folderName.String, 'data');
         
         ValveTimingFunc(valve_data_path, valve_save_path);
-        
       end
       
       return
