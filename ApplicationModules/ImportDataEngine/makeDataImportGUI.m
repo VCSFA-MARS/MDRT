@@ -21,7 +21,7 @@ if nargin == 0
   % Run as standalone GUI for testing
   
   hs.fig = figure;
-  guiSize = [672 397];
+  guiSize = [672 407];
   hs.fig.Position = [hs.fig.Position(1:2) guiSize];
   hs.fig.Name = figureName;
   hs.fig.NumberTitle = 'off';
@@ -53,9 +53,10 @@ metaData = newMetaDataStructure;
 
 %% Button Parameters
 
-buttonPositions = { [50 321 151 49];
-  [15 240 101 21];
-  [500 19 151 49];
+buttonPositions = { 
+    [50  351 151 49];
+    [15  280 101 21];
+    [500  19 151 49];
   };
 
 buttonTags          =   {   'button_newSession';
@@ -84,17 +85,18 @@ buttonParents       =   {   'fig';
 
 %% Checkbox Parameters
 
-checkboxPositions       = { [300 339 117 23];
-  [14 114 111 23];
-  [14 81 111 23];
-  [14 48 111 23];
-  [14 15 111 23];
+checkboxPositions       = { 
+  [300 369 117 23];
+  [14  114 111 23];
+  [14   81 111 23];
+  [14   48 111 23];
+  [14   15 111 23];
+  [300 160 200 23];
   [300 130 200 23];
   [300 100 200 23];
   [300  70 200 23];
   [300  40 200 23];
-  [300  10 200 23];
-  [300  00 200 23]
+  [300  10 200 23]
   };
 
 
@@ -154,10 +156,10 @@ checkboxValue           =   {   true;
 
 %% Edit Box Parameters
 
-editPositions           =   {   [417 339 233 22];
-  [150 114 190 22];
-  [150  81 190 22];
-  [150  48 190 22]
+editPositions           =   {   [417 369 233 22];
+  [150 144 190 22];
+  [150 111 190 22];
+  [150  78 190 22]
   };
 
 
@@ -190,8 +192,9 @@ editParents             =   {   'fig';
 
 %% Panel Properties
 
-panelPositions      =   {   [50   13 234 301];
-  [300 152 351 156]
+panelPositions      =   {   
+    [50   13 234 331];
+    [300 182 351 156]
   };
 
 panelStrings        =   {   'Raw data file selection';
