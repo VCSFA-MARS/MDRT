@@ -70,7 +70,6 @@ function ValveTimingFunc(DataPath,ExportFileName)
 %   -> adjust date when finally published
 % -------------------------------------------------------------------------
 
-TEMPLATE_DIR = 'Valve Timing Script';
 
 % -------------------------------------------------------------------------
 % We import the I/O Code Directory and Valve Grouping List (importing
@@ -94,7 +93,7 @@ ImportProgressBar = waitbar(0,'Importing and Organizing Data', ...
   'WindowStyle','modal');
 
 % We list the folder contents from the specified folder location.
-files = dir(fullfile(DataPath, '*.mat'));
+files = dir(fullfile(DataPath,'*.mat'));
 
 % We generate an empty structure for the extracted time series.
 MasterStructure = struct('Code',[],'TimeSeries',[]);
@@ -122,7 +121,6 @@ for i = 1:length(files)
     ErrorTable.Error(i) = ['Tag is not found in the I/O Code ' ...
       'Directory.'];
     continue
-  else
   end
   
   % We pull the fd structure.
@@ -169,11 +167,13 @@ close(ImportProgressBar)
 ExportName = strcat(ExportFileName,'.xlsx');
 ExportName = fullfile(ExportPath, ExportName);
 
-%We define the folder path of the results template Excel sheet.
-TemplateName = fullfile(TEMPLATE_DIR, 'Pad0C_ValveTimingExportTemplate.xltx');
+% We define the folder path of the results template Excel sheet.
+TemplateFolder = 'Valve Timing Script';
+TemplateName = 'Pad0C_ValveTimingExportTemplate.xltx';
+TemplateName = fullfile(TemplateFolder,TemplateName);
 
 % We create a copy of the template with the desired name.
-[stat, msg, msgid] = copyfile(TemplateName,ExportName)
+copyfile(TemplateName,ExportName)
 
 % We create a table representing the blank export Excel sheet.
 ExportData = readtable(TemplateName,'PreserveVariableNames',true);
@@ -217,27 +217,26 @@ for i = 1:height(GroupList)
   ClosedCheck = ismember(currClosedCode,CodeCheck);
   CommandCheck = ismember(currCommandCode,CodeCheck);
   ExportError = 'The following I/O Codes are missing data:';
-  
-  ErrorMsg = '';
   MissingFDs = '';
   
-  if ~all([OpenCheck, ClosedCheck, CommandCheck])
-    ErrorMsg = ExportError;
+  if ~all([OpenCheck ClosedCheck CommandCheck])
+    ErrorMessage = ExportError;
+
     if ~OpenCheck
-      MissingFDs = sprintf('%s %d,', MissingFDs, currOpenCode);
+        MissingFDs = sprintf('%s %d,',MissingFDs,currOpenCode);
     end
     if ~ClosedCheck
-      MissingFDs = sprintf('%s %d,', MissingFDs, currClosedCode);
+        MissingFDs = sprintf('%s %d,',MissingFDs,currClosedCode);
     end
     if ~CommandCheck
-      MissingFDs = sprintf('%s %d', MissingFDs, currCommandCode);
+        MissingFDs = sprintf('%s %d',MissingFDs,currCommandCode);
     end
     if MissingFDs(end) == ','
-      MissingFDs(end) = [];
+        MissingFDs(end) = [];
     end
     
-    ErrorMsg = sprintf('%s %s', ErrorMsg, MissingFDs);
-    ExportData.Errors(i) =  convertCharsToStrings(ErrorMsg);
+    ErrorMessage = sprintf('%s %s',ErrorMessage,MissingFDs);
+    ExportData.Errors(i) =  convertCharsToStrings(ErrorMessage);
     continue
   end
   
