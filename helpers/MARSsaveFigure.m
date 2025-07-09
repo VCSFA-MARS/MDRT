@@ -161,6 +161,11 @@ if file ~= 0
         otherwise
             set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
     end
+
+    if ~verLessThan('matlab', '9.10') % 2021a - they added autorotate tick labels
+        ax = findall(gcf, 'tag', 'MDRTAxes');
+        set(ax, 'XTickLabelRotationMode', 'manual');
+    end
     
 else
     % Cancelled... not sure what the best behavior is... return to GUI
