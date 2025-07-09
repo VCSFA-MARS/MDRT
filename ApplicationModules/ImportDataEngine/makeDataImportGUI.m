@@ -100,7 +100,8 @@ checkboxPositions       = {
   };
 
 
-checkboxTags            = { 'checkbox_autoName';
+checkboxTags ={ 
+  'checkbox_autoName';
   'checkbox_isOperation';
   'checkbox_isMARS';
   'checkbox_hasUID';
@@ -114,7 +115,8 @@ checkboxTags            = { 'checkbox_autoName';
   };
 
 
-checkboxStrings         = { 'Auto-name folder';
+checkboxStrings = { 
+  'Auto-name folder';
   'Operation';
   'MARS Procedure';
   'Has MARS UID';
@@ -128,7 +130,8 @@ checkboxStrings         = { 'Auto-name folder';
   };
 
 
-checkboxParents         =   {   'fig';
+checkboxParents         =   {   
+  'fig';
   'panel_metaData';
   'panel_metaData';
   'panel_metaData';
@@ -141,7 +144,8 @@ checkboxParents         =   {   'fig';
   'fig';
   };
 
-checkboxValue           =   {   true;
+checkboxValue           =   {   
+  true;
   false;
   false;
   false;
@@ -156,39 +160,43 @@ checkboxValue           =   {   true;
 
 %% Edit Box Parameters
 
-editPositions           =   {   [417 369 233 22];
-  [150 144 190 22];
-  [150 111 190 22];
-  [150  78 190 22]
-  };
+editPositions =   {   
+    [417 369 233 22];
+    [150 114 190 22];
+    [150  81 190 22];
+    [150  48 190 22]
+};
 
 
-editTags                =   {   'edit_folderName';
-  'edit_operationName';
-  'edit_procedureName';
-  'edit_UID'
-  };
+editTags = {
+    'edit_folderName';
+    'edit_operationName';
+    'edit_procedureName';
+    'edit_UID'
+};
 
 
-editStrings             =   {   '';
-  '';
-  '';
-  '';
-  };
+editStrings = {   
+    '';
+    '';
+    '';
+    '';
+};
 
 
-editEnabled             =   {   'inactive';
-  'off';
-  'off';
-  'off'
-  };
+editEnabled = {
+    'inactive';
+    'off';
+    'off';
+    'off'
+};
 
-editParents             =   {   'fig';
-  'panel_metaData';
-  'panel_metaData';
-  'panel_metaData';
-  'panel_metaData'
-  };
+editParents = {
+    'fig';
+    'panel_metaData';
+    'panel_metaData';
+    'panel_metaData'
+};
 
 %% Panel Properties
 
@@ -273,7 +281,6 @@ for i = 1:numel(editTags)
     'Enable',           editEnabled{i}, ...
     'Callback',         @controllerDataImportGUI ...
     );
-  
 end
 
 % Button Generation
@@ -509,12 +516,17 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
     
     do_padc_valves = hs.checkbox_pad_c_data.Value && ...
       hs.checkbox_pad_c_valves.Value && ...
-      hs.checkbox_pad_c_valves.Enable == 'on';
+      strcmpi(hs.checkbox_pad_c_valves.Enable,'on');
     
     if hs.checkbox_pad_c_data.Value
       % Prompt user for valve timing output file
       if do_padc_valves
-        [file, ~] = uiputfile('*.xlsx', 'Save valve timing results as');
+        file = prompt_for_filename('.xlsx');
+        if isempty(file)
+            % User cancelled
+            return
+        end
+        file = cell2mat(file(1));
       end
       
       % PLACEHOLDER for PAD-C import call
@@ -525,11 +537,11 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
         hs.checkbox_autoSkipErrors.Value );
       metaData = rmfield(metaData, 'site');
       
-      if do_padc_valves && file
+      if do_padc_valves && any(file)
         valve_save_path = fullfile(Config.importDataPath, hs.edit_folderName.String, file);
         valve_data_path = fullfile(Config.importDataPath, hs.edit_folderName.String, 'data');
         
-        ValveTimingFunc(valve_data_path, valve_save_path);
+        % ValveTimingFunc(valve_data_path, valve_save_path);
       end
       
       return
@@ -547,6 +559,25 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
     
     
   end
+
+
+  function filename = prompt_for_filename(ext_str)
+    result = inputdlg('Valve Timing Parser', 'Save valve timing data as:', 1, {'Valve Timing Data.xlsx'})
+    if isempty(result)
+      filename = '';
+      return
+    end
+    
+    [~, filename, ext] = fileparts(result);
+    % Sanitize User-selected file name - For Alina
+    filename = regexprep(filename,'^[!@$^&*~?.|/[]<>\`";#()]','');
+    filename = regexprep(filename, '[:*]','-');
+    
+    filename = [filename, '.', ext_str];
+    
+    debugout(sprintf('Alina-proof filename: %s', filename{1}))
+  end
+
 
 
   function selectFiles(~, ~, varargin)
