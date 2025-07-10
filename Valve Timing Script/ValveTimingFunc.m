@@ -317,7 +317,19 @@ for i = 1:height(GroupList)
       CommandSwitchIndices(j));
   end
   
-  ExportData{i,'Close Time [s]'} = mean(AveragingVector);
+  if any(AveragingVector == 0)
+      ExportError = ['Less than three state changes found. Cannot ' ...
+          'compute timing'];
+      ExportData.Errors(i) = convertCharsToStrings(ExportError);
+      continue
+  elseif any(AveragingVector < 0)
+      ExportError = ['Negative timings found; data is irregular. ' ...
+          'Cannot compute timing.'];
+      ExportData.Errors(i) = convertCharsToStrings(ExportError);
+      continue
+  else
+      ExportData{i,'Close Time [s]'} = mean(AveragingVector);
+  end
   
   % We look for instances of CLOSE -> OPEN commands.
   CommandOpenIndices = find(currCommandData.Data == 1);
@@ -356,8 +368,20 @@ for i = 1:height(GroupList)
     AveragingVector(j) = 0.1*(StateSwitchIndices(j) - ...
       CommandSwitchIndices(j));
   end
-  debugout(sprintf('%s %s', currValve, AveragingVector))
-  ExportData{i,'Open Time [s]'} = mean(AveragingVector);
+
+  if any(AveragingVector == 0)
+      ExportError = ['Less than three state changes found. Cannot ' ...
+          'compute timing'];
+      ExportData.Errors(i) = convertCharsToStrings(ExportError);
+      continue
+  elseif any(AveragingVector < 0)
+      ExportError = ['Negative timings found; data is irregular. ' ...
+          'Cannot compute timing.'];
+      ExportData.Errors(i) = convertCharsToStrings(ExportError);
+      continue
+  else
+      ExportData{i,'Open Time [s]'} = mean(AveragingVector);
+  end
   
 end
 % -------------------------------------------------------------------------
