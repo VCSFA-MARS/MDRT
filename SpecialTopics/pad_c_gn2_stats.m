@@ -112,7 +112,7 @@ return
     function htb = get_textbox_handle(hAx, brush_xlim, brush_ylim)
         
         % if no tb on this axis, make one and return
-        htb = findall(hAx, 'Type', 'TextBox');
+        htb = findall(hAx.Parent, 'Type', 'TextBox');
         
         if isempty(htb)
             htb = make_textbox_in_brush(hAx, brush_xlim, brush_ylim);
@@ -140,7 +140,7 @@ return
         % make normalized coords for brushed data
         n_blim = make_fig_x_normalized(bxlim, hAx);
 
-        if all(n_blim <= n_tblim) && all(n_blim >= n_tblim)
+        if all(n_tblim <= max(n_blim)) && all(n_tblim >= min(n_blim))
             is_inside = true;
         end
     end
