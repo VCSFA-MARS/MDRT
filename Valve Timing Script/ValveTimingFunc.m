@@ -65,9 +65,9 @@ function ValveTimingFunc(DataPath,ExportFileName)
 % -------------------------------------------------------------------------
 % REVISION LOG
 % -------------------------------------------------------------------------
-% Rev0: Austin Leo Thomas - July 7, 2025
-%   -> placeholder
-%   -> adjust date when finally published
+% Rev0: Austin Leo Thomas - July 14, 2025
+%   -> Authoring completed. Implementation with MDRT review.m script
+%      completed. Ready to merge with master.
 % -------------------------------------------------------------------------
 
 
@@ -85,8 +85,8 @@ QuickSearch = Directory{:,'I/O Code'};
 
 
 % -------------------------------------------------------------------------
-% We following code will attempt to read all struct files generated from
-% the review.m script.
+% We following code will read all struct files generated from the review.m 
+% script.
 % -------------------------------------------------------------------------
 % We generate a progress bar for the import process.
 ImportProgressBar = waitbar(0,'Importing and Organizing Data', ...
@@ -195,8 +195,7 @@ ProcessProgressBar = waitbar(0,'Beginning Computational Process', ...
 % For each valve defined by the Valve Grouping List, we: (a) verify that
 % data exists for all three required valves in the Master Structure,
 % writing an error message to the export file if not; (b) if required data
-% does exist, perform necessary calculations via the function...
-%   -> ValveTimingComputations.m
+% does exist, perform necessary calculations.
 % -------------------------------------------------------------------------
 for i = 1:height(GroupList)
   
@@ -399,6 +398,7 @@ close(ProcessProgressBar)
 % -------------------------------------------------------------------------
 writetable(ExportData,ExportName,'PreserveFormat',true)
 % -------------------------------------------------------------------------
+%    
 
 % -------------------------------------------------------------------------
 % We terminate the function.
