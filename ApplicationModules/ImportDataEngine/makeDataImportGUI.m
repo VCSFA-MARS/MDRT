@@ -21,7 +21,7 @@ if nargin == 0
   % Run as standalone GUI for testing
   
   hs.fig = figure;
-  guiSize = [672 397];
+  guiSize = [672 407];
   hs.fig.Position = [hs.fig.Position(1:2) guiSize];
   hs.fig.Name = figureName;
   hs.fig.NumberTitle = 'off';
@@ -53,9 +53,10 @@ metaData = newMetaDataStructure;
 
 %% Button Parameters
 
-buttonPositions = { [50 321 151 49];
-  [15 240 101 21];
-  [500 19 151 49];
+buttonPositions = {
+  [50  351 151 49];
+  [15  280 101 21];
+  [500  19 151 49];
   };
 
 buttonTags          =   {   'button_newSession';
@@ -84,21 +85,23 @@ buttonParents       =   {   'fig';
 
 %% Checkbox Parameters
 
-checkboxPositions       = { [300 339 117 23];
-  [14 114 111 23];
-  [14 81 111 23];
-  [14 48 111 23];
-  [14 15 111 23];
+checkboxPositions       = {
+  [300 369 117 23];
+  [14  114 111 23];
+  [14   81 111 23];
+  [14   48 111 23];
+  [14   15 111 23];
+  [300 160 200 23];
   [300 130 200 23];
   [300 100 200 23];
   [300  70 200 23];
   [300  40 200 23];
-  [300  10 200 23];
-  [300  00 200 23]
+  [300  10 200 23]
   };
 
 
-checkboxTags            = { 'checkbox_autoName';
+checkboxTags ={ 
+  'checkbox_autoName';
   'checkbox_isOperation';
   'checkbox_isMARS';
   'checkbox_hasUID';
@@ -112,7 +115,8 @@ checkboxTags            = { 'checkbox_autoName';
   };
 
 
-checkboxStrings         = { 'Auto-name folder';
+checkboxStrings = { 
+  'Auto-name folder';
   'Operation';
   'MARS Procedure';
   'Has MARS UID';
@@ -126,7 +130,8 @@ checkboxStrings         = { 'Auto-name folder';
   };
 
 
-checkboxParents         =   {   'fig';
+checkboxParents         =   {   
+  'fig';
   'panel_metaData';
   'panel_metaData';
   'panel_metaData';
@@ -139,7 +144,8 @@ checkboxParents         =   {   'fig';
   'fig';
   };
 
-checkboxValue           =   {   true;
+checkboxValue           =   {   
+  true;
   false;
   false;
   false;
@@ -154,44 +160,49 @@ checkboxValue           =   {   true;
 
 %% Edit Box Parameters
 
-editPositions           =   {   [417 339 233 22];
-  [150 114 190 22];
-  [150  81 190 22];
-  [150  48 190 22]
-  };
+editPositions =   {   
+    [417 369 233 22];
+    [150 114 190 22];
+    [150  81 190 22];
+    [150  48 190 22]
+};
 
 
-editTags                =   {   'edit_folderName';
-  'edit_operationName';
-  'edit_procedureName';
-  'edit_UID'
-  };
+editTags = {
+    'edit_folderName';
+    'edit_operationName';
+    'edit_procedureName';
+    'edit_UID'
+};
 
 
-editStrings             =   {   '';
-  '';
-  '';
-  '';
-  };
+editStrings = {   
+    '';
+    '';
+    '';
+    '';
+};
 
 
-editEnabled             =   {   'inactive';
-  'off';
-  'off';
-  'off'
-  };
+editEnabled = {
+    'inactive';
+    'off';
+    'off';
+    'off'
+};
 
-editParents             =   {   'fig';
-  'panel_metaData';
-  'panel_metaData';
-  'panel_metaData';
-  'panel_metaData'
-  };
+editParents = {
+    'fig';
+    'panel_metaData';
+    'panel_metaData';
+    'panel_metaData'
+};
 
 %% Panel Properties
 
-panelPositions      =   {   [50   13 234 301];
-  [300 152 351 156]
+panelPositions      =   {
+  [50   13 234 331];
+  [300 182 351 156]
   };
 
 panelStrings        =   {   'Raw data file selection';
@@ -270,7 +281,6 @@ for i = 1:numel(editTags)
     'Enable',           editEnabled{i}, ...
     'Callback',         @controllerDataImportGUI ...
     );
-  
 end
 
 % Button Generation
@@ -329,6 +339,8 @@ el(5) = addlistener(hs.checkbox_autoName,  'Value',  'PostSet', @updateFolderGue
 
 %% Set Initial Value Cell Array from GUI Generation Results
 
+controllerDataImportGUI(hs.checkbox_pad_c_data, [], []);
+
 initialValues =    ...
   {   'checkbox_autoName',        'Value',    hs.checkbox_autoName.Value;
   'checkbox_isOperation',     'Value',    hs.checkbox_isOperation.Value;
@@ -336,6 +348,8 @@ initialValues =    ...
   'checkbox_hasUID',          'Value',    hs.checkbox_hasUID.Value;
   'checkbox_vehicleSupport',  'Value',    hs.checkbox_vehicleSupport.Value;
   'checkbox_legacy_importer', 'Value',    hs.checkbox_legacy_importer.Value;
+  'checkbox_pad_c_data',      'Value',    hs.checkbox_pad_c_data.Value;
+  'checkbox_pad_c_valves',    'Enable',   hs.checkbox_pad_c_valves.Enable;
   
   'edit_folderName',          'String',   hs.edit_folderName.String;
   'edit_operationName',       'String',   hs.edit_operationName.String;
@@ -345,7 +359,7 @@ initialValues =    ...
   'edit_folderName',          'Enable',   hs.edit_folderName.Enable;
   'edit_operationName',       'Enable',   hs.edit_operationName.Enable;
   'edit_procedureName',       'Enable',   hs.edit_procedureName.Enable;
-  'edit_UID',                 'Enable',   hs.edit_UID.Enable
+  'edit_UID',                 'Enable',   hs.edit_UID.Enable;
   };
 
 
@@ -500,10 +514,19 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
     
     delim_list = flbManager.getFileCellArray;
     
+    do_padc_valves = hs.checkbox_pad_c_data.Value && ...
+      hs.checkbox_pad_c_valves.Value && ...
+      strcmpi(hs.checkbox_pad_c_valves.Enable,'on');
+    
     if hs.checkbox_pad_c_data.Value
       % Prompt user for valve timing output file
-      if hs.checkbox_pad_c_valves.Value
-        [file, ~] = uiputfile('*.xlsx', 'Save valve timing results as');
+      if do_padc_valves
+        file = prompt_for_filename('.xlsx');
+        if isempty(file)
+            % User cancelled
+            return
+        end
+        file = cell2mat(file(1));
       end
       
       % PLACEHOLDER for PAD-C import call
@@ -514,13 +537,11 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
         hs.checkbox_autoSkipErrors.Value );
       metaData = rmfield(metaData, 'site');
       
-      if file
-        
+      if do_padc_valves && any(file)
         valve_save_path = fullfile(Config.importDataPath, hs.edit_folderName.String, file);
         valve_data_path = fullfile(Config.importDataPath, hs.edit_folderName.String, 'data');
         
-        ValveTimingFunc(valve_data_path, valve_save_path);
-        
+        % ValveTimingFunc(valve_data_path, valve_save_path);
       end
       
       return
@@ -538,6 +559,25 @@ fixFontSizeInGUI(hs.fig, Config.fontScaleFactor);
     
     
   end
+
+
+  function filename = prompt_for_filename(ext_str)
+    result = inputdlg('Valve Timing Parser', 'Save valve timing data as:', 1, {'Valve Timing Data.xlsx'})
+    if isempty(result)
+      filename = '';
+      return
+    end
+    
+    [~, filename, ext] = fileparts(result);
+    % Sanitize User-selected file name - For Alina
+    filename = regexprep(filename,'^[!@$^&*~?.|/[]<>\`";#()]','');
+    filename = regexprep(filename, '[:*]','-');
+    
+    filename = [filename, '.', ext_str];
+    
+    debugout(sprintf('Alina-proof filename: %s', filename{1}))
+  end
+
 
 
   function selectFiles(~, ~, varargin)
