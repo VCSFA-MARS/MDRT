@@ -38,6 +38,7 @@ btn_flow   = uicontrol(hfig, 'Style', 'pushbutton', 'String', 'Calculate Flow', 
 
 btn_center.Callback = @snapToCenter;
 btn_trend.Callback = @annotatePressureTrend;
+btn_flow.Callback = @annotateFlow;
 
 return
 
@@ -135,13 +136,17 @@ return
     function is_inside = is_inside_brushing(htb, hAx, bxlim)
         is_inside = false;
 
-        n_tblim = [htb.Position(1), htb.Position(3) + htb.Position(1)];
+        n_tbXlim = [htb.Position(1), htb.Position(3) + htb.Position(1)];
+        n_tbYlim = [htb.Position(2), htb.Position(4) + htb.Position(2)];
 
         % make normalized coords for brushed data
-        n_blim = make_fig_x_normalized(bxlim, hAx);
+        n_bXlim = make_fig_x_normalized(bxlim, hAx);
+        n_bYlim = make_fig_y_normalized(bxlim, hAx);
 
-        if all(n_tblim <= max(n_blim)) && all(n_tblim >= min(n_blim))
-            is_inside = true;
+        if all(n_tbXlim <= max(n_bXlim)) && all(n_tbXlim >= min(n_bXlim))
+            if all(n_tbYlim <= max(n_bYlim)) && all(n_tbYlim >= min(n_bYlim))
+                            is_inside = true;
+            end
         end
     end
 
@@ -191,63 +196,63 @@ return
     end
 
 
+    function annotateFlow(hObj, event)
 
-% % Try to find a textbox that overlaps this window
-% htb = findall(gcf,'Type',  'TextBox', 'Parent', hl.Parent);
-% 
-% if isempty(htb)
-%     % make a textbox - position values are normalized to axes limits
-%     hax = hl.Parent;
-%     time_width = diff(hax.XLim);
-%     brush_start_delta = (bLim(1) - hax.XLim(1));
-%     brush_start_norm = brush_start_delta / time_width;
-%     box_height = 0.05
-% 
-%     xapf = @(x,pos,xl) pos(3)*(x-min(xl))/diff(xl)+pos(1);                % 'x' Annotation Position Function
-%     yapf = @(y,pos,yl) pos(4)*(y-min(yl))/diff(yl)+pos(2);                % 'y' Annotation Position Function
-% 
-%     tb_pos = [ xapf(min(bLim), hax.Position, hax.XLim), ...
-%                hax.Position(2) + 0.6*hax.Position(4), ...
-%                0.05, 0.05];
-% 
-%     htb = annotation('textbox', tb_pos, 'String', '')
-% 
-% 
-% else
-%     % there were already annotations in the axes
-%     xapf = @(x,pos,xl) pos(3)*(x-min(xl))/diff(xl)+pos(1);                % 'x' Annotation Position Function
-%     yapf = @(y,pos,yl) pos(4)*(y-min(yl))/diff(yl)+pos(2);                % 'y' Annotation Position Function
-% 
-%     htb = findall(hl.Parent.Parent, 'Type',  'TextBox')
-%     l_ind = strcmpi([htb.Selected], 'on')
-%     if any(l_ind)
-%         % Default to a selected textbox... is that wise?
-%         htb = htb(l_ind);
-%     else
-%         for i = 1:height(htb)
-%             this_pos = htb(i).Position;
-%             this_ax_pos = hl.Parent.Position;
-%             this_ax_lim = hl.Parent.XLim;
-%             midpoint = this_pos(1) + (this_pos(3)/2);
-%             left_n  = xapf(min(bLim), this_ax_pos, this_ax_lim);
-%             right_n = xapf(max(bLim), this_ax_pos, this_ax_lim);
-%             if midpoint <= right_n && midpoint >= left_n
-%                 % we found one!
-%                 htb = htb(i);
-%                 break
-%             end
-%         end
-%     end
-% 
-% end
-% 
-% % build new position for box?
-% 
-% 
-% 
-% 
-% htb.String = box_str;
-% htb.FitBoxToText = 'on';
+        hl = findall(hPlotFig, 'Type', 'Stair'); % get all lines in plot
+        l_ind = strcmpi({hl.DisplayName}, 'FM-5700'); %find Pac-0C FM
+    
+        hl = hl(l_ind);
+        if isempty(hl) % No plots for mpgn2
+            disp('You must have an axis with FM-5700')
+            return
+        end
+        
+        hAx = hl.Parent;
+        bh = hl.BrushHandles;
+        
+        brushedIdx = logical(hl.BrushData);
+
+        if ~any(brushedIdx) % no data have been brushed on 5700
+            disp('No data have been brushed. Please use the brushing tool on 5700')
+            return
+        end
+
+        % Get time and data vectors for brushed data. Also xLim for brushed
+        brushedTime = hl.XData(brushedIdx)';
+        brushedData = hl.YData(brushedIdx)';
+        bXLim = [brushedTime(1), brushedTime(end)];
+        bYlim = [min(brushedData), max(brushedData)];
+
+        avg_flow = mean(brushedData);
+
+        lbm_flowed = integrateTotalFlow(horzcat(brushedTime, brushedData), 's');
+        scf_flowed = lbm_flowed * 13.803
+        scl_flowed = lbm_flowed * 390.8
+        
+        mpv = 1800*2
+        mol = 775645
+        m_gn2 = 28.02
+        kg_storage = mol * m_gn2 / 1000
+        sprintf('%f', kg_storage)
+        kg2scf = 30.42
+        % 21733.572900 * kg2scf
+        
+        one_storage_scf = 21733.572900 * kg2scf
+        perc = scf_flowed/one_storage_scf
+
+        box_str = {
+            sprintf('%.3f lbm/s average flow',       avg_flow);
+            sprintf('%.0f lbm total flow',           lbm_flowed);
+            sprintf('%.1f%% of total MPGN2 Storage', perc*100);
+        };
+
+
+        htb = get_textbox_handle(hAx, bXLim, bYlim);
+
+        htb.String = box_str;
+        htb.FitBoxToText = 'on';
+
+    end
 
 
 
