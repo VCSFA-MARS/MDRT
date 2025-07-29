@@ -784,7 +784,11 @@ choice = questdlg('You are about to open the data archive manager. Only do this 
 switch choice
     case cancelButton
     case proceedButton
-        makeArchiveManagerGUI
+        if matlab_newer_than('r2017b')
+            ArchiveManagerGUI
+        else
+            makeArchiveManagerGUI
+        end
     otherwise
 end
 
