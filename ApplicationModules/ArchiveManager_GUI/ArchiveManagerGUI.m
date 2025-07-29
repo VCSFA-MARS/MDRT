@@ -40,24 +40,6 @@ hs.visible_tab_grid = uigridlayout(hs.tabs.SelectedTab, [1,1]);
 populate_tab_tree();
 
 
-% hs.tree = uitree(hs.tabs.SelectedTab, 'SelectionChangedFcn', @update_metadata_on_selection);
-% hs.rootNode = uitreenode(hs.tree, 'Text', config.dataArchivePath, 'NodeData', hs.tabs.SelectedTab.UserData);
-% 
-% D = dir(config.dataArchivePath);
-% dir_mask = [D.isdir] == true;
-% DIRS = D(dir_mask);
-% 
-% for i = 1:length(DIRS)
-%     this_dir = DIRS(i);
-%     if this_dir.name(1) == '.'
-%         % skip hidden and . or ..
-%         continue
-%     end
-%     uitreenode(hs.rootNode, 'Text', this_dir.name, 'Icon',FOLDER_ICON, 'NodeData', fullfile(config.dataArchivePath, this_dir.name));
-% end
-% 
-% hs.rootNode.expand()
-
 %% Right-hand Controls and MetaData
 hs.right_grid = uigridlayout(hs.fig_grid, [4,1]);
 hs.right_grid.RowHeight = {'fit', 'fit', 'fit', '1x'}
@@ -65,21 +47,28 @@ hs.right_grid.RowHeight = {'fit', 'fit', 'fit', '1x'}
 hs.meta_pane = uipanel(hs.right_grid, 'Title', 'Meta Data');
 hs.meta_grid = uigridlayout(hs.meta_pane, [8,1]);
 
-
+% Operation flag and title
 hs.check_is_op = uicheckbox(hs.meta_grid, 'text', 'Operation', 'ValueChangedFcn', @checkbox_callback);
 hs.edit_op_name = uieditfield(hs.meta_grid, 'Enable', 'off');
 hs.check_is_op.UserData = hs.edit_op_name; % set enable target
 
+% MARS Procedure flag and title
 hs.check_is_mars_proc = uicheckbox(hs.meta_grid, 'text', 'Procedure', 'ValueChangedFcn', @checkbox_callback);
 hs.edit_proc_name = uieditfield(hs.meta_grid, 'Enable', 'off');
 hs.check_is_mars_proc.UserData = hs.edit_proc_name; % set enable target
 
+% MARS UID flag and title
 hs.check_has_uid = uicheckbox(hs.meta_grid, 'Text', 'MARS UID', 'ValueChangedFcn', @checkbox_callback);
 hs.edit_mars_uid = uieditfield(hs.meta_grid, 'Enable', 'off');
 hs.check_has_uid.UserData = hs.edit_mars_uid; % set enable target
 
+% Vehicle support flag
 hs.check_is_vehicle = uicheckbox(hs.meta_grid, 'Text', 'Vehicle Support');
 
+% Non-editable metadata (timehacks, lists, etc?)
+
+
+% Save and Reset Controls
 hs.meta_button_grid = uigridlayout(hs.meta_grid, [1 2]);
 hs.button_meta_save = uibutton(hs.meta_button_grid, 'Text', 'Write Metadata', 'ButtonPushedFcn',@save_metadata);
 hs.button_meta_reset = uibutton(hs.meta_button_grid, 'Text', 'Reset Metadata', 'ButtonPushedFcn',@update_gui_from_metadata);
@@ -89,6 +78,7 @@ row_height = repmat({'fit'}, ...
     numel(hs.meta_grid.ColumnWidth));
 
 hs.meta_grid.RowHeight = row_height;
+
 
 %% Major Buttons
 
