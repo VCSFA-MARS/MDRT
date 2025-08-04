@@ -30,14 +30,20 @@ setappdata(hs.fig, 'fdMasterList', localDataIndex(end).FDList);     % Set appdat
 
 remoteDataIndex = [];
 if ~isempty(config.remoteArchivePath)
-	% Remote data index is configured. Load the index and prepare it to be
-	% used.
-    
-    allowRemote = true;
+  % Remote data index is configured. Load the index and prepare it to be
+  % used.
+
+  allowRemote = true;
+  index_file = fullfile(config.pathToConfig, 'dataIndex.mat');
+  if ~exist(index_file, 'file')
+    allowRemote = false;
+
+  else
     t = load(fullfile(config.pathToConfig, 'dataIndex.mat'));
     remoteDataIndex = t.dataIndex;
+    setappdata(hs.fig, 'remoteDataIndex', remoteDataIndex); % Retain remote data index
+  end
 end
-setappdata(hs.fig, 'remoteDataIndex', remoteDataIndex); % Retain remote data index
 
 
 initTimelineData;
