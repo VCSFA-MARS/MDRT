@@ -1,4 +1,8 @@
-function hs = ArchiveManagerGUI()
+function hs = ArchiveManagerGUI(options)
+    arguments
+        options.Parent (1,1) = [];
+    end
+
 
 %% Constants / Global
 FOLDER_ICON = 'folder-16x16.png';
@@ -12,15 +16,24 @@ model.auto_save = true;
 
 %% Init Figure
 
-hs = struct();
-hs.fig = uifigure();
-    hs.fig.Name = 'Archive Manager GUI';
-    hs.fig.NumberTitle = 'off';
-    hs.fig.MenuBar = 'none';
-    hs.fig.ToolBar = 'none';
-    hs.fig.Tag = 'archiveManagerFigure';
+if isempty(options.Parent)
+ 
+    hs = struct();
+    hs.fig = uifigure();
+        hs.fig.Name = 'Archive Manager GUI';
+        hs.fig.NumberTitle = 'off';
+        hs.fig.MenuBar = 'none';
+        hs.fig.ToolBar = 'none';
+        hs.fig.Tag = 'archiveManagerFigure';
+
+else
+    hs.fig = options.Parent;
+end
 
 hs.fig_grid = uigridlayout(hs.fig, [1,2]);
+
+
+    
 
 
 %% Archive Tree Layout and Controls:
