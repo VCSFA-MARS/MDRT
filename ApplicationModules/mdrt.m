@@ -1,7 +1,8 @@
+function mdrt()
 mainGui = uifigure;
     % guiSize = [672 387 + 25];
     % mainGui.Position = [mainGui.Position(1:2) guiSize];
-    mainGui.Name = 'Data Comparison Plotter';
+    mainGui.Name = 'MARS Data Review Tool';
     mainGui.NumberTitle = 'off';
     mainGui.MenuBar = 'none';
     mainGui.ToolBar = 'none';
@@ -17,6 +18,7 @@ tab4 = uitab('Parent', tgroup, 'Title', 'Comparison Tool');
 tab5 = uitab('Parent', tgroup, 'Title', 'Settings');
 
 
+dataBrowserGUI( tab1 );
 setTimeAxesLimits( tab1a );
 dataImportGUI( tab2 );
 ArchiveManagerGUI( Parent=tab3 );
