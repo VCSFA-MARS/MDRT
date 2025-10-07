@@ -15,6 +15,10 @@ function compareDrainBack
 %   datasets that will be included and to customize the FDs that are
 %   included in each subplot.
 
+%% Constant Defs
+
+DEFAULT_INTERVAL = '15m';
+
 %% Create tool window
 
 config = MDRTConfig.getInstance;
@@ -69,6 +73,36 @@ hs.evt = uicontrol( 'style',                'edit', ...
                     'FontUnits',            'normalized' ...
                     );
 
+hs.int = uicontrol( 'style',                'edit', ...
+                    'Units',                'normalized', ...
+                    'position',             [0.808 0.75 0.159 0.05], ...
+                    'HorizontalAlignment',  'left', ...
+                    'String',               DEFAULT_INTERVAL, ...
+                    'FontUnits',            'normalized' ...
+                    );
+
+
+hs.mlt = uibuttongroup("Title",             'Plot Mode', ...
+                       'Units',                'normalized', ...
+                       'Position',          [0.808 0.44 0.159 0.27]);
+
+hs.ps1 = uicontrol('Parent',                hs.mlt, ...
+                    'Style',                'radiobutton', ...
+                    'String',               'AllTogether', ...
+                    'Units',                'normalized', ...
+                    'Position',             [0.05, 0.05, 0.9, 0.4], ...
+                    'HorizontalAlignment',  'left' ...
+                    );
+
+hs.ps2 = uicontrol('Parent',                hs.mlt, ...
+                    'Style',                'radiobutton', ...
+                    'String',               'Individual', ...
+                    'Units',                'normalized', ...
+                    'Position',             [0.05, 0.55, 0.9, 0.4], ...
+                    'HorizontalAlignment', 'left', ...
+                    'Value',                1 ...
+                    );
+
 hs.run = uicontrol( 'style',                'pushbutton', ...
                     'String',               'Generate Plots', ...
                     'Units',                'normalized', ...
@@ -78,10 +112,11 @@ hs.run = uicontrol( 'style',                'pushbutton', ...
                                               hs.mis, ...
                                               hs.top, ...
                                               hs.bot, ...
-                                              hs.evt}, ...
+                                              hs.evt, ...
+                                              hs.ps1, ...
+                                              hs.int}, ...
                     'FontUnits',            'normalized' ...
                     );
-                
                 
 %% Load Archive Data to Populate Initial Values                
 
@@ -136,14 +171,18 @@ hs.run = uicontrol( 'style',                'pushbutton', ...
 
 end
 
-function generatePlots(~, ~, dataFolders, dataFiles, valveFiles, eventFD)
+function generatePlots(~, ~, dataFolders, dataFiles, valveFiles, eventFD, rbtnOverlay, timeIntEdit)
 
 dataFolders = dataFolders.String;
 dataFiles = dataFiles.String;
 valveFiles = valveFiles.String;
 eventFD = eventFD.String;
+isOverlay = logical(rbtnOverlay.Value);
+isValvePlot = false;
+interval_str = timeIntEdit.String;
 
 PageTitles = sprintf('%s Comparison Across Missions', eventFD);
+fprintf('Plot all events on one axis: %s\n', mat2str(isOverlay))
 
 %% Constants
 
@@ -190,15 +229,27 @@ for dfi = 1:numel(dataFolders)
 	MFds={ts.timeline.milestone.FD}';
     sfInd = find(ismember(MFds, eventFD));
     
+    interval = parse_duration_string(interval_str);
+
+    % lead_in = 2 * onesec;
+    % lead_out = 10 * onesec;
+    % 
+    % lead_in = -30 * onesec;
+    % lead_out = 15 * onemin;
+    
+    lead_in = interval / 30;
+    lead_out = interval;
+
     for ei = 1:numel(sfInd)
         % Build plot parameter for each found event
         ThisPlot = struct;
         ThisPlot.event = ts.timeline.milestone(sfInd(ei));
         ThisPlot.Title = sprintf('%s : %s %d', DataSet(dfi).Mission, eventFD, ei);
+        ThisPlot.legend_str = sprintf('%s %d', DataSet(dfi).Mission, ei);
         ThisPlot.dsi = dfi;
         ThisPlot.te = ThisPlot.event.Time;
-        ThisPlot.t0 = ThisPlot.te - 2*onesec;
-        ThisPlot.tf = ThisPlot.te + 10*onesec;
+        ThisPlot.t0 = ThisPlot.te - lead_in;
+        ThisPlot.tf = ThisPlot.te + lead_out;
         
         
         PlotParam = vertcat(PlotParam, ThisPlot);
@@ -212,15 +263,25 @@ end
     
 %% Generate Figures and Subplots
 
- [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots(numel(PlotParam)*2, PageTitles, 'newStyle', true , 'mdrtpairs', true);
-
+if isOverlay
+    [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots(1*2, PageTitles, 'newStyle', true , 'mdrtpairs', true);
+    axPairArray   = repmat(axPairArray, numel(PlotParam),1);
+    % axPairArray = reshape(axHandles, numel(PlotParam),1,2);
+    figHandles  = repmat(figHandles, numel(PlotParam),1);
+    
+else
+    [axHandles, figHandles, axPairArray] = makeManyMDRTSubplots(numel(PlotParam)*2, PageTitles, 'newStyle', true , 'mdrtpairs', true);
+end
 
 %% Generate Plots
-
+event_collection = [];
 for pi = 1:numel(PlotParam)
     
     topAx = axPairArray(pi, 1);
     botAx = axPairArray(pi, 2);
+
+    topFDs = {};
+    botFDs = {};
     
     thisPlot = PlotParam(pi);
     thisDataSet = DataSet(thisPlot.dsi);
@@ -229,41 +290,116 @@ for pi = 1:numel(PlotParam)
     % Muscle Pressure Plots: Top Axes
         
     for p = 1:numel(thisDataSet.PTFDs)
-        topAx.addFD( thisDataSet.PTFDs(p) );
+        if isOverlay
+            tempFD = thisDataSet.PTFDs(p);
+            offset = thisPlot.t0 - min([PlotParam.t0]);
+            
+            tempFD.ts.Time = tempFD.ts.Time - offset;
+            topAx.addFD(tempFD, 'DisplayName', thisPlot.legend_str);
+            topFDs = vertcat(topFDs, tempFD.FullString);
+        else
+            topAx.addFD( thisDataSet.PTFDs(p) );
+        end
     end
-                    
+    
 
     dynamicDateTicks(topAx.hAx);
     setDateAxes(topAx.hAx, 'XLim', [thisPlot.t0 thisPlot.tf] ) ;
-    setDateAxes(topAx.hAx, 'YLim', [92, 102]);
-    MDRTEvent(thisPlot.event, topAx);
+    setDateAxes(topAx.hAx, 'YLim', [0, 100]);
+
+%     
     
-    
-    topAx.title = thisPlot.Title;
+    if ~ isOverlay
+        topAx.title = thisPlot.Title;
+        event_collection = vertcat( event_collection, ...
+            MDRTEvent.eventFromMilestone(thisPlot.event, ...
+                topAx, [], false, 0) );
+    end
     
     % Valve Position Plots: Bottom Axes
+    if isValvePlot
+        valveStateBar({thisDataSet.ValveFDs.FullString}', botAx.hAx, ...
+            'DataFolder', thisDataSet.datafolder)
+        
+        for s = 1:numel(thisDataSet.ValveFDs)
+            botAx.addFD(thisDataSet.ValveFDs(s));
+        end
+    end
+
+    for p = 1:numel(thisDataSet.ValveFDs)
+        if isOverlay
+            tempFD = thisDataSet.ValveFDs(p);
+            offset = thisPlot.t0 - min([PlotParam.t0]);
+            
+            tempFD.ts.Time = tempFD.ts.Time - offset;
+            botAx.addFD(tempFD, 'DisplayName', thisPlot.legend_str);
+            botFDs = vertcat(botFDs, tempFD.FullString);
+        else
+            botAx.addFD( thisDataSet.ValveFDs(p) );
+        end
+    end
     
     
-    valveStateBar({thisDataSet.ValveFDs.FullString}', botAx.hAx, ...
-        'DataFolder', thisDataSet.datafolder)
-    
-%     for s = 1:numel(thisDataSet.ValveFDs)
-%         botAx.addFD(thisDataSet.ValveFDs(s));
-%     end
-    
-    
-    
+    % Set Axes limits
 	dynamicDateTicks(botAx.hAx);
     setDateAxes(botAx.hAx, 'XLim', [thisPlot.t0 thisPlot.tf] ) ;
-%     setDateAxes(botAx.hAx, 'YLim', [-0.1, 2.1]);
-                
-    botAx.title = thisPlot.Title;
-    MDRTEvent(thisPlot.event, botAx);
-                
+    setDateAxes(botAx.hAx, 'YLim', [-1, 160]);
+       
+    if ~ isOverlay
+        botAx.title = thisPlot.Title;
+        event_collection = vertcat( event_collection, ...
+        MDRTEvent.eventFromMilestone(thisPlot.event, botAx, [], false, 0) );
+    end
+
+    
+%                 
     
     linkaxes([axPairArray(pi,:).hAx]', 'x');
 
+    legend(botAx.hAx);
+    legend(topAx.hAx);
     
+end
+
+% Build Axes Title Strings from FD list. Still some failure modes!
+if isOverlay
+
+    top_event = MDRTEvent.eventFromMilestone(thisPlot.event, topAx, [], false, 0);
+    bot_event = MDRTEvent.eventFromMilestone(thisPlot.event, botAx, [], false, 0);
+    
+    top_listen = addlistener(topAx.hAx.XRuler,'MarkedClean',@top_event.AxisLimitsChanged);
+    bot_listen = addlistener(botAx.hAx.XRuler,'MarkedClean',@bot_event.AxisLimitsChanged);
+    
+    
+    % addlistener(topAx.hAx,'XLim','PostSet', top_event.AxisLimitsChanged);
+    % addlistener(botAx.hAx,'XLim','PostSet', bot_event.AxisLimitsChanged);
+
+    topFDs = unique(topFDs);
+    botFDs = unique(botFDs);
+
+    topFinds = {};
+    botFinds = {};
+
+    for n = 1:numel(topFDs)
+        thisFullString = topFDs{n};
+        if max( logical( regexp( thisFullString, '\w-\d{4,5}' ) ))
+            reEx = '(?<=\w+-)(\d{4,5})';
+            thisFind = regexp( thisFullString, reEx, 'match' );
+            topFinds = vertcat(topFinds, thisFind);
+        end
+    end
+
+    for n = 1:numel(botFDs)
+        thisFullString = botFDs{n};
+        if max( logical( regexp( thisFullString, '\w-\d{4,5}' ) ))
+            reEx = '(?<=\w+-)(\d{4,5})';
+            thisFind = regexp( thisFullString, reEx, 'match' );
+            botFinds = vertcat(botFinds, thisFind);
+        end
+    end
+
+    topAx.title = strjoin(topFinds, ', ');
+    botAx.title = strjoin(botFinds, ', ');
 end
 
 assignin('base', 'axPairArray', axPairArray);
@@ -271,8 +407,13 @@ assignin('base', 'axPairArray', axPairArray);
 return
 %% Save all these damn plots
 
+if isunix
+    homeDir = getenv('HOME');
+else
+    homeDir = getenv('HOMEDIR');
+end
 
-path = '/Users/nick/Downloads'
+path = fullfile(homeDir, 'Downloads');
 
 for f = axPairArray(1).hAx.Parent.Number:axPairArray(end).hAx.Parent.Number
     
