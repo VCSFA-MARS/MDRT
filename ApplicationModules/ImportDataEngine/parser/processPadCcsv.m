@@ -100,8 +100,15 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
         end
 
         dataVect = makeDataVect(data(c), data_type);
-        
-        fd.ts = timeseries(dataVect, timeVect, 'Name', fd.FullString);
+
+        % Handle bad cases where end of csv is mangled. Truncate timeVect
+        % to match auto-truncated dataVect from try/catch recovery
+        if length(dataVect) < length(timeVect)
+          fd.ts = timeseries(dataVect, timeVect(1:length(dataVect)), 'Name', fd.FullString);
+        else
+          fd.ts = timeseries(dataVect, timeVect, 'Name', fd.FullString);
+        end
+
         fd.ts.DataInfo.Units = unit_str;
         
         save_fd_to_disk(fd, 'folder', saveTo); % defaulting to v1 disk
@@ -173,7 +180,20 @@ function dataVect = makeDataVect(data_cell, data_type)
     end
     
     if ~isempty(formatSpec)
+      try
         dataVect = cellfun(@(s) sscanf(s,formatSpec), data_cell{1,1});
+      catch ME
+        assignin("base", 's', data_cell)
+        if strcmpi(ME.identifier, 'MATLAB:cellfun:NotAScalarOutput')
+          ind_str = regexp(ME.message, 'at index ([^,])+', 'tokens', 'once');
+          bad_ind = str2double(ind_str);
+          data_cell{1}(bad_ind:end) = [];
+          dataVect = makeDataVect(data_cell, data_type);
+        else
+          throw(ME)
+        end
+        
+      end
     end
     
     if ~process_str_to_enum
