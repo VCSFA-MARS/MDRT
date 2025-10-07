@@ -27,12 +27,14 @@ end
 
 hs.top_window = ancestor(hs.fig, 'figure');
 
-grid_fig = uigridlayout(hs.fig, [1,3]);
-grid_fig.ColumnWidth = {'fit', 'fit', '2x'};
+grid_fig = uigridlayout(hs.fig, [1,2]);
+grid_fig.ColumnWidth = {'fit', '2x'};
+hs.grid_fig = grid_fig;
 
 %% Data Set Selection Controls
 
-hs.tab_pane = uipanel(grid_fig, 'Title', 'Data Set Selection');
+hs.data_set_col_grid = uigridlayout(grid_fig, [2,1]);
+hs.tab_pane = uipanel(hs.data_set_col_grid, 'Title', 'Data Set Selection');
 hs.tab_pane_grid = uigridlayout(hs.tab_pane, [1 1]);
 hs.tabs = uitabgroup(hs.tab_pane_grid, 'SelectionChangedFcn', @populate_tab_tree);
 
@@ -48,15 +50,10 @@ populate_tab_tree();
 
 %% FD Selection UI
 
-hs.panel_fd_select = uipanel(grid_fig, 'Title', 'FD Selection');
-grid_fd_select = uigridlayout(hs.panel_fd_select, [2,1]);
-grid_fd_select.RowHeight = {'fit', '1x'};
-hs.edit_fd_search = uieditfield(grid_fd_select, 'Tag', 'searchBox', 'ValueChangingFcn', @updateSearchResults);
-hs.list_fds = uilistbox(grid_fd_select, 'Items', {}, 'ValueChangedFcn',@fd_selection_changed, 'Tag', 'listSearchResults');
+hs.panel_fd_select = uipanel(hs.data_set_col_grid, 'Title', 'FD Selection');
+hs.fd_selection = MDRTListBox(hs.panel_fd_select);
+hs.fd_selection.SelectionChangedFcn = @fd_selection_changed;
 
-% Set up search mangement
-hs.edit_fd_search.UserData = hs.list_fds;
-setappdata(hs.edit_fd_search, 'fdMasterList', {});
 
 %% Plot / Axes Creation
 
@@ -74,8 +71,9 @@ hs.ax = uiaxes(grid_fig );
       % Guard against selecting an FD without a data set selcted
       return
     end
+    disp(event)
     
-    fd_file = fullfile(event.Value);
+    fd_file = fullfile(hobj.Value);
     this_fd = load_fd_by_name(fd_file, 'isFilename', 'true', 'folder', fullfile(hs.tree.SelectedNodes.NodeData, 'data'));
     
     hs.quick_plot_line = stairs(hs.ax, datetime(this_fd.ts.Time, 'convertfrom', 'datenum'), this_fd.ts.Data, 'DisplayName', this_fd.FullString);
@@ -149,11 +147,7 @@ hs.ax = uiaxes(grid_fig );
     %% Data Set Selection Population
     s = load(fd_index_file);
     FDList = s.FDList;
-    setappdata(hs.edit_fd_search, 'fdMasterList', FDList);
-    
-    % updateSearchResults(hs.edit_fd_search, []);
-    
-    hs.list_fds.Items = FDList(:,2);
+    hs.fd_selection.set_items(FDList(:,1), FDList(:,2));
     
   end
 
