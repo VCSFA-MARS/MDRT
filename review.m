@@ -620,7 +620,12 @@ end
 
 % --- Executes on button press in uiButton_importData.
 function uiButton_importData_Callback(~, ~, ~)
+  % Launch web-based UI when compatible
+  if matlab_newer_than('r2017b')
+    dataImportGUI();
+  else
     makeDataImportGUI;
+  end
 
 
 
@@ -787,7 +792,11 @@ choice = questdlg('You are about to open the data archive manager. Only do this 
 switch choice
     case cancelButton
     case proceedButton
-        makeArchiveManagerGUI
+        if matlab_newer_than('r2017b')
+            ArchiveManagerGUI
+        else
+            makeArchiveManagerGUI
+        end
     otherwise
 end
 

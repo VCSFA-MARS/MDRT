@@ -34,14 +34,21 @@ end
         
 
 switch getenv('debugOutput')
-    case 'true'
+  case 'true'
 
-        % disp( somethingToPrintToConsole )
-        DB = evalc('disp(somethingToPrintToConsole)');
-        fprintf([S, reverseStr, DB]);
-        % fprintf('%s%s',S, DB);
+    % disp( somethingToPrintToConsole )
+    DB = evalc('disp(somethingToPrintToConsole)');
+    fprintf([S, reverseStr, DB]);
+    fprintf('%s%s',S, DB);
 
-    otherwise
+  case 'gui'
+    DB = evalc('disp(somethingToPrintToConsole)');
+    tgt = getenv('debugOutputTarget');
+    if ismethod(tgt, 'print_debug')
+      tgt.print_debug(sprintf('%s%s',S, DB));
+    end
+
+  otherwise
 end
 
 end

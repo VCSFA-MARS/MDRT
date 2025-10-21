@@ -30,12 +30,16 @@ function [ trend ] = trendMath( dataBrushVariable )
 %         trend.rsq       : r^2
 
 
+if iscell(dataBrushVariable)
+  dataBrushVariable = cell2mat({datenum(dataBrushVariable{1}), dataBrushVariable{2}} );
+end
 
 t1 = dataBrushVariable(1,1);
 t2 = dataBrushVariable(end,1);
 
 y1 = dataBrushVariable(1,2);
 y2 = dataBrushVariable(end,2);
+
 
 dy = y2 - y1;
 dt = abs(t2-t1);

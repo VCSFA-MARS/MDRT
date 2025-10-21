@@ -32,6 +32,7 @@ dataMetaData.isVehicleOp        = false;
 dataMetaData.isMARSprocedure    = false;
 dataMetaData.MARSprocedureName  = '';
 dataMetaData.hasMARSuid         = false;
+dataMetaData.MARSUID            = '';
 dataMetaData.fdList             = '';
 
 

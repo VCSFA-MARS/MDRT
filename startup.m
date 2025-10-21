@@ -36,7 +36,7 @@ setappdata(groot,'realcla',@cla)
 
 %% Set all the paths and subfolders required for MDRT here
 
-addpath(genpath(fullfile(MDRTpath,'overloads')));
+addpath(fullfile(MDRTpath,'overloads'));
 addpath(genpath(fullfile(MDRTpath,'ApplicationModules')));
 addpath(genpath(fullfile(MDRTpath,'ClassDefinitions')));
 addpath(genpath(fullfile(MDRTpath,'comparison')));
@@ -47,6 +47,13 @@ addpath(genpath(fullfile(MDRTpath,'Review_App_Files')));
 addpath(genpath(fullfile(MDRTpath,'SpecialTopics')));
 addpath(genpath(fullfile(MDRTpath,'Structures')));
 addpath(genpath(fullfile(MDRTpath,'Valve Timing Script')));
+
+%% Version Specific Overrides
+
+if ~matlab_newer_than('r2017b')
+    % isfolder introduced in 2017b
+    addpath(genpath(fullfile(MDRTpath, 'overloads', 'back_compat', 'isfolder.m')));
+end
 
 %% Set a flag in groot that MDRT can check on startup
 
