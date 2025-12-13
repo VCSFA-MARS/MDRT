@@ -512,29 +512,68 @@ resetGUI();
 
         delim_list = fileArray(:,1);
         
+        do_padc_valves = hs.checkbox_pad_c_data.Value && ...
+          hs.checkbox_valve_timing.Value && ...
+          strcmpi(hs.checkbox_valve_timing.Enable,'on');
+
         if hs.checkbox_pad_c_data.Value
-            % PLACEHOLDER for PAD-C import call
-            metaData.site = 'Pad-0C';
-            ImportPadCFromGUI(  delim_list, ... 
-                                metaData, ...
-                                hs.edit_folderName.Value, ...
-                                hs.checkbox_autoSkipErrors.Value );
-            metaData = rmfield(metaData, 'site');
-            return
+          % Prompt user for valve timing output file
+          if do_padc_valves
+            file = prompt_for_filename('.xlsx');
+            if isempty(file)
+              % User cancelled
+              return
+            end
+            file = cell2mat(file(1));
+          end
+
+          % PLACEHOLDER for PAD-C import call
+          metaData.site = 'Pad-0C';
+          ImportPadCFromGUI(  delim_list, ...
+            metaData, ...
+            hs.edit_folderName.Value, ...
+            hs.checkbox_autoSkipErrors.Value );
+          metaData = rmfield(metaData, 'site');
+
+          if do_padc_valves && any(file)
+            valve_save_path = fullfile(config.importDataPath, hs.edit_folderName.Value, file);
+            valve_data_path = fullfile(config.importDataPath, hs.edit_folderName.Value, 'data');
+
+            ValveTimingFunc(valve_data_path, valve_save_path);
+          end
+
+          return
         end
         
 
-        ImportFromGUI(  delim_list, ... 
-                        metaData, ...
-                        hs.edit_folderName.Value, ...
-                        hs.checkbox_autoSkipErrors.Value, ...
-                        hs.checkbox_combineDelims.Value, ...
-                        hs.checkbox_importRaw.Value, ...
-                        hs.checkbox_legacy_importer.Value);
+        ImportFromGUI(  delim_list, ...
+          metaData, ...
+          hs.edit_folderName.Value, ...
+          hs.checkbox_autoSkipErrors.Value, ...
+          hs.checkbox_combineDelims.Value, ...
+          hs.checkbox_importRaw.Value, ...
+          hs.checkbox_legacy_importer.Value);
         return
 
         
     end
 
 
-end % dataImportGUI()
+  function filename = prompt_for_filename(ext_str)
+    result = inputdlg('Valve Timing Parser', 'Save valve timing data as:', 1, {'Valve Timing Data.xlsx'})
+    if isempty(result)
+      filename = '';
+      return
+    end
+
+    [~, filename, ext] = fileparts(result);
+    % Sanitize User-selected file name - For Alina
+    filename = regexprep(filename,'^[!@$^&*~?.|/[]<>\`";#()]','');
+    filename = regexprep(filename, '[:*]','-');
+
+    filename = [filename, '.', ext_str];
+
+    debugout(sprintf('Alina-proof filename: %s', filename{1}))
+  end
+
+end % main function
