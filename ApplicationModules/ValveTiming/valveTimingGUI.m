@@ -313,10 +313,14 @@ hs.results_table = uitable(hs.grid_results_tab);
 
 
   function compute_timing_for_dataset(hobj, event)
+    if isempty(hs.tree.SelectedNodes)
+      return
+    end
     data_set_folder = hs.tree.SelectedNodes.NodeData;
-    processPadCValves('RootFolder', data_set_folder, 'ProgressFig', hs.fig, ...
-      'SaveFile', true, 'SaveData', true);
-
+    processPadCValves('RootFolder', data_set_folder, ...
+      'ProgressFig',    hs.top_window,  ...
+      'SaveFile',       true,           ...
+      'SaveData',       true);
   end
 
 end
