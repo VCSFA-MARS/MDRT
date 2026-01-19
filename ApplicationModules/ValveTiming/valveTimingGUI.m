@@ -139,6 +139,7 @@ hs.results_table = uitable(hs.grid_results_tab);
   function node_selection_dispatch(hobj, event)
     switch class(event.SelectedNodes.NodeData)
       case 'char'
+        % Means a path - a data set root node
         hs.button_process_valve_timing.Enable = 'on';
         dataset_node_selected(hobj, event);
       case 'struct'
@@ -214,8 +215,8 @@ hs.results_table = uitable(hs.grid_results_tab);
     timing_file   = fullfile(node_path, 'pad-c-valve-timing.mat');
     
     if exist(timing_file, 'file') == 2
-      s = load(timing_file);
       pb = uiprogressdlg(hs.top_window, 'Title', 'Loading valve timing data');
+      s = load(timing_file);
       for vi = 1:length(s.data)
         thisData = s.data(vi);
         thisRep  = s.reports(vi);
