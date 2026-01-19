@@ -132,7 +132,7 @@ end % if nargs
 
     %% Loading Data
     % Update progress bar
-    loading_progress(i, num_valves, 0, DATA_STEPS, progParent)
+    loading_progress(i, num_valves, 0, DATA_STEPS, progParent, thisReport.name)
 
     data(i).cmd   = timetable_from_io_num(thisCommand, FDList, dataSetRootFolder);
     data(i).cmd   = add_command_state_to_timetable(data(i).cmd, thisType);
@@ -162,18 +162,21 @@ end % if nargs
     osw_change_ind = [1; osw_change_ind; length(data(i).sw_open.Value)];
     cmd_change_ind = [1; cmd_change_ind; length(data(i).cmd.Value)];
     
-    state_time_inds = unique(sort([csw_change_ind;osw_change_ind]));
+    state_times = vertcat( ...
+                    data(i).sw_close(csw_change_ind,:).Time, ...
+                    data(i).sw_open(osw_change_ind, :).Time ...
+                    );
     if thisSigType
       data(i).state = make_state_from_sw_changes_reversed( ...
         data(i).sw_open,  ...
         data(i).sw_close, ...
-        state_time_inds   ...
+        state_times   ...
         );
     else
       data(i).state = make_state_from_sw_changes( ...
         data(i).sw_open,  ...
         data(i).sw_close, ...
-        state_time_inds   ...
+        state_times   ...
         );
     end
 
@@ -313,7 +316,7 @@ function this_switch = add_switch_state_to_timetable(this_switch, sig_type)
     );
 end
 
-function state_tt = make_state_from_sw_changes(osw, csw, inds)
+function state_tt = make_state_from_sw_changes(osw, csw, times)
   % Compute a valve state timetable from the open_sw and close_sw timetables
   % pass the indices of all interesting events (first, last, all changes)
   % sigType is from config spreadsheet. The open switch means OPEN when it
@@ -324,12 +327,16 @@ function state_tt = make_state_from_sw_changes(osw, csw, inds)
   % TRANSITION	DISENGAGED	DISENGAGED
   % CRITICAL	  ENGAGED	    ENGAGED
 
+  Value = ones(height(times), 1);
+  Time  = times;
 
-  Time = osw.Time(inds);
-  Value = ones(size(inds));
-  for i = 1:length(inds)
-    oSw = osw(inds(i),:).State;
-    cSw = csw(inds(i),:).State;
+  for i = 1:height(times)
+    time = times(i);
+    oSw = osw(osw.Time <= time, :).State(end);
+    cSw = csw(csw.Time <= time, :).State(end);
+
+    % oSw = osw(inds(i),:).State;
+    % cSw = csw(inds(i),:).State;
 
     if     oSw == 'Engaged'    && cSw == 'Disengaged'
       thisState = 1; % Open
@@ -356,7 +363,7 @@ function state_tt = make_state_from_sw_changes(osw, csw, inds)
 end
 
 
-function state_tt = make_state_from_sw_changes_reversed(osw, csw, inds)
+function state_tt = make_state_from_sw_changes_reversed(osw, csw, times)
   % Compute a valve state timetable from the open_sw and close_sw timetables
   % pass the indices of all interesting events (first, last, all changes)
   % sigType is from config spreadsheet. The open switch means OPEN when it
@@ -367,12 +374,13 @@ function state_tt = make_state_from_sw_changes_reversed(osw, csw, inds)
   % CRITICAL  	DISENGAGED	DISENGAGED
   % TRANSITION	ENGAGED	    ENGAGED
 
+  Value = ones(height(times), 1);
+  Time  = times;
 
-  Time = osw.Time(inds);
-  Value = ones(size(inds));
-  for i = 1:length(inds)
-    oSw = osw(inds(i),:).State;
-    cSw = csw(inds(i),:).State;
+  for i = 1:height(times)
+    time = times(i);
+    oSw = osw(osw.Time <= time, :).State(end);
+    cSw = csw(csw.Time <= time, :).State(end);
 
     if     oSw == 'Engaged'    && cSw == 'Disengaged'
       thisState = 1; % Open
@@ -413,7 +421,7 @@ function def_state = default_state_from_type(type_str)
 end
 
 
-function loading_progress(valve, valves, step, steps, pbp)
+function loading_progress(valve, valves, step, steps, pbp, varargin)
   persistent pb;
   progress = ((valve-1) + step/steps) / valves;
   
@@ -425,6 +433,9 @@ function loading_progress(valve, valves, step, steps, pbp)
     end
   
     pb.Value = progress;
+    if ~isempty(varargin)
+      pb.Message = varargin{1};
+    end
 
     if progress == 1
       try
@@ -496,18 +507,19 @@ function T = report_table_from_reports(reports)
 
   first_row_flag = true;
 
-  colnames = {'valve', 'command', 'cycles', 'average', 'cycle_time'};
-  colTypes = {'string', 'string', 'double', 'double', 'cell'};
-  T = table('Size', [0,5], 'VariableTypes', colTypes, 'VariableNames', colnames);
+  colnames = {'valve',  'find',   'command', 'cycles', 'average', 'cycle_time'};
+  colTypes = {'string', 'string', 'string',  'double', 'double',  'cell'};
+  T = table('Size', [0,numel(colnames)], 'VariableTypes', colTypes, 'VariableNames', colnames);
 
   for i = 1:height(reports)
     thisRep = reports(i);
     valveName = sprintf('%s-%s', thisRep.type, thisRep.find);
 
-    newRow = {valveName, 'open', 0,0,[]};
+    newRow = {valveName, thisRep.find, 'open', 0,0,[]};
     if ~isempty(thisRep.open)
       newRow = {
         valveName;
+        thisRep.find;
         'open';
         length(thisRep.open);
         seconds(mean(thisRep.open));
@@ -517,11 +529,12 @@ function T = report_table_from_reports(reports)
 
     T = vertcat(T, cell2table(newRow, 'VariableNames', colnames));
 
-    newRow = {valveName, 'close', 0,0,duration.empty()};
+    newRow = {valveName, thisRep.find, 'close', 0,0,duration.empty()};
     if ~isempty(thisRep.close)
       newRow = {
         valveName;
-'close';
+        thisRep.find;
+        'close';
         length(thisRep.close);
         seconds(mean(thisRep.close));
         {thisRep.close}
@@ -538,6 +551,7 @@ function save_report_table_to_excel(T, setFolder)
   %% Prompt user for filename and write the report table T to disk as an excel
   % file.
 
+  template  = getMDRTResource('ValveTiming_Template.xlsx');
   s = load(fullfile(setFolder, 'data', 'metadata.mat'));
   defaultFileName = sprintf('Valve Timing Data for %s', s.metaData.operationName);
 
@@ -557,7 +571,13 @@ function save_report_table_to_excel(T, setFolder)
 
   cell_arr_of_doubles = cellfun(@seconds, T.cycle_time, 'UniformOutput', false);
   T.cycle_time = cell_arr_of_doubles;
-
+  
+  % tempFile = [tempname, '.xlsx'];
+  % copyfile(template, tempFile)
+  % writetable(T, tempFile, 'PreserveFormat',true)
+  % disp(tempFile)
+  % copyfile(tempFile, fullfile(pathname, filename))
+  
   writetable(T, fullfile(pathname, filename))
 
 end
