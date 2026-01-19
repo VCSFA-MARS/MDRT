@@ -13,6 +13,11 @@ end
 
 % TODO: Check for non-image resources and look in the appropriate location
 
+if endsWith(resourceName, '.xlsx')
+  fullFilePath = fullfile(rootPath, 'spreadsheets', resourceName);
+  return;
+end
+
 fullFilePath = fullfile(rootPath, 'images', resourceName);
 
 end
