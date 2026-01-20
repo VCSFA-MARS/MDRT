@@ -199,6 +199,12 @@ end % if nargs
 
       if isempty(states)
         % No state changes found within MAX_CYCLE_TIME of command
+        if (cmd_time == data(i).cmd.Time(1) || cmd_time == data(i).cmd.Time(end))
+          % Ignore first and last data points - they are for plot completeness
+          % and are not expected to be a legitimate cycle.
+          continue;
+        end
+
         this_error = EMPTY_ERROR;
         this_error.direction = this_cmd.Command;
         this_error.command   = this_cmd.Time;
