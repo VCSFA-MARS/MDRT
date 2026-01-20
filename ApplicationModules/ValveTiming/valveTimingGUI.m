@@ -198,8 +198,6 @@ hs.summary_table = uitable(hs.grid_results_tab);
     avg_time_open  = seconds(mean(node_data.rep.open));
     avg_time_close = seconds(mean(node_data.rep.close));
 
-    disp(node_data.rep)
-
     num_opens  = numel(node_data.rep.open);
     num_closes = numel(node_data.rep.close);
     num_errors = numel(node_data.rep.errors);
