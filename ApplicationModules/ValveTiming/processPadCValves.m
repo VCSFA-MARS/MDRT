@@ -328,6 +328,7 @@ function state_tt = make_state_from_sw_changes(osw, csw, times)
   % CRITICAL	  ENGAGED	    ENGAGED
 
   Value = ones(height(times), 1);
+  times = sort(times);
   Time  = times;
 
   for i = 1:height(times)
@@ -375,6 +376,7 @@ function state_tt = make_state_from_sw_changes_reversed(osw, csw, times)
   % TRANSITION	ENGAGED	    ENGAGED
 
   Value = ones(height(times), 1);
+  times = sort(times);
   Time  = times;
 
   for i = 1:height(times)
