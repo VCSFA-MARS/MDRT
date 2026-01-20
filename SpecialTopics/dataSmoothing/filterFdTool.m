@@ -56,7 +56,13 @@ function filterFdTool(fdDataFullFile)
     % data.
     
     t = floor(now) + 0.5 : 1/24/60/60/10 : floor(now) + 0.75;
-    y = awgn( sin(t * 24), 25);
+    y = sin(t * 24);
+    snr_db = 10;
+    sig_power = var(y);
+    noise_power = sig_power / (10^(snr_db/10));
+    noise = sqrt(sig_power) * randn(size(y));
+    y = y + noise;
+    % y = awgn( sin(t * 24), 25);
 
     fd.FullString = 'Example Signal';
     fd.ts = timeseries(y', t');
@@ -156,6 +162,9 @@ function filterFdTool(fdDataFullFile)
 
     for i = 1:numel(buttonsToDisable)
         tObj = findall(fig, 'Tag', buttonsToDisable{i});
+        if isempty(tObj)
+          continue
+        end
 
         tObj.Visible = 'off';
     end
@@ -424,11 +433,13 @@ function filterFdTool(fdDataFullFile)
         semi_gaussian = [semi_gaussian fliplr(semi_gaussian)];
 
         % Calculate the weighted moving average (with the gaussian weight)
-        weighted = tsmovavg(ts.Data,'w',semi_gaussian,1);
+        % weighted = tsmovavg(ts.Data,'w',semi_gaussian,1);
+        weighted = movmean(ts.Data, window_size);
         
         % Calculate the simple moving average
         
-        smoothData = tsmovavg(weighted,'s',window_size,1);
+        % smoothData = tsmovavg(weighted,'s',window_size,1);
+        smoothData = movmean(weighted, window_size);
 
     end
 
