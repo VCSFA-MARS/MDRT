@@ -71,9 +71,11 @@ hs.plot_title = uilabel(hs.grid_plot);
 hs.ax = uiaxes(hs.grid_plot);
 
 %% Tabular Results View
-hs.grid_results_tab = uigridlayout(hs.result_tab_grid, [2,1], 'RowHeight', {'fit', '4x'});
+hs.grid_results_tab = uigridlayout(hs.result_tab_grid, [4,1], 'RowHeight', {'fit', '4x', 'fit', '4x'});
 hs.results_title = uilabel(hs.grid_results_tab, 'Text', 'Results of Valve Cycling');
 hs.results_table = uitable(hs.grid_results_tab);
+hs.summary_title = uilabel(hs.grid_results_tab, 'Text', 'Summary of Valve Cycling');
+hs.summary_table = uitable(hs.grid_results_tab);
 
 
 %% +----------------------------------------------------------------------+
@@ -180,8 +182,37 @@ hs.results_table = uitable(hs.grid_results_tab);
     end
 
     hs.fd_selection.set_items(cycle_strs, T);
-    hs.results_table.Data = timetable2table([node_data.data.cmds_close; ...
-      node_data.data.cmds_open]);
+
+    CycleDirections   = [node_data.rep.cycles.direction]';
+    CycleCommandTime  = [node_data.rep.cycles.command]';
+    CycleCompleteTime = [node_data.rep.cycles.complete]';
+    CycleDuration     = seconds(CycleCompleteTime - CycleCommandTime);
+
+    cycle_table = table(CycleDirections,    ...
+                        CycleCommandTime,  ...
+                        CycleCompleteTime, ...
+                        CycleDuration);
+
+    hs.results_table.Data = cycle_table;
+
+    avg_time_open  = seconds(mean(node_data.rep.open));
+    avg_time_close = seconds(mean(node_data.rep.close));
+
+    disp(node_data.rep)
+
+    num_opens  = numel(node_data.rep.open);
+    num_closes = numel(node_data.rep.close);
+    num_errors = numel(node_data.rep.errors);
+    RowLabels ={ 'Open Cycles';'Close Cycles'; 'Error Cycles' } ;
+    ColLabels ={ 'Number of Cycles';'Average Time' } ;
+
+    summary_table = table( ...
+      [num_opens;      num_closes;     num_errors], ...
+      [avg_time_open;  avg_time_close; nan()], ...
+      'RowNames',      RowLabels, ...
+      'VariableNames', ColLabels);
+
+    hs.summary_table.Data = summary_table;
 
     plotValveTimingData(node_data.data, node_data.rep, '', 0);
 
