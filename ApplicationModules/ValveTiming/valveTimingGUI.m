@@ -247,7 +247,7 @@ hs.results_table = uitable(hs.grid_results_tab);
   function plotValveTimingData(data, rep, cmd_type, ind)
 
     cla(hs.ax, 'reset')
-    hold off;
+    % hold off;
 
     thisData = data;
     thisRep  = rep;
