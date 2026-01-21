@@ -1,13 +1,19 @@
 function hs = valveTimingGUI(varargin)
 %% valveTimingGUI launches the valve timing tool
-% accepts a parent container for integration into other tools
+% accepts a parent container for integration into other tools. If you pass a
+% pane, tab, or other container, valveTimingGUI will find the parent figure
+% and target all the process dialogs to the parent.
 
 config = MDRTConfig.getInstance;
 FOLDER_ICON    = getMDRTResource('folder-16x16.png');
 FOLDER_GOOD    = getMDRTResource('folder-good-16x16.png');
+FOLDER_BAD     = getMDRTResource('folder-bad-16x16.png');
 VALVE_ICON     = getMDRTResource('valve_list_icon_transparent_64x64.png');
 VALVE_SELECTED = getMDRTResource('valve_list_icon_selected_64x64.png');
 
+empty_node_data = struct( ...
+  'type',     '' ...
+  );
 
 archives = {
   config.dataArchivePath, 'Archive';
@@ -56,7 +62,7 @@ populate_tab_tree();
 
 hs.panel_fd_select = uipanel(hs.data_set_col_grid, 'Title', 'FD Selection');
 hs.fd_selection = MDRTListBox(hs.panel_fd_select);
-hs.fd_selection.SelectionChangedFcn = @cycle_selection_changed;
+hs.fd_selection.SelectionChangedFcn = @select_valve_cycle;
 
 %% Results View UI
 
@@ -82,7 +88,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
 %  |                  Utility and Callback Functions                      |
 %  +----------------------------------------------------------------------+
 
-  function cycle_selection_changed(hobj, event)
+  function select_valve_cycle(hobj, event)
     
     
     if isempty(hs.tree.SelectedNodes)
@@ -112,16 +118,25 @@ hs.summary_table = uitable(hs.grid_results_tab);
   end
 
   function populate_tab_tree(~, ~)
+    % Populates the folder tree when an archive tab is selected
     
     hs.visible_tab_grid.Parent = hs.tabs.SelectedTab;
     if isfield(hs, 'tree')
       hs.tree.delete
     end
+
+    root_node_data = empty_node_data;
+    root_node_data.type = 'root_node';
+    root_node_data.path = hs.tabs.SelectedTab.UserData;
     
-    hs.tree = uitree(hs.visible_tab_grid, 'SelectionChangedFcn', @node_selection_dispatch);
-    hs.rootNode = uitreenode(hs.tree, 'Text', hs.tabs.SelectedTab.UserData, 'NodeData', hs.tabs.SelectedTab.UserData);
-    
-    D = dir(hs.tabs.SelectedTab.UserData);
+    hs.tree = uitree(hs.visible_tab_grid, 'SelectionChangedFcn', @select_tree_node);
+    hs.rootNode = uitreenode(hs.tree, ...
+      'Text',        hs.tabs.SelectedTab.UserData, ...
+      'NodeData',    root_node_data);
+
+    archive_root = hs.rootNode.NodeData.path;
+
+    D = dir(archive_root)
     dir_mask = [D.isdir] == true;
     DIRS = D(dir_mask);
     
@@ -131,28 +146,43 @@ hs.summary_table = uitable(hs.grid_results_tab);
         % skip hidden and . or ..
         continue
       end
-      uitreenode(hs.rootNode, 'Text', this_dir.name, 'Icon',FOLDER_ICON, 'NodeData', fullfile(hs.tabs.SelectedTab.UserData, this_dir.name));
+      this_dataset_dir = fullfile(archive_root, this_dir.name);
+      this_node_data = empty_node_data;
+      this_node_data.type = 'data_set_node';
+      this_node_data.path = this_dataset_dir;
+      this_node_data.last_updated = 0;
+      uitreenode(hs.rootNode, ...
+        'Text',     this_dir.name, ...
+        'Icon',     FOLDER_ICON, ...
+        'NodeData', this_node_data ...
+        );
     end
     
     hs.rootNode.expand();
   end
 
   
-  function node_selection_dispatch(hobj, event)
+  function select_tree_node(hobj, event)
     switch class(event.SelectedNodes.NodeData)
-      case 'char'
-        % Means a path - a data set root node
-        hs.button_process_valve_timing.Enable = 'on';
-        dataset_node_selected(hobj, event);
       case 'struct'
-        hs.button_process_valve_timing.Enable = 'off';
-        valve_node_selected(hobj, event);
-      otherwise
+        switch event.SelectedNodes.NodeData.type
+          case 'root_node'
+            hs.button_process_valve_timing.Enable = 'off';
+
+          case 'data_set_node'
+            hs.button_process_valve_timing.Enable = 'on';
+            select_dataset_node(hobj, event);
+
+          case 'valve_node'
+            hs.button_process_valve_timing.Enable = 'off';
+            select_valve_node(hobj, event);
+
+        end
     end
   end
 
 
-  function valve_node_selected(hobj, event)
+  function select_valve_node(hobj, event)
 
     set(hobj.SelectedNodes.Parent.Children, 'Icon', VALVE_ICON);
     set(event.SelectedNodes, 'Icon', VALVE_SELECTED);
@@ -220,7 +250,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
   end
 
 
-  function dataset_node_selected(hobj, event)
+  function select_dataset_node(hobj, event)
     % populate child nodes with valves if available and needed.
     % When a "folder" node is selected, available valve timing data are
     % loaded and populated as children. Valve nodes have a separate
@@ -230,22 +260,27 @@ hs.summary_table = uitable(hs.grid_results_tab);
     set(hobj.SelectedNodes.Parent.Children, 'Icon', FOLDER_ICON);
     set(event.SelectedNodes, 'Icon', FOLDER_GOOD);
     
-    this_node = event.SelectedNodes;
-    node_path = this_node.NodeData; % full path of data set
-    debugout(node_path);
+    this_data_set_node = event.SelectedNodes;
+    data_set_node_data = this_data_set_node.NodeData;
+    data_set_path = data_set_node_data.path; % full path of data set
+    debugout('Selected: %s',data_set_path);
 
+    timing_file   = fullfile(data_set_path, 'pad-c-valve-timing.mat');
+    if ~exist(timing_file, 'file')
+      timing_file_modified_time = 0;
+    else
+      timing_file_modified_time = dir(timing_file).datenum;
+    end
+    
     %% Valve Timing Data Population
-    if ~isempty(this_node.Children)
+    if timing_file_modified_time <= data_set_node_data.last_updated 
       return
     end
     
-    metaDataFile  = fullfile(node_path, 'data', 'metadata.mat');
-    fd_index_file = fullfile(node_path, 'data', 'AvailableFDs.mat');
-    timing_file   = fullfile(node_path, 'pad-c-valve-timing.mat');
-    
     if exist(timing_file, 'file') == 2
       pb = uiprogressdlg(hs.top_window, 'Title', 'Loading valve timing data');
-      s = load(timing_file);
+      s = load(timing_file); 
+      % Populate valve nodes under data set
       for vi = 1:length(s.data)
         thisData = s.data(vi);
         thisRep  = s.reports(vi);
@@ -254,13 +289,20 @@ hs.summary_table = uitable(hs.grid_results_tab);
         if isempty(thisRep.open) && isempty(thisRep.close)
           continue
         end
-        uitreenode(this_node, ...
+
+        this_valve_node_data = empty_node_data;
+        this_valve_node_data.type = 'valve_node';
+        this_valve_node_data.data = thisData;
+        this_valve_node_data.rep  = thisRep;
+
+        uitreenode(this_data_set_node, ...
           'Text', thisNodeStr, ...
           'Icon', VALVE_ICON, ...
-          'NodeData', struct('data', thisData, 'rep', thisRep) ...
+          'NodeData', this_valve_node_data ...
           );
         pb.Value = vi/length(s.data);
       end
+      this_data_set_node.NodeData.last_updated = timing_file_modified_time;
       close(pb);
     end
     
@@ -346,7 +388,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
     if isempty(hs.tree.SelectedNodes)
       return
     end
-    data_set_folder = hs.tree.SelectedNodes.NodeData;
+    data_set_folder = hs.tree.SelectedNodes.NodeData.path;
     processPadCValves('RootFolder', data_set_folder, ...
       'ProgressFig',    hs.top_window,  ...
       'SaveFile',       true,           ...
