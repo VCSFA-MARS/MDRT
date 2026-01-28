@@ -62,7 +62,7 @@ if length(varargin)>1
   end % loop through pairs
 end % if nargs
 
-  configTable = readtable('Pad0C_ValveGrouping.xlsx', ...
+  configTable = readtable('ValveTimingConfig_Pad_C.xlsx', ...
                           'PreserveVariableNames',true);
   
   num_valves = height(configTable);
