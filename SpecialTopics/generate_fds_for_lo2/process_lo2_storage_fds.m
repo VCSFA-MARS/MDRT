@@ -2,7 +2,17 @@
 
 filename = 'SpecialTopics/generate_fds_for_lo2/mdrt_format_config.json';
 filename = '/Users/nick/Developer/demo/p0a-lo2-storage-gui/mdrt_format_config.json';
-json_lines = readlines(filename);
+
+
+if matlab_newer_than(2020)
+  json_lines = readlines(filename);
+else
+  json_lines = split(string(fileread(filename)), newline);
+end
+
+if isstring(json_lines)
+  json_lines = cellstr(json_lines);
+end
 
 % Strip out comments to make Matlab's parser happy
 
@@ -18,7 +28,7 @@ tank_names = fields(json_tanks);
 tank_sensor_types = fields(json_tanks.(tank_names{1}).sensors);
 
 
-% %% Storage Vessel Sensor List Generation
+%% %% Storage Vessel Sensor List Generation
 % json_tanks = json.display_config.tanks;
 % tank_names = fields(json_tanks);
 % 

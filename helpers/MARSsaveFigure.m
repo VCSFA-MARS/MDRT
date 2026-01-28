@@ -165,6 +165,7 @@ if file ~= 0
     if ~verLessThan('matlab', '9.10') % 2021a - they added autorotate tick labels
         ax = findall(gcf, 'tag', 'MDRTAxes');
         set(ax, 'XTickLabelRotationMode', 'manual');
+        set(ax, 'XTickLabelRotation', 0);
     end
     
 else

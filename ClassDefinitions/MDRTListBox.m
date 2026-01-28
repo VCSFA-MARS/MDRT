@@ -39,7 +39,7 @@ classdef MDRTListBox < matlab.ui.componentcontainer.ComponentContainer
       
       self.list_box.Items = self.display_items;
       self.list_box.ItemsData = find(true(size(self.display_items)));
-      self.do_search([],[]  )
+      self.do_search([],[]  );
     end
     
     
@@ -48,7 +48,7 @@ classdef MDRTListBox < matlab.ui.componentcontainer.ComponentContainer
   
   methods (Access = protected)
     
-    function self = do_search(self, hobj, event)
+    function self = do_search(self, ~, event)
       if isempty(event)
         search_str = self.edit_field.Value;
       else
@@ -96,7 +96,7 @@ classdef MDRTListBox < matlab.ui.componentcontainer.ComponentContainer
       self.list_box = uilistbox(self.grid, 'Items', {}, 'ValueChangedFcn', @self.ListBoxSelectionChanged);
     end
     
-    function self = ListBoxSelectionChanged(self, hobj, event)
+    function self = ListBoxSelectionChanged(self, ~, event)
       % Callback function triggered by user clicking/selecting a list item
       % from the listbox. Sets the this/last selection properties and triggers
       % the callback notification.
@@ -116,8 +116,15 @@ classdef MDRTListBox < matlab.ui.componentcontainer.ComponentContainer
         val = {};
         return
       end
+      ind = self.list_box.Value;
+
+      switch class(self.return_items)
+        case 'table'
+          val = self.return_items(ind,:);
+        otherwise
+          val = self.return_items{ind};
+      end
       
-      val = self.return_items{self.list_box.Value};
       return
     end
     
