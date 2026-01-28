@@ -18,6 +18,8 @@ function [reports, data, T] = processPadCValves(varargin)
 % name ('DCVNC-1234'), an array of 'cycles' structs (each with the command 
 % and state change data point), and finally an 'errors' array of structs
 % containing the failed commands.
+% version 1 of cycles has command, command_time, completed_time
+% version 1.1 added 'passed' to the cycles
 
 %% data struct
 % the output data currently contain ALL data points from the valve command
@@ -630,7 +632,7 @@ function save_valve_data_to_matlab(data, reports, setFolder)
 % Saves all data in a single .mat file with a version number
 
 filename  = 'pad-c-valve-timing.mat';
-valve_timing_version = '1.0';
+valve_timing_version = '1.1';
 
 save(fullfile(setFolder, filename), ...
   'valve_timing_version', ...
