@@ -24,6 +24,17 @@ VALVE_SELECTED_ERROR = getMDRTResource('valve_blue_red.png', 'ResourceType', 'ic
 OPEN_FOLDER = getMDRTResource('OpenFolderIcon.png', 'ResourceType', 'icon');
 OPEN_FOLDER = FOLDER_GOOD;
 
+% Display Styles for UI Elements
+LIGHT_RED = [255, 199, 206] ./ 255;
+DARK_RED  = [156, 0, 6] ./ 255;
+LIGHT_YEL = [252, 236, 166] ./ 255;
+DARK_YEL  = [156, 87, 0] ./ 255;
+
+fail_style = uistyle('FontColor',       DARK_RED, ...
+  'BackgroundColor', LIGHT_RED);
+warn_style = uistyle('FontColor',       DARK_YEL, ... 
+  'BackgroundColor', LIGHT_YEL);
+
 empty_node_data = struct( ...
   'type',     '' ...
   );
@@ -206,7 +217,12 @@ hs.summary_table = uitable(hs.grid_results_tab);
 
 
   function select_valve_node(hobj, event)
+    % Callback when valve node is selected. Populate the following:
+    % - Plot state, command, command times, etc 
+    % - Two Tables: Individual cycle results, Overall averages
+    % - Populate the 'fd_selection' with cycles for plot-snapping
 
+    % Unset the last selected valve icon (do them all to be sure)
     allNodesToRefresh = hobj.SelectedNodes.Parent.Children;
     for i_n = 1:length(allNodesToRefresh)
       tNode = allNodesToRefresh(i_n);
@@ -217,27 +233,38 @@ hs.summary_table = uitable(hs.grid_results_tab);
     this_node = event.SelectedNodes;
     this_node.Icon = this_node.NodeData.icon.selected;
     
-    T = table([],[],[], 'VariableNames', {'time', 'cmd_type', 'cmd_ind'});
+    %% Generate Cycle List for Selection Box 
+    % Use report data and apply styling to valve cycles if failed
+    T = table([],[],[], [], 'VariableNames', {'time', 'cmd_type', 'cmd_ind', 'passed'});
     node_data = this_node.NodeData;
 
-    for ci = 1:height(node_data.data.cmds_open)
-      thisCmd = node_data.data.cmds_open(ci,:);
-      T = [T; {thisCmd.Time, thisCmd.Command, ci}];
-    end
-
-    for ci = 1:height(node_data.data.cmds_close)
-      thisCmd = node_data.data.cmds_close(ci,:);
-      T = [T; {thisCmd.Time, thisCmd.Command, ci}];
+    % VERSION 1.0 had no 'passed' data
+    % Consider all old data to be passing
+    if ~isfield(node_data.rep.cycles(1), 'passed')
+      thisCycle.passed = true;
+      for ci = 1:numel(node_data.rep.cycles)
+        thisCycle = node_data.rep.cycles(ci);
+        T = [T; {thisCycle.command, thisCycle.direction, ci, true}];
+      end
+    else
+      % VERSION 1.1+ uses 'passed' data
+      for ci = 1:numel(node_data.rep.cycles)
+        thisCycle = node_data.rep.cycles(ci);
+        T = [T; {thisCycle.command, thisCycle.direction, ci, thisCycle.passed}];
+      end
     end
 
     T = sortrows(T, 'time');
+    T_failing = find(T.passed == false);
     
     cycle_strs = {};
     for ci = 1:height(T)
-      cycle_strs{ci,1} = sprintf('%s cycle %d', T(ci,:).cmd_type, ci);
+      cycle_strs{ci,1} = sprintf('%s cycle', T(ci,:).cmd_type);
     end
 
     hs.fd_selection.set_items(cycle_strs, T);
+    removeStyle(hs.fd_selection.list_box)
+    addStyle(hs.fd_selection.list_box, fail_style, 'item', T_failing );
 
     CycleDirections   = [node_data.rep.cycles.direction]';
     CycleCommandTime  = [node_data.rep.cycles.command]';
@@ -258,15 +285,6 @@ hs.summary_table = uitable(hs.grid_results_tab);
       CyclePass     = [node_data.rep.cycles.passed];
       failing_rows = find(CyclePass == false);   
 
-      LIGHT_RED = [255, 199, 206] ./ 255;
-      DARK_RED  = [156, 0, 6] ./ 255;
-      LIGHT_YEL = [252, 236, 166] ./ 255;
-      DARK_YEL  = [156, 87, 0] ./ 255;
-
-      fail_style = uistyle('FontColor',       DARK_RED, ...
-        'BackgroundColor', LIGHT_RED);
-      warn_style = uistyle('FontColor',       DARK_YEL, ... 
-        'BackgroundColor', LIGHT_YEL);
 
       removeStyle(hs.results_table); % Clear previous styles!
       addStyle(hs.results_table, fail_style, 'row', failing_rows);
@@ -397,6 +415,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
   end
 
   function plotValveTimingData(data, rep, cmd_type, ind)
+    % If ind == 0, then plot all data
 
     cla(hs.ax, 'reset')
     % hold off;
@@ -441,18 +460,15 @@ hs.summary_table = uitable(hs.grid_results_tab);
     hs.plot_title.HorizontalAlignment = 'center';
 
     % Find time of indexed command for axes snapping
-    switch cmd_type
-      case 'Open'
-        ax_start = data.cmds_open(ind,:).Time;
-        ax_stop  = ax_start + rep.open(ind);
+    if ind
+      ax_start = rep.cycles(ind).command;
+      ax_stop  = rep.cycles(ind).complete;
+      direction_str = rep.cycles.direction;
 
-      case 'Close'
-        ax_start = data.cmds_close(ind,:).Time;
-        ax_stop  = ax_start + rep.close(ind);
+    else
+      ax_start = min(all_cmds.Time);
+      ax_stop  = max(all_cmds.Time) + max([rep.close, rep.open]);
 
-      otherwise
-        ax_start = min(all_cmds.Time);
-        ax_stop  = max(all_cmds.Time) + max([rep.close, rep.open]);
     end
 
     ax_start = ax_start - duration(0,0,2);
