@@ -1,3 +1,10 @@
+%% eachValveMuscle plots the pad-wide muscle PTs response and valve behavior for LO2 Stop Flow
+%
+%   No calculations are performed, subplot columns are time syncronized but
+%   not linked. Simply loops through all instances of the STOP FLOW command
+%   and generates the plots, creating multiple figures/pages as required.
+
+
 dataFolder = {
     % '/Users/nick/data/archive/2016-20-17 OA-5 LA1/data/';
     % '/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
@@ -14,7 +21,8 @@ dataFolder = {
     % '/Users/engineer/Imported Data Repository/2020-08-27 - NC-1145_Day_3/data';
     % '/Users/nick/data/imported/2021-01-16 - LO2 Flow Test NC-2135 OP-80/data';
     % '/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
-    '/Users/nick/data/imported/2021-07-23 - Stop Flow Dry Cycles ITR-2174 OP-10/data';
+    % '/Users/nick/data/imported/2021-07-23 - Stop Flow Dry Cycles ITR-2174 OP-10/data';
+    '/Users/nick/data/imported/2021-12-06 - LO2 Flow Test LOLS-16/data';
 }
 
 dataFiles = { 
@@ -22,6 +30,9 @@ dataFiles = {
             % '2016 LO2 FM-2016 Coriolis Meter Mon.mat';
             '5903 GN2 PT-5903 Press Sensor Mon.mat';
             '5070 GN2 PT-5070 Press Sensor Mon.mat';
+            '5938 GN2 PT-5938 Press Sensor Mon.mat';
+            '5940 GN2 PT-5940 Press Sensor Mon.mat';
+            '5939 GN2 PT-5939 Press Sensor Mon.mat';
             };
 
 valveFiles = {'2010 LO2 DCVNO-2010 State.mat';
@@ -181,7 +192,7 @@ for n = 1:numel(allResults)
     thisFDs = allFDs{this.allFdInd};
 
     axes(axPairArray(n,1));
-    title(sprintf('%s %s %d', '(Flow)', this.opName, this.commandNum))
+    title(sprintf('%s %s %d', '(Muscle)', this.opName, this.commandNum))
     
     for fn = 1:numel(thisFDs)
         fd = thisFDs(fn);

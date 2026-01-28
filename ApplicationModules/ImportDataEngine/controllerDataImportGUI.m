@@ -1,67 +1,76 @@
 function controllerDataImportGUI( hobj, event, varargin )
 %controllerDataImportGUI
 %   controllerDataImportGUI is the controller and callback function for the
-%   makeDataImportGUI function. This function controls all 
+%   makeDataImportGUI function. This function controls all
 
 
 
 
 switch hobj.Style
+  
+  case 'checkbox'
     
-    case 'checkbox'
+    targetOffString = '';
+    targetOnString = '';
+    targetOffMode = 'off';
+    targetOnMode = 'on';
+    
+    switch hobj.Tag
+      case 'checkbox_autoName'
+        target = findobj(gcf, 'Tag', 'edit_folderName');
+        % targetOnString = makeAutoString;
+        targetOffString = target.String;
         
-        targetOffString = '';
-        targetOnString = '';
-        targetOffMode = 'off';
-        targetOnMode = 'on';
-
-        switch hobj.Tag
-            case 'checkbox_autoName'
-                target = findobj(gcf, 'Tag', 'edit_folderName');
-                % targetOnString = makeAutoString;
-                targetOffString = target.String;
-                
-                targetOffMode = 'on';
-                targetOnMode  = 'inactive';
-
-            case 'checkbox_isOperation'
-                target = findobj('Tag', 'edit_operationName');
-                
-            case 'checkbox_isMARS'
-                target = findobj('Tag', 'edit_procedureName');
-                
-            case 'checkbox_hasUID'
-                target = findobj('Tag', 'edit_UID');
-                
-            case 'checkbox_vehicleSupport'
-                
-            otherwise
-                return
-                
-        end
+        targetOffMode = 'on';
+        targetOnMode  = 'inactive';
         
+      case 'checkbox_isOperation'
+        target = findobj(gcf, 'Tag', 'edit_operationName');
         
-        if hobj.Value
-            target.Enable = targetOnMode;
-        else
-            target.Enable = targetOffMode;
-            target.String = targetOffString;
-        end    
-
-    case 'button'
+      case 'checkbox_isMARS'
+        target = findobj(gcf, 'Tag', 'edit_procedureName');
         
-        switch hobj.Tag
-            case 'button_newSession'
-                
-            otherwise
-                return
-                
-        end
+      case 'checkbox_hasUID'
+        target = findobj(gcf, 'Tag', 'edit_UID');
         
+      case 'checkbox_vehicleSupport'
         
-    otherwise
+      case 'checkbox_pad_c_data'
+        target = findobj(gcf, 'Tag', 'checkbox_pad_c_valves');
+        targetOnString = target.String;
+        targetOffString = target.String;
         
+      case 'checkbox_pad_c_valves'
+        % should only be enabled if parsing pad-c
+      otherwise
+        return
         
+    end
+    
+    
+    if hobj.Value
+      target.Enable = targetOnMode;
+    else
+      target.Enable = targetOffMode;
+      if isprop(target, 'String')
+        target.String = targetOffString;
+      end
+    end
+    
+  case 'button'
+    
+    switch hobj.Tag
+      case 'button_newSession'
+        
+      otherwise
+        return
+        
+    end
+    
+    
+  otherwise
+    
+    
 end
 
 

@@ -30,14 +30,20 @@ setappdata(hs.fig, 'fdMasterList', localDataIndex(end).FDList);     % Set appdat
 
 remoteDataIndex = [];
 if ~isempty(config.remoteArchivePath)
-	% Remote data index is configured. Load the index and prepare it to be
-	% used.
-    
-    allowRemote = true;
+  % Remote data index is configured. Load the index and prepare it to be
+  % used.
+
+  allowRemote = true;
+  index_file = fullfile(config.pathToConfig, 'dataIndex.mat');
+  if ~exist(index_file, 'file')
+    allowRemote = false;
+
+  else
     t = load(fullfile(config.pathToConfig, 'dataIndex.mat'));
     remoteDataIndex = t.dataIndex;
+    setappdata(hs.fig, 'remoteDataIndex', remoteDataIndex); % Retain remote data index
+  end
 end
-setappdata(hs.fig, 'remoteDataIndex', remoteDataIndex); % Retain remote data index
 
 
 initTimelineData;
@@ -238,19 +244,25 @@ function initTimelineData()
     end
 
     % LoadRemoteTimelines
-    remoteTimelineFiles = fullfile({apd.remoteDataIndex.pathToData}', 'timeline.mat');
     RemoteTimelines = {};
-    for f = 1:numel(remoteTimelineFiles)
-
-        try
-            tempTL = load(remoteTimelineFiles{f} );
-            RemoteTimelines{f} = tempTL.timeline;
-        catch
-            % LocalTimelines(f) = []; % Not needed since assigning to index
-            thisSet = apd.remoteDataIndex(f).metaData.operationName;
-            fprintf('No timeline data loaded for remote data set %d: %s\n', f, thisSet);
+    try
+        remoteTimelineFiles = fullfile({apd.remoteDataIndex.pathToData}', 'timeline.mat');
+        for f = 1:numel(remoteTimelineFiles)
+            try
+                tempTL = load(remoteTimelineFiles{f} );
+                RemoteTimelines{f} = tempTL.timeline;
+            catch
+                % LocalTimelines(f) = []; % Not needed since assigning to index
+                thisSet = apd.remoteDataIndex(f).metaData.operationName;
+                fprintf('No timeline data loaded for remote data set %d: %s\n', f, thisSet);
+            end
         end
+    catch
+        warning('No remote index file found. Run mdrt settings to initialize the remote repository')
     end
+    
+    
+    
 
     setappdata(gcf, 'LocalTimelines',  LocalTimelines);
     setappdata(gcf, 'RemoteTimelines', RemoteTimelines);
@@ -262,15 +274,19 @@ function archiveButtonChanged(hobj, event)
 
     switch event.NewValue.Tag
         case 'rb_local'
+            setappdata(gcf, 'isRemoteArchive', false);
             populateDataSetList(getappdata(gcf, 'localDataIndex'));
             dataIndex = getappdata(gcf, 'localDataIndex');
             setappdata(gcf, 'fdMasterList', dataIndex(end).FDList);
             
         case 'rb_remote'
+            setappdata(gcf, 'isRemoteArchive', true);
             populateDataSetList(getappdata(gcf, 'remoteDataIndex'));
             dataIndex = getappdata(gcf, 'remoteDataIndex');
             setappdata(gcf, 'fdMasterList', dataIndex(end).FDList);
     end
+    
+    updateEventListbox
 
 end
 
@@ -384,11 +400,15 @@ function generatePlot(event, obj, varargin)
         end
 
         for f = 1:numel(dataFolders)
+            
+            timelineLoaded = false;
+            metadataLoaded = false;
+            datafileLoaded = false;
 
             try
 
-                load( fullfile( dataFolders{f},  'timeline.mat') );
-                load( fullfile( dataFolders{f},  'metadata.mat') );
+                load( fullfile( dataFolders{f},  'timeline.mat') ); timelineLoaded = true;
+                load( fullfile( dataFolders{f},  'metadata.mat') ); metadataLoaded = true;
 
                 eventInd = find(ismember({timeline.milestone.String}, EventString), 1, 'first');
                 
@@ -414,8 +434,10 @@ function generatePlot(event, obj, varargin)
 
                     % Plot each FD in its own axes
                     for a = 1:numel(dataFileNames)
+                        
+                        datafileLoaded = false;
 
-                        load(fullfile(dataFolders{f}, dataFileNames{a}));
+                        load(fullfile(dataFolders{f}, dataFileNames{a}));  datafileLoaded = true;
 
                         axes(subPlotAxes(a)); % 4918
                         hold on; 
@@ -444,7 +466,22 @@ function generatePlot(event, obj, varargin)
 
             catch
                 % Unable to load metadata - no action
-                disp(sprintf('%s : Skipped. No matching data or event', metaData.operationName))
+                errormsg = '';
+                if ~timelineLoaded
+                    errormsg = strcat(errormsg, 'timeline.mat ');
+                end
+                if ~datafileLoaded
+                    errormsg = strcat(errormsg, 'FD Data file ');
+                end
+                if ~metadataLoaded
+                    errormsg = strcat(errormsg, 'metadata file ');
+                end
+                
+                if ~metadataLoaded
+                    fprintf('%s : Skipped. No matching: %s\n', dataFolders{f}, errormsg)
+                else
+                    fprintf('%s : Skipped. No matching: %s\n', metaData.operationName, errormsg)
+                end
                 
             end
 

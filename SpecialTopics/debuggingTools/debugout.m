@@ -1,4 +1,4 @@
-function debugout( somethingToPrintToConsole )
+function debugout( somethingToPrintToConsole, varargin )
 %debugout will display console output for debugging purposes
 %   looks for environment variable 'debugOutput' which is true or false
 %
@@ -20,6 +20,7 @@ function debugout( somethingToPrintToConsole )
 
 [st, ~] = dbstack;
 
+
 if numel(st) > 1
     callingFunction = st(2).name;
     S = sprintf( '<strong> %s: </strong>', callingFunction);
@@ -32,16 +33,26 @@ else
     reverseStr = '';
 end
         
-
+if nargin == 1
+  DB = evalc('disp(somethingToPrintToConsole)');
+else
+  db_str = sprintf(somethingToPrintToConsole, varargin{:});
+  DB = evalc('disp(db_str)');
+  % DB = sprintf('%s\n', DB);
+end
 switch getenv('debugOutput')
-    case 'true'
+  case 'true'
 
-        % disp( somethingToPrintToConsole )
-        DB = evalc('disp(somethingToPrintToConsole)');
-        fprintf([S, reverseStr, DB]);
-        % fprintf('%s%s',S, DB);
+    % fprintf([S, reverseStr, DB]);
+    fprintf('%s%s',S, DB);
 
-    otherwise
+  case 'gui'
+    tgt = getenv('debugOutputTarget');
+    if ismethod(tgt, 'print_debug')
+      tgt.print_debug(sprintf('%s%s',S, DB));
+    end
+
+  otherwise
 end
 
 end

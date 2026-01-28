@@ -26,3 +26,6 @@ if strfind(FDstruct.FullString, 'Mon')   suffix=''        ; end
 
 legendString = strcat(FDstruct.Type, '-', FDstruct.ID, suffix);
 
+if strcmp(legendString, '-')
+    legendString = FDstruct.FullString;
+end

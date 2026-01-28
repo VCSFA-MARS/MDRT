@@ -41,13 +41,14 @@ sphVol = @(h) pi() ./ 3 .* h.^2 .* (1.5 * tank.radius * 2 - h);
 tnkVol = @(h) ( cylVol(h) + sphVol(h) ) .* convert.in3togal; % gallons
 
 headPress = @(h) LOX.density.lbin3  * h; % takes inches, gives psi
+psi2in    = @(p) p * 27.7076; % Convert psi to inH2O
 
-p2raw = @(h) round(h./10 * 30000);
+p2raw = @(h) round(h./10 * 30000); % psi to RAW
 
 raw2vol = @(h) polyval(C, h);
 
 
-figure = makeMDRTPlotFigure;
+fig1 = makeMDRTPlotFigure;
 
 plot(tnkVol(0:tank.radius*2), 'displayname', 'True Volume');
 hold on; plot(raw2vol(p2raw(headPress( 0:tank.radius*2 ))), '-g', 'displayname', 'FCS Volume')
@@ -58,3 +59,16 @@ ylabel(gca, 'LOX Volume in tank');
 title('MARS 32 Volume Curves');
 plotStyle;
 legend('Location', 'SouthEast');
+
+
+fig2 = makeMDRTPlotFigure;
+h = 0:tank.radius*2;
+p = headPress(h);
+geo = tnkVol(h);
+calc = raw2vol(p2raw(p));
+plot(h./max(h), calc-geo, 'displayname', 'geometric error')
+xlabel('Inches of LOX in tank (as % of full height)')
+ylabel('Error in gallons from perfect pressure measurement to geometry')
+title('Error in pressure derrived tank level vs liquid height as %')
+plotStyle
+legend show

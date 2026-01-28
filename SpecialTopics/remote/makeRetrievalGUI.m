@@ -119,7 +119,6 @@ function hs = makeRetrievalGUI(varargin)
 
 TAMFDs = getTAMcontents([]);
 
-
 % Set appdata
     setappdata(hs.fig, 'fdMasterList',      TAMFDs.FD);
     setappdata(hs.fig, 'TAMFDs',            TAMFDs);

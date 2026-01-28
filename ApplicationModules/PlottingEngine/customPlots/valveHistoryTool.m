@@ -1,11 +1,15 @@
+%% valveHistoryTool - plots each actuation of a selected valve for a given 
+% data set and creates a table of all relevant timing data for export to
+% excel or csv
+
 missions = {
-    '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
+%     '/Users/nick/data/archive/2021-08-09 - NG-16_Launch/data';
 %     '/Users/nick/data/imported/2021-07-29 - Stop Flow Accumulator Timing ITR-2174 OP-40/data';   
 %     '/Users/nick/data/imported/2021-07-29 - 2010 Muscle Supply Test ITR-2174 OP-20/data';    
 %     '/Users/nick/data/imported/2021-07-23 - Stop Flow Dry Cycles ITR-2174 OP-10/data';
 %     '/Users/nick/data/imported/2021-06-09 - NC-1273 - LO2 Flow Test/data';
 %     '/Users/nick/data/imported/2021-02-23 - All 2031 Post NG-15/data';
-    '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
+%     '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
 %     '/Users/nick/data/archive/2020-10-02 - NG-14 Launch/data';
 %     '/Users/nick/data/archive/2020-09-30 - NG-14 Scrub/data';
 %     '/Users/nick/data/imported/2020-08-28 - NC-1145/data';
@@ -19,9 +23,12 @@ missions = {
 % 	'/Users/nick/data/archive/2018-05-20 - OA-9 Launch/data';
 % 	'/Users/nick/data/archive/2017-11-12 - OA-8 Launch/data';
 % 	'/Users/nick/data/archive/2016-20-17 OA-5 LA1/data';
+    '/Users/nick/data/imported/2021-12-06 - LO2 Flow Test LOLS-16/data'
+
 };
 
 shouldPrintMessages = true;
+shouldPlotRVLimits  = false;
 skipFigures = false;
 
 pressSensNum = '5070';
@@ -45,6 +52,7 @@ oneSec = oneMin/60;
 
 plotWindow = [-5*oneSec, 15*oneSec];
 dataWindow = [-11*oneMin, 11*oneMin];
+pressYLim  = [ 70 110 ];
 
 
 %% Valve Selection
@@ -522,8 +530,13 @@ end
         linkaxes(axPairArray(ind,:),'x');
         dynamicDateTicks(axPairArray(ind,:), 'link');
         setDateAxes(axPairArray(ind, 2), 'XLim', timeInterval);
+        
+        if shouldPlotRVLimits
+            hline(165, '--r', 'RV setpoint');
+            hline(165*0.9, '--r', '- 10%');
+        end
     
-        ylim([ 0, 200] );
+        ylim( pressYLim );
     end
     
     
@@ -554,13 +567,6 @@ outTable
 
 writetable(outTable, fullfile(missions{end}, [valveName, '_valveTable.csv']))
 
-
-%% Add hline annotations to bottom plot
-for q = 1:length(axPairArray)
-    axes(axPairArray(q,2))
-    hline(165, '--r', 'RV setpoint');
-    hline(165*0.9, '--r', '- 10%');
-end
 
 
 reviewRescaleAllTimelineEvents

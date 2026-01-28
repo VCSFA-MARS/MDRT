@@ -84,6 +84,8 @@ prototypes = {  'fd',           fieldnames(fdPrototype)';
         
             
     for n = 1:length(prototypes)
+        proto_str = prototypes{n,1};
+        this_proto = prototypes{n,2};
     
     
     % Using switch statement for readability - lots of duplicated code
@@ -91,45 +93,45 @@ prototypes = {  'fd',           fieldnames(fdPrototype)';
     
     % TODO: change this to automatically return the structure type using
     % the prototypes cell array?
-    
-        switch prototypes{n, 1}
+        
+        switch proto_str
             case 'fd'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'fd';
                     break 
                 end
 
             case 'graph'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'graph';
                     break
                 end
 
             case 'timeline'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'timeline';
                     break
                 end
 
             case 'metadata'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'metadata';
                     break
                 end
                 
             case 'config'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'config';
                     break
                 end
                 
             case 'searchResult'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'searchResult';
                     break
                 end
             case 'masterFDList'
-                if doesVariableHaveAllFields(testVariable, prototypes{n,2})
+                if doesVariableHaveAllFields(testVariable, this_proto)
                     structureTypeString = 'masterFDList';
                     break
                 end

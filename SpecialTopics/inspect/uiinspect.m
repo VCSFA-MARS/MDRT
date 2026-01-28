@@ -111,7 +111,8 @@ function hFig = uiinspect(obj, fig)
 
   try
       % Arg check
-      error(nargchk(1,2,nargin));
+%       error(nargchk(1,2,nargin));
+      narginchk(1,2);
       try
           mc = getMetaClass(obj);
       catch

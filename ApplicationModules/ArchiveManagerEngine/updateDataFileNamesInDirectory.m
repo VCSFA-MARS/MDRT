@@ -32,9 +32,8 @@ else
     end
 end
 
-debugout('Processing data files in the folder:')
-debugout(rootDir_path)
-    
+debugout(sprintf('Processing data files in the folder: %s', rootDir_path)
+
 directoryList = dir(rootDir_path);
 
 originalFiles = {directoryList(~[directoryList.isdir]).name}';

@@ -1,0 +1,695 @@
+{
+    "display_config": {
+        "sensors": {},
+        "tanks": {
+            "MARS-32": {
+                "tag_str": "MARS-32",
+                "fd_str": "mars-32 liquid column height",
+                "pos": [50, 75],
+                "size": [400, 175],
+                "liquid": "LO2",
+                "tank_radius": 65.5,
+                "sensors": {
+                    "ullage_press_1": {
+                        "label_str": "PT-2913"                      ,
+                        "fd_str"   : "LO2 PT-2913 Press Sensor  Mon",
+                        "unit_str" : "psig"
+                    },
+                    "ullage_press_2": {
+                        "label_str": "PT-2916"                      ,
+                        "fd_str"   : "LO2 PT-2916 Press Sensor  Mon",
+                        "unit_str" : "psig"
+                    },
+                    "liquid_level": {
+                        "label_str": "PT-2902"                     ,
+                        "fd_str"   : "mars-32 liquid column height",
+                        "unit_str" : "in"
+                    },
+                    "liquid_volume_gallons": {
+                        "label_str": "PT-2902"                      ,
+                        "fd_str"   : "mars-32 liquid volume gallons",
+                        "unit_str" : "gal"
+                    },
+                    "liquid_volume_percent": {
+                        "label_str": "PT-2902"                      ,
+                        "fd_str"   : "mars-32 liquid volume percent",
+                        "unit_str" : "%"
+                    }
+                }
+            },
+            "MARS-144": {
+                "tag_str": "MARS-144",
+                "fd_str": "mars-144 liquid column height",
+                "pos": [550, 75],
+                "size": [300, 175],
+                "liquid": "LO2",
+                "tank_radius": 65.5,
+                "sensors": {
+                    "ullage_press_1": {
+                        "label_str": "PT-2921"              ,
+                        "fd_str"   : "CB8 Analog In 10  Mon",
+                        "unit_str" : "psig"
+                    },
+                    "ullage_press_2": {
+                        "label_str": "PT-2922"              ,
+                        "fd_str"   : "CB8 Analog In 11  Mon",
+                        "unit_str" : "psig"
+                    },
+                    "liquid_level": {
+                        "label_str": "PT-2920"                      ,
+                        "fd_str"   : "mars-144 liquid column height",
+                        "unit_str" : "in"
+                    },
+                    "liquid_volume_gallons": {
+                        "label_str": "PT-2920"                       ,
+                        "fd_str"   : "mars-144 liquid volume gallons",
+                        "unit_str" : "gal"
+                    },
+                    "liquid_volume_percent": {
+                        "label_str": "PT-2920"                       ,
+                        "fd_str"   : "mars-144 liquid volume percent",
+                        "unit_str" : "%"
+                    }
+                }
+            }
+        },
+        "dcvs": {
+            "PCVNC-2069": {
+                "initial_display_state": "open",
+                "proportional": true,
+                "position": {
+                    "from_widget": "MARS-32",
+                    "location": "nw",
+                    "offset": ["n", 25]
+                },
+                "commands": {
+                    "close_cmd": "LO2 PCVNC-2069 Globe Valve Close Cmd",
+                    "open_cmd" : "LO2 PCVNC-2069 Globe Valve Open Cmd" ,
+                    "position" : "LO2 PCVNC-2069 Globe Valve  Cmd",
+                    "vent_50"  : ["LO2 PCVNC-2069 Globe Valve  Cmd", 50]
+                },
+                "inline_orientation": "vertical",
+                "normal_state": "closed",
+                "fd_str": "LO2 PCVNC-2069 State",
+                "tool_tip": "Main vent valve for MARS-32"
+            },
+            "DCVNC-2152": {
+                "fd_str": "DCVNC-2152 State",
+                "normal_state": "closed",
+                "position": [350, 50],
+                "inline_orientation": "horizontal",
+                "initial_display_state": "open",
+                "tool_tip": "Ullage pressure supply for MARS-32",
+                "commands": {
+                    "open_cmd" : ["CB8 Discrete Out 04  Ctl", 1],
+                    "close_cmd": ["CB8 Discrete Out 04  Ctl", 0]
+                }
+            },
+            "DCVNC-2056": {
+                "initial_display_state": "open",
+                "position": {
+                    "from_widget": "MARS-32",
+                    "location": "s",
+                    "offset": ["s", 50]
+                },
+                "inline_orientation": "vertical",
+                "normal_state": "closed",
+                "fd_str": "LO2 DCVNC-2056 State",
+                "text_pos": "e",
+                "tool_tip": "LO2 supply valve to vaporizer from MARS-32",
+                "commands": {
+                    "open_cmd" : ["LO2 DCVNC-2056 Ball Valve Open Ctl" ],
+                    "close_cmd": ["LO2 DCVNC-2056 Ball Valve Close Ctl"]
+                }
+            },
+            "DCVNO-2252": {
+                "initial_display_state": "open",
+                "position": [575, 50],
+                "inline_orientation": "horizontal",
+                "normal_state": "open",
+                "fd_str": "DCVNO-2252 State",
+                "commands": {
+                    "open_cmd" : ["CB8 Discrete Out 11  Ctl", 0],
+                    "close_cmd": ["CB8 Discrete Out 11  Ctl", 1]
+                },
+                "tool_tip": "Ullage pressure supply for MARS-144"
+            },
+            "DCVNC-2256": {
+                "initial_display_state": "open",
+                "position": {
+                    "from_widget": "MARS-144",
+                    "location": "s",
+                    "offset": ["s", 50]
+                },
+                "inline_orientation": "vertical",
+                "normal_state": "closed",
+                "fd_str": "DCVNC-2256 State",
+                "tool_tip": "LO2 supply valve to vaporizer from MARS-144",
+                "commands": {
+                    "open_cmd" : ["CB8 Discrete Out 03  Ctl", 1],
+                    "close_cmd": ["CB8 Discrete Out 03  Ctl", 0]
+                }
+            },
+            "DCVNC-2264": {
+                "initial_display_state": "closed",
+                "position": {
+                    "from_widget": "MARS-32",
+                    "location": "sw",
+                    "offset": ["s", 50]
+                },
+                "inline_orientation": "vertical",
+                "normal_state": "closed",
+                "fd_str": "DCVNC-2264 State",
+                "tool_tip": "Tank-to-tank liquid transfer valve",
+                "commands": {
+                    "open_cmd" : ["CB8 Discrete Out 08  Ctl", 1],
+                    "close_cmd": ["CB8 Discrete Out 08  Ctl", 0]
+                }
+            },
+            "DCVNC-2269": {
+                "initial_display_state": "open",
+                "position": {
+                    "from_widget": "MARS-144",
+                    "location": "ne",
+                    "offset": ["n", 25]
+                },
+                "inline_orientation": "vertical",
+                "normal_state": "closed",
+                "fd_str": "DCVNC-2269 State",
+                "tool_tip": "Main vent valve for MARS-144",
+                "commands": {
+                    "open_cmd" : ["CB8 Discrete Out 09  Ctl", 1],
+                    "close_cmd": ["CB8 Discrete Out 09  Ctl", 0]
+                }
+            }
+        },
+        "pipes": {
+            "p1": {
+                // tank to 2069
+                "from_coords": {"from_widget": "MARS-32", "location": "nw"},
+                "to_coords": {"from_widget": "PCVNC-2069"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p2": {
+                // tank to 2152 (GOX pressurization line)
+                "from_coords": {"from_widget": "MARS-32", "location": "ne"},
+                "to_coords": {"from_widget": "DCVNC-2152"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p3": {
+                // tank to 2056
+                "from_coords": {"from_widget": "MARS-32", "location": "s"},
+                "to_coords": {"from_widget": "DCVNC-2056"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p4": {
+                /// 2056 to vaporizer1
+                "from_coords": {"from_widget": "DCVNC-2056"},
+                "to_coords": {"from_widget": "vap1", "location": "s"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p5": {
+                /// 144 to 2269
+                "from_coords": {"from_widget": "MARS-144", "location": "ne"},
+                "to_coords": {"from_widget": "DCVNC-2269"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p6": {
+                /// 144 to 2252
+                "from_coords": {"from_widget": "MARS-144", "location": "nw"},
+                "to_coords": {"from_widget": "DCVNO-2252"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p7": {
+                /// 144 to 2256 (Vaporizer liquid supply line)
+                "from_coords": {"from_widget": "MARS-144", "location": "s"},
+                "to_coords": {"from_widget": "DCVNC-2256"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p8": {
+                /// 2256 to vap1
+                "from_coords": {"from_widget": "DCVNC-2256"},
+                "to_coords": {"from_widget": "vap1", "location": "s"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p9": {
+                /// vap1 to vap2
+                "from_coords": {"from_widget": "vap1", "location": "n"},
+                "to_coords": {"from_widget": "vap2", "location": "n", "offset": ["n", 25]},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p10": {
+                /// 2152 towards vap123
+                "from_coords": {"from_widget": "DCVNC-2152"},
+                "to_coords": {"from_widget": "MARS-32", "location": "e", "offset": ["e", 15]},
+                "commodity": "LO2",
+                "shape": "7"
+            },
+            "p11": {
+                /// p10 towards p9
+                "from_coords": {"from_widget": "MARS-32", "location": "e", "offset": ["e", 15]},
+                "to_coords": {"from_widget": "vap2", "location": "n", "offset": ["n", 25]},
+                "commodity": "LO2",
+                "shape": "N"
+            },
+            "p12": {
+                /// vap2 to p12
+                "from_coords": {"from_widget": "vap2", "location": "n"},
+                "to_coords": {"from_widget": "vap2", "location": "n", "offset": ["n", 25]},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p13": {
+                /// vap2 to vap3
+                "from_coords": {"from_widget": "vap3", "location": "n"},
+                "to_coords": {"from_widget": "vap2", "location": "n", "offset": ["n", 25]},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p14": {
+                /// 2252 towards vap45
+                "from_coords": {"from_widget": "DCVNO-2252"},
+                "to_coords": {"from_widget": "MARS-144", "location": "w", "offset": ["w", 15]},
+                "commodity": "LO2",
+                "shape": "7"
+            },
+            "p15": {
+                /// P14 towards vap45 tie-in
+                "from_coords": {"from_widget": "MARS-144", "location": "w", "offset": ["w", 15]},
+                "to_coords": {"from_widget": "vap4", "location": "n", "offset": ["ne", 35]},
+                "commodity": "LO2",
+                "shape": "N"
+            },
+            "p16": {
+                /// vap45 tie-in to vap4
+                "from_coords":  {"from_widget": "vap4", "location": "n", "offset": ["ne", 35]},
+                "to_coords": {"from_widget": "vap4", "location": "n"},
+                "commodity": "LO2",
+                "shape": "7"
+            },
+            "p17": {
+                /// vap45 tie-in to vap5
+                "from_coords":  {"from_widget": "vap4", "location": "n", "offset": ["ne", 35]},
+                "to_coords": {"from_widget": "vap5", "location": "n"},
+                "commodity": "LO2",
+                "shape": "7"
+            },
+            "p18": {
+                /// vap45 to iso valve
+                "from_coords":  {"from_widget": "vap4", "location": "n", "offset": ["ne", 35]},
+                "to_coords": {"from_widget": "vap3", "location": "n", "offset":["n", 25]},
+                "commodity": "LO2",
+                "shape": "7"
+            },
+            "p19": {
+                /// 32 to 2264 (liquid transfer line)
+                "from_coords": {"from_widget": "MARS-32", "location": "sw"},
+                "to_coords": {"from_widget": "DCVNC-2264"},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p20": {
+                /// 2264 to midpoint (liquid transfer line)
+                "from_coords": {"from_widget": "DCVNC-2264"},
+                "to_coords": {"from_widget": "vap3", "location": "s", "offset":["s", 50]},
+                "commodity": "LO2",
+                "shape": "L"
+            },
+            "p21": {
+                /// midpoint to 144 (liquid transfer line)
+                "from_coords": {"from_widget": "vap3", "location": "s", "offset":["s", 50]},
+                "to_coords": {"from_widget": "MARS-144", "location": "se"},
+                "commodity": "LO2",
+                "shape": "7"
+            }
+        },
+        "equipment": {
+            "vap1": {
+                "position": [300, 375],
+                "size": [50, 100],
+                "commodity": "LO2"
+            },
+            "vap2": {
+                "position": [375, 375],
+                "size": [50, 100],
+                "commodity": "LO2"
+            },
+            "vap3": {
+                "position": [450, 375],
+                "size": [50, 100],
+                "commodity": "LO2"
+            },
+            "vap4": {
+                "position": [525, 375],
+                "size": [50, 100],
+                "commodity": "LO2"
+            },
+            "vap5": {
+                "position": [600, 375],
+                "size": [50, 100],
+                "commodity": "LO2"
+            }
+        }
+    },
+    "data_config": {
+        "fds": {
+            "CB7 Analog In 04  Mon": {
+                "cal_curve": {
+                    "sensor_range": 600,
+                    "type": "PressureTransducer",
+                    "unit_str": "inwc"
+                },
+                "data_type": "analog",
+                "initial_value": 0
+            },
+            "LO2 PT-2913 Press Sensor  Mon": {
+                "cal_curve": {
+                    "type": "CalibrationCurve",
+                    "unit_str": "psig"
+                },
+                "data_type": "analog",
+                "initial_value": 999.9
+            },
+            "LO2 PT-2916 Press Sensor  Mon": {
+                "cal_curve": {
+                    "type": "CalibrationCurve",
+                    "unit_str": "psig"
+                },
+                "data_type": "analog",
+                "initial_value": 999.9
+            },
+            "DCVNC-2152 State": {
+                "data_type": "derrived",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type"    : "DiscreteValve"          ,
+                    "fd_open" : "CB8 Discrete In 21  Ind",
+                    "fd_closed": "CB8 Discrete In 22  Ind"
+                }
+            },
+            "CB8 Discrete In 21  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "CB8 Discrete In 22  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "LO2 DCVNC-2056 State": {
+                "data_type": "discrete",
+                "initial_value": 3,
+                "set_method": "PROC"
+            },
+            "LO2 PCVNC-2069 State": {
+                "data_type": "discrete",
+                "initial_value": 3,
+                "set_method": "PROC"
+            },
+            "LO2 PCVNC-2069 Globe Valve  Mon": {
+                "data_type": "analog",
+                "initial_value": 0,
+                "set_method": "PROC"
+            },
+            "DCVNO-2252 State": {
+                "data_type": "derrived",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type"    : "DiscreteValve"          ,
+                    "fd_open" : "CB8 Discrete In 24  Ind",
+                    "fd_close": "CB8 Discrete In 23  Ind"
+                }
+            },
+            "CB8 Discrete In 23  Ind": {    
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "CB8 Discrete In 24  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "DCVNC-2256 State": {
+                "data_type": "derrived",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type"    : "DiscreteValve",
+                    "fd_open" : "CB8 Discrete In 17  Ind",
+                    "fd_close": "CB8 Discrete In 18  Ind"
+                }
+            },
+            "CB8 Discrete In 17  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "CB8 Discrete In 18  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+
+            "DCVNC-2264 State": {
+                "data_type": "derrived",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type"    : "DiscreteValve"          ,
+                    "fd_open" : "CB8 Discrete In 14  Ind",
+                    "fd_close": "CB8 Discrete In 13  Ind"
+                }
+            },
+            "CB8 Discrete In 13  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "CB8 Discrete In 14  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+
+            "DCVNC-2269 State": {
+                "data_type": "derrived",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type"    : "DiscreteValve"          ,
+                    "fd_open" : "CB8 Discrete In 20  Ind",
+                    "fd_close": "CB8 Discrete In 19  Ind"
+                }
+            },
+            "CB8 Discrete In 19  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "CB8 Discrete In 20  Ind": {
+                "data_type": "discrete",
+                "initial_value": 1,
+                "set_method": "PROC"
+            },
+            "LO2 PT-2902 Press Sensor  Mon": {
+                "data_type": "analog",
+                "poll_method": "RAW",
+                "set_method": "RAW",
+                "initial_value": 0,
+                "cal_curve": {"sensor_range": 10.13774105, "type": "PressureTransducer"}
+            },
+            "mars-32 liquid column height": {
+                "data_type": "derrived",
+                "cal_curve": {
+                    "type"          : "LiquidColumnHeight"           ,
+                    "commodity"     : "LO2"                          ,
+                    "pressure_units": "psid"                         ,
+                    "unit_str"      : "inwc"                         ,
+                    "pressure"      : "LO2 PT-2902 Press Sensor  Mon"
+                }
+            },
+            "mars-32 liquid volume gallons": {
+                "data_type": "derrived",
+                "cal_curve": {
+                    "type": "HemisphericalTank",
+                    "tank_radius": 65.5,
+                    "cyl_length": 1344,
+                    "unit_str": "gal",
+                    "liquid_height": "mars-32 liquid column height"
+                }
+            },
+            "mars-32 liquid volume percent": {
+                "data_type": "derrived",
+                "cal_curve": {
+                    "type": "HemisphericalTank",
+                    "tank_radius": 65.5,
+                    "cyl_length": 1344,
+                    "unit_str": "%",
+                    "liquid_height": "mars-32 liquid column height",
+                    "return_mode": "percent"
+                }
+            },
+            "CB8 Analog In 09  Mon": {
+                // MARS-144 Level Sensor
+                "data_type": "analog",
+                "poll_method": "RAW",
+                "set_method": "RAW",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type": "PressureTransducer",
+                    "sensor_range": 1000,
+                    "unit_str": "inwc"
+                }
+            },
+            "mars-144 liquid column height": {
+                "data_type": "derrived",
+                "cal_curve": {
+                    "type"          : "LiquidColumnHeight"   ,
+                    "commodity"     : "LO2"                  ,
+                    "pressure_units": "inwc"                 ,
+                    "unit_str"      : "inwc"                 ,
+                    "pressure"      : "CB8 Analog In 09  Mon"
+                }
+            },
+            "mars-144 liquid volume gallons": {
+                "data_type": "derrived",
+                "cal_curve": {
+                    "type": "HemisphericalTank",
+                    "tank_radius": 63,
+                    "cyl_length": 796,
+                    "unit_str": "gal",
+                    "liquid_height": "mars-144 liquid column height"
+                }
+            },
+            "mars-144 liquid volume percent": {
+                "data_type": "derrived",
+                "cal_curve": {
+                    "type": "HemisphericalTank",
+                    "tank_radius": 65.5,
+                    "cyl_length": 1344,
+                    "unit_str": "%",
+                    "liquid_height": "mars-144 liquid column height",
+                    "return_mode": "percent"
+                }
+            },
+            "CB8 Analog In 10  Mon": {
+                // PT-2921
+                "data_type": "analog",
+                "poll_method": "RAW",
+                "set_method": "RAW",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type": "PressureTransducer",
+                    "sensor_range": 200,
+                    "unit_str": "psig"
+                }
+            },
+            "CB8 Analog In 11  Mon": {
+                // PT-2922
+                "data_type": "analog",
+                "poll_method": "RAW",
+                "set_method": "RAW",
+                "initial_value": 0,
+                "cal_curve": {
+                    "type": "PressureTransducer",
+                    "sensor_range": 200,
+                    "unit_str": "psig"
+                }
+            }
+        },
+        "automation": {
+            "press_144": {
+                "open_cmd": ["DCVNO-2252", "DCVNC-2256"],
+                "close_cmd": ["DCVNC-2152", "DCVNC-2269"]
+            },
+            "press_32": {
+                "open_cmd":  ["DCVNC-2152", "DCVNC-2256"],
+                "close_cmd": ["DCVNO-2252", "PCVNC-2069"]
+            },
+            "press_both": {
+                "open_cmd": ["DCVNC-2152", "DCVNO-2252", "DCVNC-2256"],
+                "close_cmd": ["PCVNC-2069", "DCVNC-2269"]
+            },
+            "hold_press": {
+                "open_cmd": ["DCVNO-2252"],
+                "close_cmd": ["DCVNC-2152", "DCVNC-2256"]
+            },
+            "vent_32": {
+                "vent_50": ["PCVNC-2069"],
+                "close_cmd": ["DCVNC-2152"]
+            },
+            "vent_144": {
+                "open_cmd": ["DCVNC-2269"],
+                "close_cmd": ["DCVNO-2252"]
+            }
+        },
+        "simulator": {
+            "DCVNC-2152": {
+                "style"   : "Sim_Valve_Discrete"     ,
+                "fd_str"  : "DCVNC-2152 State"       ,
+                "fd_open" : "CB8 Discrete In 21  Ind",
+                "fd_close": "CB8 Discrete In 22  Ind"
+            },
+            "DCVNO-2252": {
+                "style"   : "Sim_Valve_Discrete"     ,
+                "fd_str"  : "DCVNO-2252 State"       ,
+                "fd_open" : "CB8 Discrete In 24  Ind",
+                "fd_close": "CB8 Discrete In 23  Ind"
+            },
+            "DCVNC-2056": {
+                "style"   : "Sim_Valve_Discrete"     ,
+                "fd_str"  : "LO2 DCVNC-2056 State"   ,
+                "fd_open" : "CB7 Discrete In 03  Ind",
+                "fd_close": "CB7 Discrete In 04  Ind"
+            },
+            "PCVNC-2069": {
+                "style"       : "Sim_Valve_Proportional"         ,
+                "fd_str"      : "LO2 PCVNC-2069 Globe Valve  Mon",
+                "fd_state_str": "LO2 PCVNC-2069 State"
+            },
+            "DCVNC-2256": {
+                "style"   : "Sim_Valve_Discrete"     ,
+                "fd_str"  : "DCVNC-2256 State"       ,
+                "fd_open" : "CB8 Discrete In 17  Ind",
+                "fd_close": "CB8 Discrete In 18  Ind"
+            },
+            "DCVNC-2264": {
+                "style"   : "Sim_Valve_Discrete"     ,
+                "fd_str"  : "DCVNC-2264 State"       ,
+                "fd_open" : "CB8 Discrete In 14  Ind",
+                "fd_close": "CB8 Discrete In 13  Ind"
+            },
+            "DCVNC-2269": {
+                "style"   : "Sim_Valve_Discrete"     ,
+                "fd_str"  : "DCVNC-2269 State"       ,
+                "fd_open" : "CB8 Discrete In 20  Ind",
+                "fd_close": "CB8 Discrete In 19  Ind"
+            },
+            "mars32-level": {
+                "style" : "Sim_Analog_RAW"               ,
+                "fd_str": "LO2 PT-2902 Press Sensor  Mon"
+            },
+            "mars144-level": {
+                "style" : "Sim_Analog_RAW"       ,
+                "fd_str": "CB8 Analog In 09  Mon"
+            },
+            "mars144-ullage_press_1": {
+                "style" : "Sim_Analog_RAW"       ,
+                "fd_str": "CB8 Analog In 10  Mon"
+            },
+            "mars144-ullage_press_2": {
+                "style" : "Sim_Analog_RAW"       ,
+                "fd_str": "CB8 Analog In 11  Mon"
+            }
+        }
+    }
+}
+

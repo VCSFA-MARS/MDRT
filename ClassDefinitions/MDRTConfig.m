@@ -70,6 +70,7 @@ classdef MDRTConfig < handle
         
         workingDataPath         % folder containing the .mat data files, metadata, timeline, and archive index.
         workingDelimPath        % folder where .delim files are copied, processed, and parsed.
+        workingPlotPath         % folder where the .pdf files are stored
 
     end
     
@@ -95,10 +96,11 @@ classdef MDRTConfig < handle
         applicationName = 'mdrt';
 
         linuxPrefix = '.';
-        configFileName = 'config_linux.txt';
+        configFileName = 'mdrt_config.txt';
 
         macConfigFile = 'config_mac.txt';
         winConfigFile = 'config_windows.txt'
+        nixConfigFile = 'config_linux.txt';
 
         fontScaleFactorMac      = 1.0;
         fontScaleFactorPC       = 0.8;
@@ -318,6 +320,16 @@ classdef MDRTConfig < handle
             end
              
         end
+
+      function workingPlotPath = get.workingPlotPath(this)
+        root = this.userWorkingPath;
+        test_dir = fullfile(root, 'plots');
+        if exist(test_dir, 'dir')
+          workingPlotPath = test_dir;
+        else
+          workingPlotPath = '';
+        end
+      end 
         
         
         function workingDelimPath = get.workingDelimPath(this)
@@ -326,14 +338,10 @@ classdef MDRTConfig < handle
                         
             if exist( fullfile(root, 'delim'), 'dir' )
                 workingDelimPath = fullfile(root, 'delim');
-                
-                
-                
             else
                 % No data folder - set output to empty variable
                 workingDelimPath = '';
             end
-             
         end
 
 
@@ -759,7 +767,7 @@ classdef MDRTConfig < handle
 
             elseif isunix
                 pathToConfig = fullfile('~', [self.linuxPrefix, self.applicationName] );
-                defaultConfigFile = self.macConfigFile;
+                defaultConfigFile = self.nixConfigFile;
 
             end
 

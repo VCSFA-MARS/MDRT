@@ -14,6 +14,14 @@ function outputCellArray = makeDataGridFromGUI (hobj, event, varargin)
 %   Counts 10-2017, VCSFA
 
 
+%% %%%%%%%%%%%%%%%%%%%%%%%%%
+% % Grid Setup Parameters %
+% %%%%%%%%%%%%%%%%%%%%%%%%%
+
+defaultHoursBefore = 8;
+defaultHoursAfter  = 8;
+defaultIntervalInMinutes = 15;
+
 %% Load app data from calling GUI
 
     mdrt = getappdata(hobj.Parent);
@@ -21,7 +29,8 @@ function outputCellArray = makeDataGridFromGUI (hobj, event, varargin)
 
 %% Load Timeline Information from Data Set (with some error checking)
 
-path = mdrt.dataIndex(mdrt.selectedList{1,3}).pathToData;
+data_set_index = mdrt.hs.popup_dataSetMain.Value;
+path = mdrt.dataIndex(data_set_index).pathToData;
 
 if exist(fullfile(path, 'timeline.mat'), 'file')
     s = load(fullfile(path, 'timeline.mat'));
@@ -33,8 +42,18 @@ if exist(fullfile(path, 'timeline.mat'), 'file')
             
         else
             % No t0 specified. Ask?
-            error('No t0 time specified for this data set.');
             
+            try
+                s = load(fullfile(path, 'metadata.mat'));
+                t0 = s.metaData.timeSpan(end);
+                defaultHoursAfter  = 0;
+                
+                delta = abs(diff(s.metaData.timeSpan));
+                defaultHoursBefore = ceil(delta * 24);
+                
+            catch
+                error('No t0 or metadata for this data set.');
+            end
         end
         
     else
@@ -57,13 +76,7 @@ end
 
 %% Use timeHacks vector to generate the timesteps
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%
-% % Grid Setup Parameters %
-% %%%%%%%%%%%%%%%%%%%%%%%%%
 
-defaultHoursBefore = 8;
-defaultHoursAfter  = 8;
-defaultIntervalInMinutes = 15;
 
     prompt = {  'Grid Interval (minutes):', ...
                 'Start Hours before T0:', ...
@@ -103,7 +116,7 @@ newTimeVector = t0 - timeHacks;
 
 %% Step through each data file
 
-filePaths = cell(size(mdrt.selectedList,1));
+filePaths = cell(size(mdrt.selectedList,1),1);
 
 
 for i = 1:length(filePaths)
@@ -155,6 +168,7 @@ end
 outputCellArray;
 
 hs.fig = figure;
+hs.fig.Name = sprintf('%s Data Grid', mdrt.dataIndex(data_set_index).metaData.operationName);
 hs.t = uitable(hs.fig, 'Data', outputCellArray, ...
     'units',        'normalized', ...
     'position',     [0.05 0.05 0.9 0.9]);

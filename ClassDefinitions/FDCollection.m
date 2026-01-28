@@ -8,6 +8,21 @@ classdef FDCollection < handle
     %   Class methods provide a means for generating cell arrays to
     %   populate a uicontrol.
     %
+    %   Example Code:
+    %
+    %     hs.fig = figure;
+    %     hs.listbox = uicontrol(hs.fig, 'style','listbox','Units','normalized','Position',[0.1,0.1,0.8,0.8]);
+    %     hs.editbox = uicontrol(hs.fig, 'style','edit','Units','normalized','Position',[0.1,0.95,0.8,0.05],'HorizontalAlignment','left');
+    % 
+    %     cfg = MDRTConfig.getInstance;
+    %     load(fullfile(cfg.dataArchivePath, 'dataIndex.mat'));
+    % 
+    %     fdc = FDCollection(dataIndex(1:2), hs.listbox);
+    %     fdc.searchUI = hs.editbox;
+    %     fdc.populateListbox;    
+    
+    
+    %
     % Counts, 2016 VCSFA
     
     % fdc = FDCollection( dataIndex(1), { dataIndex(1).metaData.fdList(1:10,:) } )
@@ -190,10 +205,10 @@ classdef FDCollection < handle
             end
             
             thisFDCollection.searchResultLogicalIndex = true(size(dataStreamNames));
-            thisFDCollection.masterDataStreamNames = dataStreamNames;
-            thisFDCollection.dataFilesWithPath = dataFilesWithPath;
-            thisFDCollection.timelineFilesWithPath = timelineFilesWithPath;
-            thisFDCollection.fdDataSetIndex = fdDataSetIndex;
+            thisFDCollection.masterDataStreamNames =    dataStreamNames;
+            thisFDCollection.dataFilesWithPath =        dataFilesWithPath;
+            thisFDCollection.timelineFilesWithPath =    timelineFilesWithPath;
+            thisFDCollection.fdDataSetIndex =           fdDataSetIndex;
                 
             
             
@@ -503,15 +518,14 @@ classdef FDCollection < handle
             searchToks(strcmp('',searchToks)) = [];
 
             % start with empty match index variable
-            ind = [];
-    
+            ind = true(size(self.masterDataStreamNames, 1), length(searchToks));
             
             % create an index of matches for each token
             % -------------------------------------------------------------
+                        
             for i = 1:numel(searchToks)
-                
-                ind = [ind, cellfun(@(x)( ~isempty(x) ), ...
-                       regexpi(self.masterDataStreamNames, searchToks{i}))];
+                ind(:,i) = cellfun(@(x)( ~isempty(x) ), ...
+                       regexpi(self.masterDataStreamNames, searchToks{i}));
             end
             
             % combine matches (and searching, not or)
