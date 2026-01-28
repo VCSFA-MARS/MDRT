@@ -77,7 +77,8 @@ end % if nargs
   EMPTY_CYCLE = struct ( ...
     'direction',  [], ...
     'command',    [], ...
-    'complete',   []  ...
+    'complete',   [], ...
+    'passed',     []  ...
     );
 
   EMPTY_ERROR = struct ( ...
@@ -93,7 +94,7 @@ end % if nargs
     'open',   [], ...
     'close',  [], ...
     'errors', [], ...
-    'cycles', [EMPTY_CYCLE]  ...
+    'cycles', []  ...
     );
 
   EMPTY_DATA = struct ( ...
@@ -121,6 +122,8 @@ end % if nargs
     thisCommand   = configTable.("Command I/O")(i);
     thisSigType   = configTable.("TRUE State Signal")(i);
     thisValveName = sprintf('%s-%s', thisType, thisFind);
+    thisTimingReq = table2struct(configTable(i, ...
+      {'Open_Min', 'Open_Max', 'Close_Min', 'Close_Max'}));
 
     %% Pre-populate valve report;
     thisReport      = EMPTY_REPORT;
@@ -257,6 +260,7 @@ end % if nargs
       thisCycle.direction = this_cmd.Command;
       thisCycle.command   = this_cmd.Time;
       thisCycle.complete  = new_state_time;
+      thisCycle.passed    = pass_or_fail_cycle(thisCycle, thisReport, thisTimingReq);
       thisReport.cycles = horzcat(thisReport.cycles, thisCycle);
 
 
@@ -428,6 +432,35 @@ function def_state = default_state_from_type(type_str)
   end
 end
 
+function passed = pass_or_fail_cycle(thisCycle, thisReport, thisTimingReq)
+  % If thisTimingReq has Nan (empty requirements from spreadsheet) then mark as
+  % passed. Some valves may have no requirements - it will be user's job to 
+  % ensure requirements are captured. If no requirements, then manual review
+
+  seconds_elapsed = seconds(thisCycle.complete - thisCycle.command);
+  switch thisCycle.direction
+    case 'Open'
+      if seconds_elapsed > thisTimingReq.Open_Max 
+        passed = false;
+      elseif seconds_elapsed < thisTimingReq.Open_Min
+        passed = false;
+      else
+        passed = true;
+      end
+      return
+
+    case 'Close'
+      if seconds_elapsed > thisTimingReq.Close_Max 
+        passed = false;
+      elseif seconds_elapsed < thisTimingReq.Close_Min
+        passed = false;
+      else
+        passed = true;
+      end
+      return
+  end
+
+end
 
 function loading_progress(valve, valves, step, steps, pbp, varargin)
   persistent pb;

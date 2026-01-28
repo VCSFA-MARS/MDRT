@@ -5,11 +5,22 @@ function hs = valveTimingGUI(varargin)
 % and target all the process dialogs to the parent.
 
 config = MDRTConfig.getInstance;
+%% GUI Constants
 FOLDER_ICON    = getMDRTResource('folder-16x16.png');
 FOLDER_GOOD    = getMDRTResource('folder-good-16x16.png');
 FOLDER_BAD     = getMDRTResource('folder-bad-16x16.png');
-VALVE_ICON     = getMDRTResource('valve_list_icon_transparent_64x64.png');
-VALVE_SELECTED = getMDRTResource('valve_list_icon_selected_64x64.png');
+
+VALVE_ICON     = getMDRTResource('valve_white.png', 'ResourceType', 'icon');
+VALVE_ICON_WARN  = getMDRTResource('valve_white_yellow.png', 'ResourceType', 'icon');
+VALVE_ICON_ERROR = getMDRTResource('valve_white_red.png', 'ResourceType', 'icon');
+
+VALVE_SELECTED = getMDRTResource('valve_blue.png', 'ResourceType', 'icon');
+VALVE_SELECTED_WARN  = getMDRTResource('valve_blue_yellow.png', 'ResourceType', 'icon');
+VALVE_SELECTED_ERROR = getMDRTResource('valve_blue_red.png', 'ResourceType', 'icon');
+
+% OPEN_FOLDER    = getMDRTResource('OpenFolderIcon.icns', 'ResourceType', 'icon'); 
+OPEN_FOLDER = getMDRTResource('OpenFolderIcon.png', 'ResourceType', 'icon');
+OPEN_FOLDER = FOLDER_GOOD;
 
 empty_node_data = struct( ...
   'type',     '' ...
@@ -184,10 +195,15 @@ hs.summary_table = uitable(hs.grid_results_tab);
 
   function select_valve_node(hobj, event)
 
-    set(hobj.SelectedNodes.Parent.Children, 'Icon', VALVE_ICON);
-    set(event.SelectedNodes, 'Icon', VALVE_SELECTED);
-    
+    allNodesToRefresh = hobj.SelectedNodes.Parent.Children;
+    for i_n = 1:length(allNodesToRefresh)
+      tNode = allNodesToRefresh(i_n);
+      tNodeNormalIcon = tNode.NodeData.icon.normal;
+      tNode.Icon = tNodeNormalIcon;
+    end
+
     this_node = event.SelectedNodes;
+    this_node.Icon = this_node.NodeData.icon.selected;
     node_path = this_node.Parent.NodeData; % full path of data set
     
     cycle = struct('cmd_type', [], 'cmd_ind', []);
@@ -218,12 +234,32 @@ hs.summary_table = uitable(hs.grid_results_tab);
     CycleCompleteTime = [node_data.rep.cycles.complete]';
     CycleDuration     = seconds(CycleCompleteTime - CycleCommandTime);
 
+
     cycle_table = table(CycleDirections,    ...
                         CycleCommandTime,  ...
                         CycleCompleteTime, ...
                         CycleDuration);
 
+    
     hs.results_table.Data = cycle_table;
+
+    %% Apply Table Styles to Failing Cycle Rows 
+    if isfield(node_data.rep.cycles, 'passed')
+      CyclePass     = [node_data.rep.cycles.passed];
+      failing_rows = find(CyclePass == false);   
+
+      LIGHT_RED = [255, 199, 206] ./ 255;
+      DARK_RED  = [156, 0, 6] ./ 255;
+      LIGHT_YEL = [252, 236, 166] ./ 255;
+      DARK_YEL  = [156, 87, 0] ./ 255;
+
+      fail_style = uistyle('FontColor',       DARK_RED, ...
+        'BackgroundColor', LIGHT_RED);
+      warn_style = uistyle('FontColor',       DARK_YEL, ... 
+        'BackgroundColor', LIGHT_YEL);
+      removeStyle(hs.results_table); % Clear previous styles!
+      addStyle(hs.results_table, fail_style, 'row', failing_rows);
+    end
 
     avg_time_open  = seconds(mean(node_data.rep.open));
     avg_time_close = seconds(mean(node_data.rep.close));
@@ -258,7 +294,8 @@ hs.summary_table = uitable(hs.grid_results_tab);
     % TODO: add update time to folder node to detect updates?
     
     set(hobj.SelectedNodes.Parent.Children, 'Icon', FOLDER_ICON);
-    set(event.SelectedNodes, 'Icon', FOLDER_GOOD);
+    % set(event.SelectedNodes, 'Icon', FOLDER_GOOD);
+    set(event.SelectedNodes, 'Icon', OPEN_FOLDER);
     
     this_data_set_node = event.SelectedNodes;
     data_set_node_data = this_data_set_node.NodeData;
@@ -273,9 +310,12 @@ hs.summary_table = uitable(hs.grid_results_tab);
     end
     
     %% Valve Timing Data Population
+    %  Already been here and the data haven't changed on disk
     if timing_file_modified_time <= data_set_node_data.last_updated 
       return
     end
+
+    delete(this_data_set_node.Children);
     
     if exist(timing_file, 'file') == 2
       pb = uiprogressdlg(hs.top_window, 'Title', 'Loading valve timing data');
@@ -295,9 +335,29 @@ hs.summary_table = uitable(hs.grid_results_tab);
         this_valve_node_data.data = thisData;
         this_valve_node_data.rep  = thisRep;
 
+        if ~isfield(thisRep.cycles, 'passed')
+          this_valve_icon = VALVE_ICON;
+          this_valve_icon_selected = VALVE_SELECTED;
+        elseif all([thisRep.cycles.passed])
+          this_valve_icon = VALVE_ICON;
+          this_valve_icon_selected = VALVE_SELECTED;
+        elseif any([thisRep.cycles.passed])
+          this_valve_icon = VALVE_ICON_WARN;
+          this_valve_icon_selected = VALVE_SELECTED_WARN;
+        else
+          this_valve_icon = VALVE_ICON_ERROR;
+          this_valve_icon_selected = VALVE_SELECTED_ERROR;
+        end
+
+        this_valve_node_data.icon = struct(    ...
+          'normal', this_valve_icon,           ...
+          'selected', this_valve_icon_selected ...
+        );
+
+
         uitreenode(this_data_set_node, ...
           'Text', thisNodeStr, ...
-          'Icon', VALVE_ICON, ...
+          'Icon', this_valve_icon, ...
           'NodeData', this_valve_node_data ...
           );
         pb.Value = vi/length(s.data);
