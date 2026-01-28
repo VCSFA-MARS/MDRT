@@ -310,14 +310,16 @@ else
     save(fullfile(pwd,'review.cfg'),'config');
     
     [filepath,name,~] = fileparts(config.dataFolderPath);
+    if isempty(name) [filepath,name,~] = fileparts(filepath); end % handle trailing /
     if strcmp(name, 'data')
-        [filepath,~,~] = fileparts(filepath);
+        % [filepath,~,~] = fileparts(filepath);
         Config = MDRTConfig.getInstance;
         Config.userWorkingPath = filepath;
         Config.userSavePath = fullfile(filepath, 'plots');
     end
     
 end
+
 
 % TODO: add an MDRTConfig call to "updateWorkingDirFromDataFolder"
 
@@ -659,6 +661,9 @@ function populateFDlistFromDataFolder(hObject, handles, folder)
 function ui_newDataButton_Callback(hObject, eventdata, handles)
 
     rootGuess = handles.configuration.dataFolderPath;
+
+    % Austin Thomas: TESTING
+    disp(rootGuess)
     
     if exist(fullfile(rootGuess),'dir')
         

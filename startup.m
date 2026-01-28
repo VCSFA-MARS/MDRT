@@ -46,6 +46,7 @@ addpath(genpath(fullfile(MDRTpath,'resources_mdrt')));
 addpath(genpath(fullfile(MDRTpath,'Review_App_Files')));
 addpath(genpath(fullfile(MDRTpath,'SpecialTopics')));
 addpath(genpath(fullfile(MDRTpath,'Structures')));
+addpath(genpath(fullfile(MDRTpath,'Valve Timing Script')));
 
 %% Version Specific Overrides
 

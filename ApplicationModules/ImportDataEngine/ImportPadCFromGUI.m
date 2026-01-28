@@ -44,6 +44,7 @@ folderName = strtrim(folderName);
         
 if isempty(folderName)
     % User cancelled
+    debugout('folderName argument is empty')
     return
 end
     
