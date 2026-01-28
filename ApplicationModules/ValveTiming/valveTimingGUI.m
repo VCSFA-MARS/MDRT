@@ -6,9 +6,11 @@ function hs = valveTimingGUI(varargin)
 
 config = MDRTConfig.getInstance;
 %% GUI Constants
+FOLDER_EMPTY   = getMDRTResource('Folder_Tahoe_Empty_16.png', 'ResourceType', 'icon');
+FOLDER_FULL    = getMDRTResource('Folder_Tahoe_Data_Full_16.png', 'ResourceType', 'icon');
+
 FOLDER_ICON    = getMDRTResource('folder-16x16.png');
 FOLDER_GOOD    = getMDRTResource('folder-good-16x16.png');
-FOLDER_BAD     = getMDRTResource('folder-bad-16x16.png');
 
 VALVE_ICON     = getMDRTResource('valve_white.png', 'ResourceType', 'icon');
 VALVE_ICON_WARN  = getMDRTResource('valve_white_yellow.png', 'ResourceType', 'icon');
@@ -147,7 +149,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
 
     archive_root = hs.rootNode.NodeData.path;
 
-    D = dir(archive_root)
+    D = dir(archive_root);
     dir_mask = [D.isdir] == true;
     DIRS = D(dir_mask);
     
@@ -158,14 +160,24 @@ hs.summary_table = uitable(hs.grid_results_tab);
         continue
       end
       this_dataset_dir = fullfile(archive_root, this_dir.name);
+      this_dataset_file = fullfile(this_dataset_dir, 'pad-c-valve-timing.mat');
       this_node_data = empty_node_data;
       this_node_data.type = 'data_set_node';
       this_node_data.path = this_dataset_dir;
       this_node_data.last_updated = 0;
+
+      % Change icon if valve data are found in the dataset
+      if exist(this_dataset_file, 'file')
+        this_node_icon = FOLDER_FULL;
+      else
+        this_node_icon = FOLDER_EMPTY;
+      end
+
+
       uitreenode(hs.rootNode, ...
-        'Text',     this_dir.name, ...
-        'Icon',     FOLDER_ICON, ...
-        'NodeData', this_node_data ...
+        'Text',     this_dir.name,  ...
+        'Icon',     this_node_icon, ...
+        'NodeData', this_node_data  ...
         );
     end
     
@@ -204,9 +216,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
 
     this_node = event.SelectedNodes;
     this_node.Icon = this_node.NodeData.icon.selected;
-    node_path = this_node.Parent.NodeData; % full path of data set
     
-    cycle = struct('cmd_type', [], 'cmd_ind', []);
     T = table([],[],[], 'VariableNames', {'time', 'cmd_type', 'cmd_ind'});
     node_data = this_node.NodeData;
 
@@ -257,6 +267,7 @@ hs.summary_table = uitable(hs.grid_results_tab);
         'BackgroundColor', LIGHT_RED);
       warn_style = uistyle('FontColor',       DARK_YEL, ... 
         'BackgroundColor', LIGHT_YEL);
+
       removeStyle(hs.results_table); % Clear previous styles!
       addStyle(hs.results_table, fail_style, 'row', failing_rows);
     end
@@ -276,10 +287,15 @@ hs.summary_table = uitable(hs.grid_results_tab);
       'RowNames',      RowLabels, ...
       'VariableNames', ColLabels);
 
+    pb = uiprogressdlg(hs.top_window, ...
+      'Title', 'Updating valve cycle results');
+    pb.Value = 0.5;
     hs.summary_table.Data = summary_table;
 
+    pb.Message = 'Updating valve cycle plots';
     plotValveTimingData(node_data.data, node_data.rep, '', 0);
-
+    pb.Value = 1.0;
+    delete(pb);
 
     %% Populate cycle list
     
@@ -293,9 +309,9 @@ hs.summary_table = uitable(hs.grid_results_tab);
     % callback function. No updating if already populated for now
     % TODO: add update time to folder node to detect updates?
     
-    set(hobj.SelectedNodes.Parent.Children, 'Icon', FOLDER_ICON);
+    % set(hobj.SelectedNodes.Parent.Children, 'Icon', FOLDER_ICON);
     % set(event.SelectedNodes, 'Icon', FOLDER_GOOD);
-    set(event.SelectedNodes, 'Icon', OPEN_FOLDER);
+    % set(event.SelectedNodes, 'Icon', OPEN_FOLDER);
     
     this_data_set_node = event.SelectedNodes;
     data_set_node_data = this_data_set_node.NodeData;
@@ -320,6 +336,8 @@ hs.summary_table = uitable(hs.grid_results_tab);
     if exist(timing_file, 'file') == 2
       pb = uiprogressdlg(hs.top_window, 'Title', 'Loading valve timing data');
       s = load(timing_file); 
+      data_version = s.valve_timing_version;
+
       % Populate valve nodes under data set
       for vi = 1:length(s.data)
         thisData = s.data(vi);
@@ -335,7 +353,10 @@ hs.summary_table = uitable(hs.grid_results_tab);
         this_valve_node_data.data = thisData;
         this_valve_node_data.rep  = thisRep;
 
-        if ~isfield(thisRep.cycles, 'passed')
+        if string(data_version) < "1.1"
+          this_valve_icon = VALVE_ICON;
+          this_valve_icon_selected = VALVE_SELECTED;
+        elseif ~isfield(thisRep.cycles, 'passed')
           this_valve_icon = VALVE_ICON;
           this_valve_icon_selected = VALVE_SELECTED;
         elseif all([thisRep.cycles.passed])
