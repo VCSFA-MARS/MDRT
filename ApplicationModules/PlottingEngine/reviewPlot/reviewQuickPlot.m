@@ -33,9 +33,9 @@ function [ figureHandle ] = reviewQuickPlot( fdFileNameWithPath, varargin, handl
     % Set plotting axes!!
 	axes(subPlotAxes);
 
-  
-    % load(['/Users/nick/Documents/MATLAB/ORB-D1/Data Files/' fdName '.mat']);
-    load(fdFileNameWithPath,'-mat');
+ 
+    [~,fn,~] = fileparts(fdFileNameWithPath);
+    fd = load_fd_by_name(fn, 'isFilename', true);
    
     
 switch upper(fd.Type)

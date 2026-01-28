@@ -1,7 +1,31 @@
 %% getAllValveCommands: Generate table of all valve commands sent during a data set
+%
+% This tool is useful for analyzing operations to look for unexpected valve
+% commands, timing, or to generate a scripted "replay" of a previous
+% operation for live testing.
+%
+% Creates a table with the following columns:
+%   ValveName ValveCommand CommandTime CommandTimeXl CommandTimeString CommandParam
+%
+%   CommandTime   - a Matlab datenum
+%   CommandTimeXL - a Microsoft Excel date/time value
 
-dataFolders = '/Users/nick/data/archive/2021-02-19 - NG-15 Launch/data';
-    
+% Counts, VCSFA
+
+config = MDRTConfig.getInstance;
+defaultCSVName = 'everyValveCommand.csv';
+
+
+[dataFolders, setFolder] = selectDataSet;
+
+if isempty(setFolder)
+    return
+end
+
+filters = UIGetSystemFilters();
+
+
+
 filesCommand = {
         '1003 RP1 DCVNC-1003 Ball Valve Ctl Param.mat';
         '1010 RP1 DCVNC-1010 Ball Valve Ctl Param.mat';
@@ -94,23 +118,26 @@ propCommand = {
 
 filesPressure = { 
         '5903 GN2 PT-5903 Press Sensor Mon.mat';
+        '5938 GN2 PT-5938 Press Sensor Mon.mat';
         '5070 GN2 PT-5070 Press Sensor Mon.mat';
+        '5939 GN2 PT-5939 Press Sensor Mon.mat';
+        '5940 GN2 PT-5940 Press Sensor Mon.mat';
         '5930 GN2 PT-5930 Press Sensor Mon.mat';
-    };    
+    };
     
 
 %% Load All Command Data
 
 filesCommand    = unique(sort([filesCommand; propCommand]));
-totalValves = numel(filesCommand);
-    
+filesCommand = AnyRowContaining(filesCommand, filters);
 
-% allData = cell(totalValves,1);
+totalValves = numel(filesCommand);
+
 allData = [];
 
 for fi = 1:totalValves
     
-    [s, e] = regexp(filesCommand{fi}, '[DP]CVN[CO]-\d*');
+    [s, e] = regexp(filesCommand{fi}, '([DP]CVN[CO]|RV)-\d*');
     findNumber = filesCommand{fi}(s:e);
     
     thisFile = fullfile(dataFolders, filesCommand{fi});
@@ -135,7 +162,7 @@ dataStruct = [];
 numAllData = length(allData);
 oneData = 1/numAllData;
 
-progressbar('Valve', 'Command');
+progressbar('Valves', 'Commands');
 for di = 1:length(allData)
     
     thisCommand = allData(di).Data;
@@ -146,7 +173,7 @@ for di = 1:length(allData)
                     find([0;diff(thisCommand)]) ; 
                     length(thisCommand) ];
 
-    valveProg = di / length(allData) - oneData;
+    valveProg = (di / length(allData)) - oneData;
     
     for n = 1:length(changeInds)
 
@@ -179,4 +206,24 @@ end
 valveTable = struct2table(dataStruct);
 
 
-% writetable(valveTable, 'NG-15_ValveCommands.csv');
+questStr = ['Save script results to ', setFolder];
+
+result = questdlg(questStr, 'Save .csv file?', ...
+            'Yes', 'No', 'Yes');
+
+switch result
+    case 'Yes'     
+    otherwise
+        return
+end
+
+
+
+[filename, pathname, ~] = uiputfile( ...
+                           {'*.csv', 'Comma Separated Value (*.csv)';
+                            '*.*',  'All Files (*.*)'},...
+                            'Save as', fullfile(setFolder, defaultCSVName) );
+
+if ~pathname; return; end
+                      
+writetable(valveTable, fullfile(pathname, filename));

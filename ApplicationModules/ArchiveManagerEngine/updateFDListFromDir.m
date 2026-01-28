@@ -132,7 +132,7 @@ end
 
 % Index initialization
     iFilesToAdd=false(numel(fileNames), 1);
-    iRowsToRemove=true(length(FDList), 1);
+    iRowsToRemove=true(size(FDList,1), 1);
     newFDListEntries={};
     workingFDList=FDList;
     numEntriesUpdated = 0;

@@ -8,6 +8,9 @@ classdef MDRTFigure < handle
         subplots        = [];
         graphTitle      = 'MDRT Plot';
         
+        graph           = []; % empty graph struct for back compatability
+        graphNumber     = []; % empty graphNumber (int) for back compatability
+        
         eventmanager    % The MDRT Event collection manager for this MDRT Figure
         
     end
@@ -24,13 +27,26 @@ classdef MDRTFigure < handle
         % removeData - remove an existing FD from the plot
 
         % Constructor
-        function self = MDRTFigure()
+        function self = MDRTFigure(varargin)
             
             self.hfig = figure;
             self.addSubplot(MDRTAxes('Title', 'Subplot 1'));
             self.hGraphTitle = suptitle('MDRT Plot');
             
             orient(self.hfig, 'landscape');
+            
+            % Add graph struct and graphNumber for backwards compatability
+            if nargin
+                if strcmpi(checkStructureType(varargin{1}), 'graph')
+                    self.graph =  varargin{1};
+                    setappdata(self.hfig, 'graph', self.graph);
+                    if varargin{2}
+                        self.graphNumber = varargin{2};
+                        setappdata(self.hfig, 'graphNumber', self.graphNumber);
+                    end
+                end
+            end
+                    
         end
         
          
@@ -61,6 +77,22 @@ classdef MDRTFigure < handle
             for i = 1:numPlots
                 self.subplots(i).setPosition( self.axesPositionForNumberOfSubplots(numPlots, i) );
             end
+            
+        end
+        
+        function self = removeSubplot(self, hax)
+            % removeSubplot(hSubplot) expects an MDRTAxes handle. If the
+            % MDRTAxes is registered to this MDRTFigure, it will be removed
+            % and destroyed.
+            if ismember(hax, self.subplots)
+                for s = 1:numel(self.subplots)
+                    if isequal(self.subplots(s), hax)
+                        self.subplots(s).delete;
+                        continue
+                    end
+                end
+            end
+            
             
         end
         

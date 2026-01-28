@@ -133,6 +133,7 @@ else
                       'color', get(h,'color'),...
                       'Rotation',-90,...
                       'FontSize',[6],...
+                      'Clipping', 'on', ...
                       'BackgroundColor',[1 1 1]);
         else
 %             text(x-.05*xrange,y(2)-vscale*(y(2)-y(1)),label,'color',get(h,'color'),'Rotation',-90)
@@ -140,14 +141,15 @@ else
                       'color', get(h,'color'),...
                       'Rotation',-90,...
                       'FontSize',[6],...
+                      'Clipping', 'on', ...
                       'BackgroundColor',[1 1 1]);
         end
     end     
 
-    if(Zpos < 0)
-        uistack(th,'bottom');
-        uistack(h, 'bottom');
-    end
+%     if(Zpos < 0)
+%         uistack(th,'bottom');
+%         uistack(h, 'bottom');
+%     end
         
     if g==0
     hold off

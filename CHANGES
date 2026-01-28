@@ -1,3 +1,272 @@
+Version 0.8.0:
+ - removed development files from tree
+ - Moved dataBrowserGUI to permanent home
+ - Merge branch '86-add-valve-timing-tool-for-pad-c-data' into ValveTimingRelease
+ - Merge branch 'master' into ValveTimingRelease
+ - added RTD electrical calculation work to special topics
+ - removed up old development scripts
+ - Update valve timing config file name
+ - ValveTimingGUI : Apply pass/fail styling to cycle selection list
+ - valveTimingGUI - update folder icon display. Shows full/empty data sets
+ - Updated saved data output version number
+ - Valve Timing Tool Update : Pass/Fail calculation and display in GUI
+ - badged icon file generator
+ - Updated Pad0C Valve Timing Parameter spreadsheet - config and reqs
+ - Icon generation and badged icon addition
+ - valveTimingGUI - dataset nodes update if file updates, unified node func
+ - processPadCValves - add empty cycles struct to report template
+ - valveTimingGUI: cleaned up console output
+ - Updated filterFDTool to use octave-based sig processing. No toolboxes
+ - Valve Timing Parser ignores the first and last data sample as errors
+ - ValveTimingGUI shows more useful numerical reporting
+ - removed axes setup tab from mdrt - not currently used
+ - BugFix: processPadCValves maintains time order of calculated ValveState
+ - updated debugout to accept sprintf-style format strings
+ - cleanup old function
+ - Added valve timing report as mdrt_resource and updated getter to support
+ - moved big data load *inside* progress bar loop to help user frustration
+ - Prevent loading of valve data if already loaded
+ - Added find number to valve timing spreadsheet and valve-name to progbar
+ - Added Valve Timing tool to MDRT GUI
+ - New Feature: valve timing GUI. Update MDRTListBox to return tables
+ - Added valve timing module - parsing function with config spreadsheet
+ - New Helper: parseFunctionArguments - handles common key/val pairs
+ - initial commit - pad c data valve timing for current data set
+ - selecting data set in review properly updates config if path ends in /
+ - Fixed uicontrol property mismatch
+ - BugFix: Stop auto-rotate of time axis labels
+ - BugFix: Back compatible for 2017
+ - Merge branch 'develop' into 86-add-valve-timing-tool-for-pad-c-data
+ - trendMath updated to support 2025 cell vars
+ - generate proc-to-raw cal curves for new system
+ - Get data from missions at milestones - to spreadsheet
+ - Fixed MetaDataStruct creator - include MARSUID
+ - Ambient weather scraper - initial commit
+ - Added GUI-friendly output case to `debugout`
+ - dataBrowserGUI and new search/listboxes
+ - CompareDrainback - removed dev paths, move towards deployability
+ - Pad-C Importer - graceful fail on bad data and end of csv: var to base
+ - MDRTConfig - added plot path
+ - abandoned window-keypress callback approach
+ - New Feature: Data Browsing GUI for MDRT - include data set selection
+ - BugFix: continue If remote archive index is missing
+ - MDRT updated with new GUI tabs: Archive Manager, Settings, Import
+ - ArchiveManagerGUI now takes optional `Parent` param for GUI nesting
+ - New UI: Settings pane rewritten for new UI
+ - New UI: Data Import tool converted to new UI and added to review
+ - Added isfolder() as back-compat overload with startup check
+ - Updated: pad-c gn2 stat generator
+ - Added 3rd party drag-n-drop extension
+ - Add forward/backward compatibility check for new archive manager
+ - New Function: matlab_newer_than() to manage feature compatability
+ - minor cleanup and commenting for new archive manger gui
+ - updated archiveManager to new web-UI. Added editable metadata
+ - Added "convert data set" capability to archive manager tool
+ - Update quickplot to use load_fd_by_name, support new fd file version
+ - Removed unnecessary files from repo. Saved locally or deleted.
+ - Merge remote-tracking branch 'origin/86-add-valve-timing-tool-for-pad-c-data' into 86-add-valve-timing-tool-for-pad-c-data
+ - Final changes to Rev0. Ready for merge.
+ - Added additional error messages for certain edge cases
+ - significant progress on relief valve selector function
+ - fixed logic: properly detect existing textbox inside brushed data bounds
+ - pad-c gn2 annotation widget: center and trend buttons working
+ - create trend annotation from simply brushing data - creates new box
+ - added stat generator for pad-c support/GN2 consumption
+ - BugFix: stop autorotate of axis labels in Matlab 2021a+
+ - BugFix - data import UI handles valve timing filename selection
+ - Minor changes to clean up code.
+ - Added checks and logic for pad-c valve parser checkbox on import GUI
+ - Removed abandoned import UI code
+ - Updated import GUI layout to accommodate new checkbox
+ - Added valve timing script folder to path management
+ - Merge branch 'develop' into 86-add-valve-timing-tool-for-pad-c-data
+ - Added control to import GUI to trigger valve timing parser on pad c data
+ - Tweaked valveTimingFunc error message generation and file paths
+ - Added debugout() to results
+ - added to valve timing test data
+ - Adding test data files to ValveTimingScript
+ - Major changes to relief valve selector function and associated reference .xlsx; WIP
+ - Added FuncTest.m to path.
+ - Minor changes to ValveTimingFunc + added introduction comment block
+ - Deleted redundant files. Renamed testing script. Finalized process as function: 'ValveTimingFunc'. Added necessary .xlsx files to project folder. Ready for review.
+ - Update new lo2_storage parser with better try/catch (less crash)
+ - Small debugout() tweak
+ - import tools use save_fd...() functions to expose disk-version control
+ - New Feature:  v2 disk-format for faster data loading with test suite
+ - Improvements to TestingScript_ALT. First draft of ValveTimingProcessFunc.
+ - Reorganized existing valve timing files into folder. Added relief valve selector work to repository (previously stored locally).
+ - Small changes to export Excel template. Finished debugging testing script.
+ - Merge commit '21b68b613c6033e16ff8542e888d8038e3eed3f5'
+ - Minor changes to export Excel template. Continued debugging of Testing Script computational processes (~75% of sample valve timings are computed correctly).
+ - Added data export excel template to Git.
+ - Operable version of testing script completed. Debugging required on computational side.
+ - Finished draft import functionality. Begun work on process functionality.
+ - plotGraphFromGUI - using load_fd_by_name() to support fd versions
+ - load_fd_by_name: added option to specify filename & docs
+ - newFD bugfix, checkStructureType bugfix, added unit tests for check
+ - Merge upstream changes from 'develop' into feature branch
+ - New Feature: fd version 'v2' for more efficient `.mat` files
+ - Updated load/save fd helpers: added location overrides and documentation
+ - Added scripts for pressure vessel lifecycle data preparation
+ - Documented pressure cycle data table generator script
+ - More progress on data importation and organization. [WIP]
+ - Created testing script and began work on data importation. [WIP]
+ - testing git interface
+ - NewFeature: LN2 Tank Data Processing
+ - BugFix: disabled system call for encoding detection until matlab update
+ - added fatigue cycle data prep script to special topics
+ - Updated import parser: no more line count, encoding detection on macos
+ - added Matlab version check for file open/close behavior
+ - added convenience tools for saving and loading FDs
+ - Progress bar management object
+ - fix fast import bug for raw data
+ - added pad c debugging variable storage
+ - added new lo2 storage data parsing
+ - added subcooler level calculation tools and model
+ - added parse_duration()
+ - added weather data parser
+ - fix empty process customFDnames and ecu import
+ - implemented units in Pad-0C parser
+ - Plot legend uses fullstring if FD struct isn't populated
+ - Pad-0C CSV Import handles edge case with date string having no decimals
+ - initial ECU data script
+ - Improved file line count speed
+ - Updated MDRTEvent listener callback
+ - Added 'displayname' override option to `addFd()` method
+ - subplot generation returns correct objects for MDRTaxes in axpairs
+ - MDRTEvent Marker text clips with axes limits
+ - Bugfix: some delim files break onepass. Added console output
+ - Import tool uses parseDelimOnePass as default parser. Option for old one
+ - parseDelimOnePass: major update, faster, handles overwrites, documented
+ - bugfix: checkbox controller broke if multiple import windows were open
+ - parseDelimOnePass working with basic function
+ - enhancement: find better grep on macos/linux and warn if using slow grep
+ - started one-pass delim importer
+ - added better windows support for file line counting
+ - bugfix: deled horizline can be re-created. listbox selection fixed
+ - suppress nuisance warning
+ - bugfix: default config file is correct for OS. Common name used now
+ - bugfix: axis limits and linking optimization
+ - plot engine hack linkaxes for performance gains
+ - Update setTimeAxesLimits for mdrt tab view and added to mdrt
+ - Update archive manager for mdrt tab view and added to mdrt
+ - Bugfix: x-limits for discrete only, dimension mismatch fixed
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Fix crazy XLims for valveStateBar plots
+ - Added "reset" to the rescaleFD tool, in case it goes wrong!
+ - Added timeseries helpers (difference and average)
+ - added timeseries math helpers
+ - performance improvement by removing uistack from vline() on every call
+ - valve plot small performance improvements
+ - documented Plotting function key/val pairs, fixed small axes label bug
+ - valveStateBar change to floating label instead of ytick label offsets
+ - fixed deprecated nargchk() call
+ - improved rp playback event handling
+ - New Tool - script for quickly tagging a data set with HSS test events
+ - Added automatic event marker text hiding when scrolled off the plot
+ - Fixed data index selection during table generation
+ - For data sets with no timeline, guess "start to finish"
+ - Extended data grid maker - let you select any data set
+ - BugFix: MARSsaveFigure now correctly selects the resize method
+ - updated import GUI with bugfix and pad-0c option
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - valveStateBar - enable plotting state/mon without command FD
+ - Fixed r-squared display issue
+ - Merge remote-tracking branch 'origin-gitlab.marsspaceport/develop' into develop
+ - Updated flow-pressure specialty plots
+ - Added rudimentary pad-c data parsing plugin
+ - Added option to disable original TimelineEvent plot system
+ - quick development test setup for MDRTEventCollection
+ - MARSsaveFigure() - added hooks to support rescaling MDRTEvent Markers
+ - New Class: MDRTEventCollection - manage event markers on a figure
+ - MDRTEvent - MAJOR update, allows vectorized preallocation & collections
+ - Better event label sizes in PDF exports
+ - Improvement: valveStateBar now mimics right stairs (accurate plots!)
+ - New Feature: ValveStateBar() now ignores duplicate valves
+ - Update RP1 Visualization - selectable bottom FD, graceful failures
+ - BugFix: typo in `index` broke search results.
+ - Merge remote-tracking branch 'origin-gitlab.marsspaceport/develop' into develop
+ - BugFix - FD-reindexing broke when only one FD was in FDList
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - BugFix: getAllValveCommands doesn't skip ECS RVs in regex
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - BugFix: selectDataSet correctly returns fullfile paths for both returns
+ - conflict resolved merge of "develop" and "origin/develop"
+ - New Feature: selectDataSet - handles both root folder and data folder
+ - Added additional geometry vs FCS calc plots
+ - Added "m" abbreviation for minute units
+ - New Feature: Data Set Selection widget for custom plots
+ - Removed debugging statement
+ - New Feature: Valve Command Retrieval Tool
+ - Merge remote-tracking branch 'origin-gitlab.marsspaceport/develop' into develop
+ - Added date functions to remove financial toolbox dependency
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Added matlab/excel date functions to remove toolbox dependency
+ - MDRTShape and Color - objects updated with defaults and key/val pairs
+ - makeManyMDRTSubplots() - added graph struct support and working examples
+ - RemoteRetriever - semi-working demo
+ - Merge remote-tracking branch 'origin/develop' into develop
+ - Fixed appdata() syntax
+ - MDRTShape - fixed constructor position bug.
+ - MDRTShape - cleaned out unused code
+ - MDRTShape - Added one-click drag-n-drop repositioning
+ - MDRTShape - added constructor options and documentation
+ - MDRTColor - changed back to a value class
+ - MDRTShape - added color and dragging support
+ - MDRTColor - new class to manage color/alpha info for MDRT FGSE Objects
+ - Added 3rd party "draggable" function - toggle click-drag on graphics
+ - MDRTShape - new class to manage schematic display UI objects
+ - UIComponentOrientation - new class to manage orientation of FGSE UI
+ - TELForceComparisons - added separate index for cyl data
+ - TELForceComparisons - initial commit. Script to plot force v position
+ - plotGraphFromGUI() - added code to generate class-based plots and events
+ - valveHistoryTool - added doc and options for PT scaling and limit plots
+ - compareStopflow - added docs and beefed up time calc robustness
+ - eachValveMuscle - added documentation to describe behavior
+ - compareDrainBack() - updated with documentation and added to launcher
+ - cleanup root directory
+ - getPlotParameters() - unused, removed function and references
+ - listAvailableFDs() - unused, removed function and references
+ - makeTestListbox - added documentation for clarity
+ - FDCollection - minor cleanup, fixed index changing size
+ - CMDRTSubplot() - added `hMDRTAxes` class handles as a return variable
+ - MDRTAxes() - updated delete to clean up child axes
+ - MDRTFigure() - added `graph` and `graphNumber` for back compatability
+ - horizLine - fix subplot title name extraction to cell array
+ - FamilyPlotter - fixed error handling and messages for bad data sets
+ -  Updated telemetry playback with better detail plot location code
+ - Added application icon
+ - BugFix: family plotter remote archive event list update remote archive
+ - BugFix: MDRT processed data files named correctly with RAW appended
+ - Updated plot output and save functions for 2017a+. compatability
+ - New Feature: integrate total run time - accurate for square wave data
+ - Added 'day' support without error message
+ - added RAW support to splitDelimFiles()
+ - Added option to return MDRTAxes pair vector instead of Matlab axes pairs
+ - Added RAW data parsing support to processDelimFiles()
+ - New Feature: MDRTEvents support regular axes and MDRT save figure
+ - Added save file dialog to rescaleFDfromFile()
+ - New Feature: FD Rescaling  Widget for STE PTs and other
+ - Added plot axes, grids, cautionary valve color coding
+ - Added "Specialty Plots" button and launcher menu to "review" tool GUI
+ - New Playback Tool: 414 Panel GN2 PHS with selectable bottom plot FD
+ - Updated playback tools to use config variable to get data set
+ - Updated playback tools to use config variable to get data set
+ - BugFix: Plot Setup Tool defaults to GraphConfig folder for load save
+ - Added TELHS Playback Tool
+ - Added tool for positioning axes on axes
+ - Updated help button link with new github server wiki
+ - Adding RAW value parsing/importing for delims
+ - Removed deprecated import tools
+ - Updated RP1 Playback tool with new valves
+ - Added RP1 Playback
+ - EventTagger in development
+ - modulating relief valve visualization
+ - basic modulating rv calc
+ - added relief valve special topic script
+ - BugFix: FamilyPlot tool crash if remote repository not configured
+ - Changes from v0.7.0 release
+
 Version 0.7.0:
  - Merge remote-tracking branch 'origin/release_0.7.0_candidate' into release_0.7.0_candidate
  - Merge branch '77-java-gettext-method-fails-on-windows-installations' into 'release_0.7.0_candidate'

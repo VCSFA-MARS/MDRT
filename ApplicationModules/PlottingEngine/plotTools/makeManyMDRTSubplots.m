@@ -38,10 +38,17 @@ function [subPlotAxes,  varargout] = makeManyMDRTSubplots(InputTitleArray, Figur
 %       gap             numeric - set the gap between subplots (normalized units)
 %       margin          numeric - set the margin between subplots and figure (normalized units)
 %       groupAxesBy     numeric - the grouping for the 'axPairs' array. Default is 2
-
-
-% TODO: Add parameter parsing to let the user configure height, width,
-% title format string, etc
+%       mdrtpairs       true or fales - use true to return MDRTAxes pairs. Default is false
+%       graphStruct     graph structure - pass the MDRT graph struct to be added as appdata for other tools
+%       graphNumber     graph number - the index/number of the graph config structure
+%
+%
+%   EXAMPLE:
+%
+%       makeManyMDRTSubplots({'valve 1', 'valve 2', 'valve 3', 'valve 4'}, ...
+%                            'figure title', 'plotsWide', 2)
+%
+%       [hax, ~, hap] = makeManyMDRTSubplots(8, 'Demo Plots', 'plotsWide', 4)
 
 
 %% Input Parameters
@@ -89,6 +96,10 @@ end
 %% Plot Setup
 
 USE_MDRTAxes = false;
+RETURN_MDRTAxes_Pairs = false;
+APPEND_GRAPH_STRUCT = false;
+graphStruct = [];
+graphNum = [];
 graphsPlotGap = 0.05;
 GraphsPlotMargin = 0.06;
 numberOfSubplots = 1; % Change this to define the groupings! (Shouldn't be larger than spHigh)
@@ -119,7 +130,14 @@ for K = 1:2:numel(varargin)
             GraphsPlotMargin = Val;
         case 'groupaxesby'
             reshapeParam = Val;
-           
+        case 'mdrtpairs'
+            RETURN_MDRTAxes_Pairs = true;
+        case {'graphstruct' 'graph'}
+            APPEND_GRAPH_STRUCT = true;
+            graphStruct = Val;
+        case {'graphnumber' 'graphnum'}
+            graphNum = Val;
+
     end
 end
 
@@ -159,7 +177,7 @@ if expectedSubplots > spWide
         end
         
         if USE_MDRTAxes
-            spa = CMDRTSubplot( spHigh, plotCols,	graphsPlotGap, ... 
+            [spa, MDRA] = CMDRTSubplot( spHigh, plotCols,	graphsPlotGap, ... 
                                 GraphsPlotMargin,   GraphsPlotMargin);
         else
             spa = MDRTSubplot(  spHigh, plotCols,	graphsPlotGap, ... 
@@ -177,8 +195,16 @@ if expectedSubplots > spWide
         if spHigh > reshapeParam
             numOfGroups = numel(spa) / reshapeParam;
             axPair = reshape(reshape(spa,numOfGroups,reshapeParam)', numOfGroups,reshapeParam);
+            if USE_MDRTAxes && RETURN_MDRTAxes_Pairs
+                
+                axPair = reshape(reshape(MDRA,numOfGroups,reshapeParam)', numOfGroups,reshapeParam);
+            end
         else
             axPair = reshape(spa, plotCols*spHigh/reshapeParam, reshapeParam);
+            
+            if USE_MDRTAxes && RETURN_MDRTAxes_Pairs
+                axPair = reshape(MDRA, plotCols*spHigh/reshapeParam, reshapeParam);
+            end
         end
         
         axPairs = vertcat(axPairs, axPair);
@@ -194,14 +220,39 @@ else
     % NOTE: This code DOES NOT WORK for 2 stop flow events! Must correctly
     % implement the generation of the axPairs array
     fig = makeMDRTPlotFigure;
-    
-    subPlotAxes = MDRTSubplot(spHigh,       length(expectedSubplots), ... 
-                        graphsPlotGap,      GraphsPlotMargin, ...
-                        GraphsPlotMargin);
-                    
-    axPairs = reshape(subPlotAxes, length(expectedSubplots)*spHigh/reshapeParam, reshapeParam);
+    plotCols = length(expectedSubplots);
+
+    if USE_MDRTAxes
+        [spa, MDRA] = CMDRTSubplot( spHigh, plotCols,	graphsPlotGap, ... 
+                            GraphsPlotMargin,   GraphsPlotMargin);
+    else
+        spa = MDRTSubplot(  spHigh, plotCols,	graphsPlotGap, ... 
+                            GraphsPlotMargin,   GraphsPlotMargin);
+    end
+
+    axPairs = reshape(spa, length(expectedSubplots)*spHigh/reshapeParam, reshapeParam);
+    if USE_MDRTAxes && RETURN_MDRTAxes_Pairs
+        axPairs = reshape(MDRA, plotCols*spHigh/reshapeParam, reshapeParam);
+    end
+    subPlotAxes = spa;             
 	suptitle(FigureTitleString);
 end
+
+
+
+if APPEND_GRAPH_STRUCT
+    for nfig = 1:length(fig) 
+        if USE_MDRTAxes
+            adTarget = fig(nfig).hfig;
+        else
+            adTarget = fig(nfig);
+        end
+        setappdata(adTarget, 'graph',          graphStruct);
+        setappdata(adTarget, 'graphNumber',    graphNum);
+    end
+end
+
+
 
 switch nargout
     case 2

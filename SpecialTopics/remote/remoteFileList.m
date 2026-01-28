@@ -23,8 +23,8 @@ Filebase = 'TAM';
 
 remoteCommand = ['HistRetrieve -ss -p' TAMdir ' -f ' Filebase ];
 
-[status,result] = system(['ssh -i id_rsa_mdrt ops1@fcsdev3 "' remoteCommand '"']);
-
+% [status,result] = system(['ssh -i id_rsa_mdrt ops1@fcsdev3 "' remoteCommand '"']);
+[status,result] = system('ssh -i /Users/ops1/.ssh/id_rsa_data_iMac fcsdev3 "HistRetrieve -ss -p /opt/archive/MARS-NAS/operations/2020-02-15_NG-13/NG13_Launch_server1/TAM/2020046_001840_1581725920 -f TAM"');
 
 %% Pre-process
 %   Some of the FD descriptions may have a pipe (|) character in them,

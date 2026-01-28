@@ -13,6 +13,9 @@ function MARSsaveFigure(varargin)
 
 %   Counts, VCSFA, 2020 - convert to function for improved fault tolerance.
 
+eventLabelSize = 4;
+
+
 config = getConfig;
 
 if nargin == 3
@@ -52,6 +55,17 @@ end
 % Open UI for save name and path
     [file,path] = uiputfile('*.pdf','Save Plot to PDF as:',fullfile(config.outputFolderPath, defaultName));
 
+
+% Get Number of Axes for intelligent font sizing
+ax = findobj( get(fh,'Children'), '-depth', 1, 'type', 'axes');
+numAxes = sum(~ strcmp({ax.Tag}, 'suptitle'));
+
+if numAxes > 2
+    eventLabelSize = 5.5;
+else
+    eventLabelSize = 8;
+end
+    
 % Check the user didn't "cancel"
 if file ~= 0
     
@@ -80,15 +94,41 @@ if file ~= 0
     % Timeline Label Sizes
     labels = findall(fh,'Tag','vlinetext');         progressbar(8/totalSteps);
     
+    events = [];
+    labelSizeMethod = 'original'
+    if isappdata(fh, 'MDRTEvents')
+        events = getappdata(fh, 'MDRTEvents');
+        oldEventFontSize = events(1).FontSize;
+        newEventFontSize = 4;
+        labelSizeMethod = 'original';
+    elseif isappdata(fh, 'EventCollection')
+        EC = getappdata(fh, 'EventCollection');
+        labelSizeMethod = 'extra-crispy';
+    end
+    
+    switch labelSizeMethod
+        case 'original'            
+            if ~isempty(events)
+                [events.FontSize] = deal(newEventFontSize); progressbar(9/totalSteps);
+            end
+        case 'extra-crispy'
+            EC.makePrintSize(true);                         progressbar(9/totalSteps);
+    end
+    
+    
     if ~(isempty(labels))
         oldLabelFontSize = get(labels, 'FontSize'); progressbar(9/totalSteps);
-        set(labels, 'FontSize', 8);                 progressbar(10/totalSteps);
+        set(labels, 'FontSize', eventLabelSize);    progressbar(10/totalSteps);
     else
         oldLabelFontSize = {};                      progressbar(10/totalSteps);
     end
     
-    % Save
-    saveas(fh, [path file],'pdf');                  progressbar(11/totalSteps);
+    if verLessThan('matlab','9.2.0') % R2017a
+        saveas(fh, [path file],'pdf');              progressbar(11/totalSteps);
+    else
+        print( [path, file], '-dpdf', '-fillpage'); progressbar(11/totalSteps);
+    end
+    
     
     %% Restore font sizes
     
@@ -105,10 +145,28 @@ if file ~= 0
         if ~ iscell(oldLabelFontSize)
             oldLabelFontSize = { oldLabelFontSize };
         end
+        
+        if ~isempty(events)
+            [events.FontSize] = deal(oldEventFontSize);
+        end
     
     set(cursors, {'FontSize'}, oldCursorFontSize);  progressbar(12/totalSteps);
     set(legends, {'FontSize'}, oldLegendFontSize);  progressbar(13/totalSteps);
-    set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
+    
+    switch labelSizeMethod
+        case 'original'           
+            set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
+        case 'extra-crispy'
+            EC.makePrintSize(false);                        progressbar(14/totalSteps);
+        otherwise
+            set(labels,  {'FontSize'}, oldLabelFontSize);   progressbar(14/totalSteps);
+    end
+
+    if ~verLessThan('matlab', '9.10') % 2021a - they added autorotate tick labels
+        ax = findall(gcf, 'tag', 'MDRTAxes');
+        set(ax, 'XTickLabelRotationMode', 'manual');
+        set(ax, 'XTickLabelRotation', 0);
+    end
     
 else
     % Cancelled... not sure what the best behavior is... return to GUI

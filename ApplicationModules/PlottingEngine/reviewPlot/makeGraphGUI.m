@@ -65,7 +65,8 @@ function makeGraphGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Load the project configuration (paths to data, plots and raw data)
     config = getConfig;
     Config = MDRTConfig.getInstance;
- 
+    config.graphConfigFolderPath = Config.graphConfigFolderPath;
+    
 % Store configuration in handles structure    
     handles.configuration = config;
 
@@ -1029,7 +1030,6 @@ function uiSaveButton_ClickedCallback(hObject, eventdata, handles)
             defaultName = defaultName{1};
         end
         
-        
     % Attempt to autopopulate the path
     if isfield(handles.configuration, 'graphConfigFolderPath')
         % Loads path from configuration
@@ -1066,8 +1066,6 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
         lookInPath = handles.configuration.dataFolderPath;
     end
     
-    
-
 
     % Open UI Window to Choolse Graph Config File
     [filename, pathname, filterindex] = uigetfile( ...
@@ -1075,8 +1073,11 @@ function uiLoadButton_ClickedCallback(hObject, eventdata, handles)
                '*.xlsx',        'Excel file (*.xlsx)'; ...
                '*.xls',         'Excel file (*.xls)'; ...
                '*.*',           'All Files (*.*)'}, ...
-               [fullfile(lookInPath,'*.gcf')], 'Pick a file');
+               'Pick a file', fullfile(lookInPath,'*.gcf') );
    
+    if filename == 0
+        return
+    end
   
     switch filterindex
         case 1

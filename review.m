@@ -28,7 +28,7 @@ function varargout = review(varargin)
 
 % Edit the above text to modify the response to help review
 
-% Last Modified by GUIDE v2.5 14-Sep-2021 12:02:18
+% Last Modified by GUIDE v2.5 29-Mar-2022 11:10:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -310,14 +310,16 @@ else
     save(fullfile(pwd,'review.cfg'),'config');
     
     [filepath,name,~] = fileparts(config.dataFolderPath);
+    if isempty(name) [filepath,name,~] = fileparts(filepath); end % handle trailing /
     if strcmp(name, 'data')
-        [filepath,~,~] = fileparts(filepath);
+        % [filepath,~,~] = fileparts(filepath);
         Config = MDRTConfig.getInstance;
         Config.userWorkingPath = filepath;
         Config.userSavePath = fullfile(filepath, 'plots');
     end
     
 end
+
 
 % TODO: add an MDRTConfig call to "updateWorkingDirFromDataFolder"
 
@@ -408,13 +410,12 @@ end
 
 
 % --- Executes on button press in uiButton_updateFDList.
-function uiButton_updateFDList_Callback(hObject, eventdata, handles)
+function uiButton_updateFDList_Callback(hObject, ~, handles)
 % hObject    handle to uiButton_updateFDList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Calls helper function to list the FDs
-%     FDList = listAvailableFDs(handles.configuration.dataFolderPath, 'mat');
     FDList = updateFDListFromDir(handles.configuration.dataFolderPath, ...
                                     'save',         'yes', ...
                                     'prompt',       'yes');
@@ -506,12 +507,13 @@ function uiButton_refreshTimelineEvents_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 reviewRescaleAllTimelineEvents;
 
-% --- Executes on button press in uiButton_toggleTimelineLabelSize.
-function uiButton_toggleTimelineLabelSize_Callback(hObject, eventdata, handles)
-% hObject    handle to uiButton_toggleTimelineLabelSize (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
+% --- Executes on button press in uiButton_rescaleFD.
+function uiButton_rescaleFD_Callback(hObject, ~, handles)
+% hObject    handle to uiButton_rescaleFD (see GCBO)
 % handles    structure with handles and user data (see GUIDATA)
-reviewRescaleAllTimelineLabels
+index = get(handles.uiPopup_FDList,'Value');
+fdFullFileName = fullfile(handles.configuration.dataFolderPath, handles.quickPlotFDs{index, 2} );
+rescaleFDfromFile(fdFullFileName);
 
 
 % --- Executes on button press in uiButton_filterData.
@@ -558,7 +560,7 @@ function menu_review_help_Callback(hObject, eventdata, handles)
 % --- Executes on button press in uiButton_helpButton.
 function uiButton_helpButton_Callback(hObject, eventdata, handles)
 % Open web browser window to MDRT wiki homepage
-web('https://github.com/VCSFA-MARS/MDRT/wiki')
+web('https://gitlab.marsspaceport.com/data-review/MDRT/-/wikis/home')
 
 % popup an "about" dialog with version info.
 % helpDialogTitle = 'About Review Tool';
@@ -620,7 +622,12 @@ end
 
 % --- Executes on button press in uiButton_importData.
 function uiButton_importData_Callback(~, ~, ~)
+  % Launch web-based UI when compatible
+  if matlab_newer_than('r2017b')
+    dataImportGUI();
+  else
     makeDataImportGUI;
+  end
 
 
 
@@ -654,6 +661,9 @@ function populateFDlistFromDataFolder(hObject, handles, folder)
 function ui_newDataButton_Callback(hObject, eventdata, handles)
 
     rootGuess = handles.configuration.dataFolderPath;
+
+    % Austin Thomas: TESTING
+    disp(rootGuess)
     
     if exist(fullfile(rootGuess),'dir')
         
@@ -784,7 +794,11 @@ choice = questdlg('You are about to open the data archive manager. Only do this 
 switch choice
     case cancelButton
     case proceedButton
-        makeArchiveManagerGUI
+        if matlab_newer_than('r2017b')
+            ArchiveManagerGUI
+        else
+            makeArchiveManagerGUI
+        end
     otherwise
 end
 
@@ -803,3 +817,11 @@ function button_DatePicker_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 MDRTdatePicker
+
+
+% --- Executes on button press in uibutton_specialPlots.
+function uibutton_specialPlots_Callback(hObject, eventdata, handles)
+% hObject    handle to uibutton_specialPlots (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+specialPlotLauncher
