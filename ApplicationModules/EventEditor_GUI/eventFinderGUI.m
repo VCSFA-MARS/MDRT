@@ -67,6 +67,10 @@ hs.infoString = uicontrol(hs.fig, 'Style', 'text', ...
 %% Contents of getUniqueEventsFromDelim function
 [t, c1, c2, uc1, uc2] = getUniqueEventsFromDelim;
 
+if isempty(t)
+  close(hs.fig)
+  return
+end
 
 %%
                     

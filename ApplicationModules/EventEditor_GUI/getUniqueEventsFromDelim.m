@@ -25,6 +25,11 @@ textParseString = '%s %*s %*s %s %*s %s %*[^\n]';
 if isnumeric(fileName)
     % User cancelled .delim pre-parse
     disp('User cancelled file selection');
+    t = [];
+    c1 = [];
+    c2 = [];
+    uc1 = [];
+    uc2 = [];
     return
 end
 
