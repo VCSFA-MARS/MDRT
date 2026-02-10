@@ -257,7 +257,7 @@ resetGUI();
       case 'button_importFiles'
         startImport();
       otherwise
-        disp(hobj);
+        debugout(hobj);
     end
 
   end
@@ -465,9 +465,12 @@ resetGUI();
   function selectFiles()
 
     [filename, pathname, ~] = uigetfile( ...
-      {'*.delim','FCS Retrievals (*.delim)'; ...
-      '*.csv','Pad-0C Files (*.csv)'; ...
-      '*.*',  'All Files (*.*)'}, ...
+      {
+        '*.delim;*.csv', 'Pad Data Files'; % MacOS/Matlab issue: file filters
+        '*.delim','FCS Retrievals (*.delim)'; ...
+        '*.csv','Pad-0C Files (*.csv)'; ...
+        '*.*',  'All Files (*.*)'
+      }, ...
       'Pick a file', ...
       'MultiSelect', 'on');
 
@@ -525,6 +528,6 @@ resetGUI();
             hs.checkbox_legacy_importer.Value);
 
         end
-    end
+    end % startImport
 
 end % main function

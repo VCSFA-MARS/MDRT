@@ -1,0 +1,37 @@
+{
+	"graph":{
+		"name":"NG-14 Scrub Vehicle Suport - Sep 30, 2020 to Oct 02, 2020",
+		"subplots":[
+			"Flow Control",
+			"Temperatures"
+		],
+		"streams":[
+			{
+				"toPlot":[
+					"LO2 Flow Control Max Value",
+					"LO2 Flow Control Min Value",
+					"2015 LO2 FM-2015 Coriolis Meter Filtered",
+					"2016 LO2 FM-2016 Coriolis Meter Filtered"
+				]
+			},
+			{
+				"toPlot":[
+					"2118 LO2 TC-2118 Temp Sensor Mon",
+					"2119 LO2 TC-2119 Temp Sensor Mon"
+				]
+			}
+		],
+		"time":{
+			"isStartTimeUTC":true,
+			"isStartTimeAuto":true,
+			"startTime":{
+			},
+			"startTag":"none",
+			"isStopTimeUTC":true,
+			"isStopTimeAuto":true,
+			"stopTime":{
+			},
+			"stopTag":"none"
+		}
+	}
+}
