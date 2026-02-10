@@ -1,3 +1,7 @@
+Version 0.8.1:
+ - BugFix: import file selection filters not working on some OS
+ - BugFix: Valve Timing config fixed for 05C331, 332, and 335
+
 Version 0.8.0:
  - removed development files from tree
  - Moved dataBrowserGUI to permanent home
