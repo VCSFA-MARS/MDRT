@@ -339,7 +339,7 @@ resetGUI();
     for j = 1:numel(guessFile)
 
       % Open guess file to read a few lines
-      fid = fopen(guessFile{j});
+      fid = fopen(guessFile{j}, 'r', 'n', 'utf-8');
       finfo = dir(guessFile{j});
       [~, ~, ext] = fileparts(finfo.name);
 

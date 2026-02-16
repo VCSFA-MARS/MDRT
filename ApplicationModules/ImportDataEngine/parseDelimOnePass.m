@@ -229,7 +229,7 @@ while ~feof(fid)
             
         from_file.fd.ts = merged_ts;
         fd = from_file.fd;
-        save(this_fullfile, 'fd');
+        save(this_fullfile, 'fd', '-v7.3');
 
         
     end
