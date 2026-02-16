@@ -15,6 +15,8 @@ function [ figureHandle ] = makeMDRTPlotFigure( graph, graphNumber )
 % MDRTAdvanceMenu, on, off
 % FigureOptions, cellArrayOfValidKeyValuePairs
 
+ENABLE_NEW_UI = false;
+
 passGraph = true;
 if ~nargin
     passGraph = false; 
@@ -25,7 +27,12 @@ end
 % Generate new figure and handle. Set up for printing
 % -------------------------------------------------------------------------
     
-    figureHandle = figure();
+    
+if matlab_newer_than('2017a') && ENABLE_NEW_UI
+  figureHandle = uifigure();
+else
+  figureHandle = figure();
+end
     debugout(sprintf('Created MDRtFigure: %d', figureHandle.Number))
     
     % Add graph structure to appdata
@@ -46,9 +53,13 @@ end
     % Set plot/paper size and orientation if needed
     orient('landscape');
     
-    % Hide File/Save as
+    % Hide File/Save-As menu if in new uifigure
     hMenuSaveAs = findall(gcf,'tag','figMenuFileSaveAs');
-    hMenuSaveAs.Visible = 'off';
+    if ~isempty(hMenuSaveAs)
+      hMenuSaveAs.Visible = 'off';
+    end
+
+    
     
     % Override File/Save(as)
     hMenuSave   = findall(gcf,'tag','figMenuFileSave');
