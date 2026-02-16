@@ -54,8 +54,8 @@ populate_tab_tree();
 
 
 %% Right-hand Controls and MetaData
-hs.right_grid = uigridlayout(hs.fig_grid, [4,1]);
-hs.right_grid.RowHeight = {'fit', 'fit', 'fit', '1x'}
+hs.right_grid = uigridlayout(hs.fig_grid, [5,1]);
+hs.right_grid.RowHeight = {'fit', 'fit', 'fit', 'fit', '1x'}
 
 hs.meta_pane = uipanel(hs.right_grid, 'Title', 'Meta Data');
 hs.meta_grid = uigridlayout(hs.meta_pane, [8,1]);
@@ -96,7 +96,8 @@ hs.meta_grid.RowHeight = row_height;
 %% Major Buttons
 
 hs.button_convertSelectedSet = uibutton(hs.right_grid, 'Text', 'Convert Data Files to v2');
-hs.button_fixSelectedSet = uibutton(hs.right_grid, 'Text', 'Fix Selected Data Set');
+hs.button_fixSelectedSet     = uibutton(hs.right_grid, 'Text', 'Fix Selected Data Set');
+hs.button_indexSelectedSet   = uibutton(hs.right_grid, 'Text', 'Re-index Selected Data Set', 'ButtonPushedFcn', @index_selected_dataset);
 
 
 
@@ -214,10 +215,26 @@ hs.button_fixSelectedSet = uibutton(hs.right_grid, 'Text', 'Fix Selected Data Se
     function save_metadata(~,~)
         debugout(model.loaded_metadata)
         update_model_from_gui();
+        metaData = model.loaded_metadata;
         node_path = hs.tree.SelectedNodes.NodeData;
         metaDataFile = fullfile(node_path, 'data', 'metadata.mat');
+        save(metaDataFile, 'metaData', '-mat');
+    end
 
+    function index_selected_dataset(~,~)
+        debugout(model.loaded_metadata)
+        metaData = model.loaded_metadata;
+        node_path = hs.tree.SelectedNodes.NodeData;
+        metaDataFile = fullfile(node_path, 'data', 'metadata.mat');
+        fdIndexFile  = fullfile(node_path, 'data', 'AvailableFDs.mat');
 
+        [ FDList, timeSpan ] = indexTimeAndFDNames( node_path, hs.fig );
+
+        metaData.timeSpan = timeSpan;
+        metaData.fdList = FDList;
+        
+        save(metaDataFile, 'metaData', '-mat');
+        save(fdIndexFile, 'FDList');
     end
 
     function index_all_folders(~,~)
