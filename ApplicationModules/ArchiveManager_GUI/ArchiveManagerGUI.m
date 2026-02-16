@@ -1,8 +1,8 @@
-function hs = ArchiveManagerGUI(options)
-    arguments
-        options.Parent (1,1) = [];
-    end
+function hs = ArchiveManagerGUI(parentFig)
 
+if (nargin == 0)
+  parentFig = [];
+end
 
 %% Constants / Global
 FOLDER_ICON = 'folder-16x16.png';
@@ -16,7 +16,7 @@ model.auto_save = true;
 
 %% Init Figure
 
-if isempty(options.Parent)
+if isempty(parentFig)
  
     hs = struct();
     hs.fig = uifigure();
@@ -27,7 +27,7 @@ if isempty(options.Parent)
         hs.fig.Tag = 'archiveManagerFigure';
 
 else
-    hs.fig = options.Parent;
+    hs.fig = parentFig;
 end
 
 hs.fig_grid = uigridlayout(hs.fig, [1,2]);
