@@ -78,6 +78,14 @@ hs.ax = uiaxes(grid_fig );
     
     hs.quick_plot_line = stairs(hs.ax, datetime(this_fd.ts.Time, 'convertfrom', 'datenum'), this_fd.ts.Data, 'DisplayName', this_fd.FullString);
     
+    % Units label for Y Axes and Plot Title from FD FullString
+    thisUnits = this_fd.ts.DataInfo.Units;
+    hs.ax.YLabel.String = thisUnits;
+
+    thisFullString = this_fd.FullString;
+    hs.ax.Title.String = thisFullString;
+
+
     ylims = [0, max(this_fd.ts.Data) * 1.05]; % These are bad bounds setters
     if ylims == [0,0];
       ylims = [0,1];
