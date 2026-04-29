@@ -25,6 +25,7 @@ else
   hs.fig = varargin{1};
 end
 
+hs.timeline = [];
 hs.top_window = ancestor(hs.fig, 'figure');
 
 grid_fig = uigridlayout(hs.fig, [1,2]);
@@ -34,6 +35,7 @@ hs.grid_fig = grid_fig;
 %% Data Set Selection Controls
 
 hs.data_set_col_grid = uigridlayout(grid_fig, [2,1]);
+hs.data_set_col_grid.ColumnWidth = {'fit'};
 hs.tab_pane = uipanel(hs.data_set_col_grid, 'Title', 'Data Set Selection');
 hs.tab_pane_grid = uigridlayout(hs.tab_pane, [1 1]);
 hs.tabs = uitabgroup(hs.tab_pane_grid, 'SelectionChangedFcn', @populate_tab_tree);
@@ -66,12 +68,10 @@ hs.ax = uiaxes(grid_fig );
 
   function fd_selection_changed(hobj, event)
     
-    
     if isempty(hs.tree.SelectedNodes)
       % Guard against selecting an FD without a data set selcted
       return
     end
-    disp(event)
     
     fd_file = fullfile(hobj.Value);
     this_fd = load_fd_by_name(fd_file, 'isFilename', 'true', 'folder', fullfile(hs.tree.SelectedNodes.NodeData, 'data'));
@@ -87,7 +87,7 @@ hs.ax = uiaxes(grid_fig );
 
 
     ylims = [0, max(this_fd.ts.Data) * 1.05]; % These are bad bounds setters
-    if ylims == [0,0];
+    if ylims == [0,0]
       ylims = [0,1];
     end
     
@@ -110,9 +110,8 @@ hs.ax = uiaxes(grid_fig );
     time_pad = delta_t * 0.05;
     hs.ax.XLim = datetime([time_bounds(1) - time_pad, time_bounds(2) + time_pad], 'convertfrom', 'datenum');
     
-    disp(event)
-    disp(hobj)
-    
+    show_timeline_events(hs.ax, hs.timeline);
+
   end
 
   function populate_tab_tree(~, ~)
@@ -142,7 +141,6 @@ hs.ax = uiaxes(grid_fig );
   end
 
   function node_selected(hobj, event)
-    disp(event);
     set(event.PreviousSelectedNodes, 'Icon', FOLDER_ICON);
     set(event.SelectedNodes, 'Icon', FOLDER_GOOD);
     
@@ -151,11 +149,21 @@ hs.ax = uiaxes(grid_fig );
     
     metaDataFile  = fullfile(node_path, 'data', 'metadata.mat');
     fd_index_file = fullfile(node_path, 'data', 'AvailableFDs.mat');
+    timelineFile  = fullfile(node_path, 'data', 'timeline.mat');
     
     %% Data Set Selection Population
     s = load(fd_index_file);
     FDList = s.FDList;
     hs.fd_selection.set_items(FDList(:,1), FDList(:,2));
+
+    %% Timeline File
+    if exist(timelineFile, "file")
+      s = load(timelineFile);
+      hs.timeline = s.timeline;
+    else
+      hs.timeline = [];
+    end
+
     
   end
 
@@ -163,6 +171,23 @@ hs.ax = uiaxes(grid_fig );
     % fprintf('edit value: %s \t event value: %s\n', hobj.Value, event.Value);
     search_str = event.Value;
     
+  end
+
+  function show_timeline_events(hax, timeline)
+    if isempty(timeline)
+      return
+    end
+
+    if ~timeline.uset0
+      return
+    end
+
+    t0 = datetime(timeline.t0.time, 'convertfrom', 'datenum');
+
+    t0line = xline(hax, t0, '-r', timeline.t0.name);
+    t0line.LabelHorizontalAlignment = 'center';
+    t0line.LabelVerticalAlignment = 'middle';
+
   end
 
 end
