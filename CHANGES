@@ -1,3 +1,18 @@
+Version 0.9.0:
+ - Update pad-c importer to work with new csv header format + autodetect
+ - HEX liquid volume calculations and plots
+ - new PECS import script
+ - MDRT Data Browser plots t0 in graph
+ - BugFix: Matlab Version Check fixed for back compatibility
+ - NewFeature: DataBrowserGUI shows FD as title and units on y-axis
+ - ArchiveMangerGUI: added "re-index data set" feature with uiprogress
+ - indexTimeAndFDNames progressbar updated to for uifigure-based apps
+ - Stubbed out plotFromGUI for uifigure and fixed mdrt archive manager
+ - UX: import console output moved to `debugout()`
+ - BugFix: 20Gb+ data imports don't immediately crash parser at fopen
+ - BugFix: Archive Manager launches correctly from MDRT and review
+ - Merge branch 'master' into develop
+
 Version 0.8.1:
  - BugFix: import file selection filters not working on some OS
  - BugFix: Valve Timing config fixed for 05C331, 332, and 335
