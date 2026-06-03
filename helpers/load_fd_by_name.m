@@ -40,6 +40,7 @@ function fd = load_fd_by_name(fd_str, varargin)
 %% Defaults
 
 use_filename = false;
+THROW_ERRORS = true;
 
 config = getConfig;
 containing_folder = config.dataFolderPath;
@@ -56,6 +57,8 @@ for i = 1:2:length(varargin)
             containing_folder = value;
         case {'isfilename','byfilename', 'byname'}
             use_filename = value;
+        case {'quiet-errors', 'quiet'}
+            THROW_ERRORS = ~value;
     end
 end
 
@@ -90,9 +93,11 @@ filename = fullfile(containing_folder, file_str );
 
 
 %% Fail if file does not exist
-if ~exist(filename, "file")
+if ~exist(filename, "file") && THROW_ERRORS
     fprintf('File not found: %s\n', filename)
     error('Tried to load non-existant FD: %s', fd_str)
+elseif ~exist(filename, "file")
+    error('File not found: %s', filename);
 end
 
 %% Create matfile() link to file and read stored variables

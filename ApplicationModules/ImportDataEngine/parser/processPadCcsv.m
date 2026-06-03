@@ -1,4 +1,7 @@
-function processPadCcsv(fileList, destFolder, autoSkip)
+function processPadCcsv(fileList, destFolder, autoSkip, mergeFDs)
+
+META_SEP = ';';
+MERGE_FD_FILES = mergeFDs;
 
 HEADER_LINES = 1;
 disp(fileList)
@@ -17,6 +20,7 @@ for f = 1:numel(fileList)
     thisFile = fileList{f};
     fid = fopen(thisFile, 'r+');
     first_line = fgetl(fid);
+    META_SEP = auto_detect_meta_sep(first_line);
     
     chan_names = getChannelNames(first_line);
     byte_chans = getByteChannelInds(chan_names);
@@ -108,10 +112,59 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
         else
           fd.ts = timeseries(dataVect, timeVect, 'Name', fd.FullString);
         end
-
-        fd.ts.DataInfo.Units = unit_str;
         
-        save_fd_to_disk(fd, 'folder', saveTo); % defaulting to v1 disk
+        tsName = fd.ts.Name;
+        fd.ts.DataInfo.Units = unit_str;
+
+        if MERGE_FD_FILES
+          % load, merge, write?
+          try
+            disk_fd = load_fd_by_name(fd.FullString,'folder', saveTo, 'quiet-errors', true);
+            disk_ts = disk_fd.ts;
+
+            % find rows in new timeseries that are already in the data on
+            % disk. Remove duplicates from the NEW data
+
+            new_duplicate_mask = ismember(fd.ts.Time, disk_ts.Time);
+            fd.ts = fd.ts.delsample('Index', find(new_duplicate_mask));
+
+            if isempty(fd.ts.Time)
+              debugout("%s data are already on disk, skipping", fd.FullString)
+              if use_prog
+                  pp.set_completed(pp_ind, c);
+              else
+                  progressbar(c/numChans)
+              end
+              continue
+            end
+
+            if fd.ts.Time(1) > disk_ts.Time(end)
+              % these data are after data on disk
+              fd.ts = disk_ts.append(fd.ts);
+
+            else
+              % disk data are after these data
+              fd.ts = fd.ts.append(disk_ts);
+            end
+            
+            % timeseries append wipes out all other properties because matlab is terrible
+            fd.ts.DataInfo.Units = unit_str;
+            fd.ts.Name = tsName;
+
+            save_fd_to_disk(fd, 'folder', saveTo);
+
+          catch
+            % Couldn't load old FD file, assuming it was nonexistent or
+            % malformed. Writing a new, clean FD file with these data
+            save_fd_to_disk(fd, 'folder', saveTo); % defaulting to v1 disk
+          end
+          
+
+
+        else
+          save_fd_to_disk(fd, 'folder', saveTo); % defaulting to v1 disk
+        end
+        
         
         if use_prog
             pp.set_completed(pp_ind, c);
@@ -124,9 +177,9 @@ function makeFDsFromAllData(timeVect, data, chans, saveTo, skipError, varargin)
 
 end
 
-    function [fd, unit_str] = makeFdFromChanStr(chan_str)
+function [fd, unit_str] = makeFdFromChanStr(chan_str)
     fd = newFD;
-    entries = split(chan_str, ';');
+    entries = split(chan_str, META_SEP);
 
     % {'"/GSE_Systems/LC2_WALLOPS/MASTER/PowerPack_HVAC_FSM_LineChill_UnderTemp_Hysteresis{__type__=""TYPE_DOUBLE""'}
     % {'complex=""lc2""'                                                                                            }
@@ -227,7 +280,13 @@ function timeVect = makeTimeVect(data_cell)
     timeVect = datenum(data_cell, 'yyyy-mm-ddTHH:MM:SS.FFF');
 end
 
-
+function meta_sep = auto_detect_meta_sep(first_line)
+  if contains(first_line, ';')
+    meta_sep = ';';
+  else
+    meta_sep = ',';
+  end
+end
 
 function fix_csv_newline(original_file, temp_file, start_date_strs, header_lines, varargin)
     % Reads a csv file, replaces bad newline characters and writes to a 
@@ -298,13 +357,17 @@ function fix_csv_newline(original_file, temp_file, start_date_strs, header_lines
 
 end
 
-
-
 function channels = getChannelNames(headerStr)
-
-    channels = textscan(headerStr, '%s', 'delimiter', ',');
+    switch META_SEP
+      case ','
+        % %q ignores commas inside "" but strips escape quotes inside the
+        % token
+        channels = textscan(headerStr, '%q', 'delimiter', ',');
+      case ';'
+        channels = textscan(headerStr, '%s', 'delimiter', ',');
+    end
+    
     channels = channels{1};
-
 end
 
 function byte_chan_inds = getByteChannelInds(chan_names)
@@ -312,9 +375,18 @@ function byte_chan_inds = getByteChannelInds(chan_names)
 end
 
 function type_str = getChanType(chan_name)
-    tok = regexp(chan_name, '__type__=""(.*?)""', 'match');
-    start_pos = strfind(tok{:}, '=') + 3;
-    type_str = tok{1}((start_pos:end-2));
+    switch META_SEP
+      case ','
+        % double quotes get removed when header is parsed with %q
+        tok = regexp(chan_name, '__type__="(.*?)"', 'match');
+        num_quotes = 1;
+      case ';'
+        tok = regexp(chan_name, '__type__=""(.*?)""', 'match');
+        num_quotes = 2;
+    end
+    
+    start_pos = strfind(tok{:}, '=') + 1 + num_quotes;
+    type_str = tok{1}((start_pos:end-num_quotes));
 end
 
 function start_time = get_starting_datenum_from_file(fileID, header_lines, rewind_at_end)
@@ -359,7 +431,6 @@ function start_time = get_starting_datenum_from_file(fileID, header_lines, rewin
         frewind(fileID);
     end
 end
-
 
 function jump_to_first_data_in_file(fileID, header_lines)
     % move the file pointer to the first line after the specified
