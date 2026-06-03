@@ -123,7 +123,7 @@ for i = 1:length(filenameCellList)
 
         % PT - TC - FM - LS
         % For all analog measurement types (I think) we dump into a 
-        % timeseries
+
         
         % Name the time series, add time as UTC ?
         
@@ -249,7 +249,7 @@ for i = 1:length(filenameCellList)
 
         tic;
             info = getDataParams(shortNameCell{1});
-        disp(sprintf('Calling getDataParams took: %f seconds',toc));
+        debugout(sprintf('Calling getDataParams took: %f seconds',toc));
 
 
         % Different handlings for different retrieval types
@@ -265,14 +265,14 @@ for i = 1:length(filenameCellList)
                 
                 try
 
-                    disp('Processing flow control set-points');
+                    debugout('Processing flow control set-points');
 
 
                     % Generate normal time series        
                     tic;
                         % ts = timeseries( sscanf(sprintf('%s', valueCell{:,1}),'%f'), timeVect, 'Name', info.FullString);
                         ts = timeseries( str2double(valueCell), timeVect, 'Name', info.FullString);
-                    disp(sprintf('Generating timeseries took: %f seconds',toc));            
+                    debugout(sprintf('Generating timeseries took: %f seconds',toc));            
 
                     fd = struct('ID',           info.ID,...
                                 'Type',         info.Type,...
@@ -294,7 +294,7 @@ for i = 1:length(filenameCellList)
 
                             saveFDtoDisk(fd)
 
-                    disp(sprintf('Writing data to disk took: %f seconds',toc));
+                    debugout(sprintf('Writing data to disk took: %f seconds',toc));
 
                     disp(sprintf('Finished file %i of %i',i,length(filenameCellList)));
   
@@ -312,7 +312,7 @@ for i = 1:length(filenameCellList)
                 % ---------------------------------------------------------
                 
                 %   make timeseries for this data set:
-                disp('Processing Standard FD Data')
+                debugout('Processing Standard FD Data')
                 RAW_FLAG = false;
 
                 % Parse and assign engineering units to timeseries
@@ -327,7 +327,7 @@ for i = 1:length(filenameCellList)
                         thisUnit = 'RAW';
                         RAW_FLAG = true;
                         RAW_Suffix = ' RAW';
-                        disp('Processing RAW Data')
+                        debugout('Processing RAW Data')
                     otherwise
                         thisUnit = unitCell{1};
                 end                
@@ -349,13 +349,13 @@ for i = 1:length(filenameCellList)
                             % all be true.
                             ts = timeseries( cellfun(@isempty,regexp(valueCell,'^0')), timeVect, 'Name', info.FullString);
                             
-                            disp('Discrete data type detected')
+                            debugout('Discrete data type detected')
                             
                         case {'CR', 'SC', 'BA'}
                             % Ignore control stuff that is non-numerical
                             % for now. System Command and Command Response
                             
-                            disp('File contains data of type ''CR'' - Skipping file ')
+                            debugout('File contains data of type ''CR'' - Skipping file ')
                             skipThisFile = true;
                             
                         case { 'RAW' }
@@ -398,7 +398,7 @@ for i = 1:length(filenameCellList)
                 else
 
                     %   ts.Name = info.FullString;
-                    disp(sprintf('Generating timeseries took: %f seconds',toc));
+                    debugout(sprintf('Generating timeseries took: %f seconds',toc));
 
                     tic;
                         fd = struct('ID', info.ID,...
@@ -408,18 +408,18 @@ for i = 1:length(filenameCellList)
                                     'ts', ts,...
                                     'isValve', false);
 
-                    disp(sprintf('Generating dataStream structure took: %f seconds',toc));
+                    debugout(sprintf('Generating dataStream structure took: %f seconds',toc));
 
 
                     % write timeSeries to disk as efficient 'mat' format
                     tic;
                         saveFDtoDisk(fd)
-                    disp(sprintf('Writing data to disk took: %f seconds',toc));
+                    debugout(sprintf('Writing data to disk took: %f seconds',toc));
 
 
 
-                    disp(sprintf('Finished file %i of %i',i,length(filenameCellList)));
-                    disp(sprintf('Processing file took: %f seconds',toc(tstart)));
+                    debugout(sprintf('Finished file %i of %i',i,length(filenameCellList)));
+                    debugout(sprintf('Processing file took: %f seconds',toc(tstart)));
                 
                 end
         end
@@ -596,7 +596,7 @@ clear fid filenameCellList i longNameCell shortNameCell timeCell timeVect valueC
                     % users to debug - only if not
                     % deployed!
                     if ~isdeployed
-                        disp('Copying data to main workspace for debugging');
+                        debugout('Copying data to main workspace for debugging');
 
                         assignin('base' , 'parseValue', valueCell );
                         assignin('base' , 'parseTime',  timeVect  );

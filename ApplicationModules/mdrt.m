@@ -23,7 +23,7 @@ dataBrowserGUI( tab1 );
 % setTimeAxesLimits( tab1a );
 dataImportGUI( tab2 );
 valveTimingGUI( tab2a );
-ArchiveManagerGUI( Parent=tab3 );
+ArchiveManagerGUI( tab3 );
 % makeDataComparisonGUI( tab4 );
 SettingsGUI( tab5 );
 

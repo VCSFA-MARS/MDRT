@@ -127,7 +127,7 @@ end
                         
 % Open the file selected above
 % -------------------------------------------------------------------------
-fid = fopen(fileName);
+fid = fopen(fileName, 'r', 'n', 'UTF-8');
 debugout(fileName);
 
 %% Get lines in data file to chunk large files

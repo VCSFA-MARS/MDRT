@@ -1,4 +1,4 @@
-function [ availFDs, timespan, varargout ] = indexTimeAndFDNames( path )
+function [ availFDs, timespan, varargout ] = indexTimeAndFDNames( path, prog_bar_parent )
 %indexTimeAndFDNames 
 %
 %   [ availFDs, timespan ] =indexTimeAndFDNames( path )
@@ -22,6 +22,11 @@ function [ availFDs, timespan, varargout ] = indexTimeAndFDNames( path )
 %
 %   N. Counts, Spaceport Support Services, 2017
 
+% Default value for prog_bar_parent for back-compatability
+if nargin == 1
+  prog_bar_parent = [];
+end
+
     filesOfType = dir( fullfile( path, '*.mat') );
     
     N = numel(filesOfType);
@@ -33,7 +38,7 @@ function [ availFDs, timespan, varargout ] = indexTimeAndFDNames( path )
     
     if N % Files are found!
     
-        progressbar('Retrieving Available FDs');
+        pb = make_progress_bar('Retrieving Available FDs', prog_bar_parent);
 
         availFDs {N,2} = '';
 
@@ -80,7 +85,7 @@ function [ availFDs, timespan, varargout ] = indexTimeAndFDNames( path )
                 
             end
 
-            progressbar(i/N);
+            update_progress(pb, i/N, filesOfType(i).name);
 
         end
 
@@ -97,5 +102,35 @@ function [ availFDs, timespan, varargout ] = indexTimeAndFDNames( path )
         
     end
         
+  function pb = make_progress_bar(message, parent)
+    pb = [];
+
+    if isempty(parent)
+      progressbar(message);
+    else
+      pb = uiprogressdlg(parent, 'Title', 'Indexing Selected Data Set');
+    end
+  end
+
+
+  function update_progress(pb, percent, message)
+    if nargin < 3
+      message = '';
+    end
+
+    if isempty(pb)
+      progressbar(percent);
+      return
+    end
+
+    pb.Value = percent;
+    
+    if ~isempty(message)
+      pb.Message = message;
+    end
+
+  end
+
+
 end
 
