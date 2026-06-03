@@ -11,13 +11,22 @@ function is_newer = matlab_newer_than(ver)
 
 % Counts, 2025
 
+% On 2017a: '9.2.0.1226206 (R2017a) Update 4'
+% On 2024b: '24.1.0.3050227 (R2024a) Update 8'
+
+
+REXP_REL = '([rR]\d{4}[ab])';
+REXP_VER = '^\d+.\d+';
 
 [v,d] = version();
 
 this_year = str2double(d(end-3:end));
-this_rel = v(end-6:end-1);
 
-[~, ~, ~, vstr] = regexp(v, '^\d+.\d+');
+[~, ~, ~, rel_match] = regexp(v, REXP_REL);
+this_rel = rel_match{1};
+
+
+[~, ~, ~, vstr] = regexp(v, REXP_VER);
 this_ver = str2double(vstr);
 
 
@@ -73,7 +82,11 @@ return
     end
 
     function is_newer = check_by_release(rel)
-        is_newer = string(lower(this_rel)) >= lower(rel);
+      % Handle missing 'R' in 'R2017b' gracefully
+      if ~startsWith(rel, 'r')
+        rel = ['r' rel];
+      end
+      is_newer = string(lower(this_rel)) >= lower(rel);
     end
 
 end

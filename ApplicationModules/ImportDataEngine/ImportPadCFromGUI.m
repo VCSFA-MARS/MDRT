@@ -1,4 +1,4 @@
-function ImportPadCFromGUI( filesIn, metaData, folderName, autoSkip )
+function ImportPadCFromGUI( filesIn, metaData, folderName, autoSkip, mergeFDs )
 %ImportFromGUI 
 %   Automates the data importing process.
 %
@@ -101,7 +101,7 @@ end
 
 %% Parse .csv files
 
-processPadCcsv(workingFiles, config.workingDataPath, autoSkip);
+processPadCcsv(workingFiles, config.workingDataPath, autoSkip, mergeFDs);
 
 
 %% Start Indexing!
