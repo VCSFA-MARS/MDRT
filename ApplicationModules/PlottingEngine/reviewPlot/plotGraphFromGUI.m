@@ -218,6 +218,7 @@ for graphNumber = 1:numberOfGraphs
     
     % Reset axes label variables
     axesTypeCell = [];
+    axesUnitCell = [];
     isNormalSubplot = [];
     
     for subPlotNumber = 1:numberOfSubplots
@@ -241,6 +242,7 @@ for graphNumber = 1:numberOfGraphs
             % Build the list of variable types for axes label generation
             for i = 1:length(s)
                 axesTypeCell = [axesTypeCell, {s(i).fd.Type}];
+                axesUnitCell = [axesUnitCell, {s(i).fd.ts.DataInfo.Units}];
             end
         
         catch
@@ -310,7 +312,7 @@ for graphNumber = 1:numberOfGraphs
 
 
             % ylabel(subPlotAxes(subPlotNumber),'Temperature (^oF)')
-                ylabel(subPlotAxes(subPlotNumber), axesLabelStringFromSensorType(axesTypeCell));
+                ylabel(subPlotAxes(subPlotNumber), axesLabelStringFromSensorType(axesTypeCell, axesUnitCell));
 
 
             % Display major and minor grids
@@ -344,6 +346,7 @@ for graphNumber = 1:numberOfGraphs
 
             % Reset any subplot specific loop variables
                 axesTypeCell = [];
+                axesUnitCell = [];
                 clear s
 
                 if subPlotNumber == numberOfSubplots
@@ -433,6 +436,9 @@ for graphNumber = 1:numberOfGraphs
                 if ismember(y_upper, commonStateLimits) && (y_lower == 0)
                     y_upper = y_upper + 0.1;
                     y_lower = y_lower - 0.1;
+                    subPlotAxes(i).YLim = [y_lower, y_upper];
+                else
+                    y_upper = y_upper*1.05;
                     subPlotAxes(i).YLim = [y_lower, y_upper];
                 end
             end

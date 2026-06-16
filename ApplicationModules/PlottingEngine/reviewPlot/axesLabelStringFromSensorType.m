@@ -1,9 +1,15 @@
-function [ axesLabelString ] = axesLabelStringFromSensorType( typeArray )
+function [ axesLabelString ] = axesLabelStringFromSensorType( typeArray, varargin )
 %axesLabelStringFromSensorType ( typeArray )
 %   [ axesLabelString ] = axesLabelStringFromSensorType( typeArray )
 %
 %
 %
+
+if nargin == 2
+    unitArray = varargin{1};
+else
+    unitArray = [];
+end
 
 %Play nice with the users
 typeArray = upper(typeArray);
@@ -20,25 +26,39 @@ unknownFlag = false;
 firstLabel = true;
 
 labels = [];
+units = [];
 axesLabelString = '';
+axesUnitString = '';
 
 for i = 1:length(typeArray)
-    switch typeArray{i}
-        case 'PT'
-            ptFlag = true;
-        case 'TC'
-            tcFlag = true;
-        case 'FM'
-            fmFlag = true;
-        case 'LS'
-            lsFlag = true;
-        case {'DCVNC' 'DCVNO'}
-            vsFlag = true;
-        case {'PCVNC' 'PCVNO'}
-            vpFlag = true;
-        otherwise
-            unknownFlag = true;
+    if ~isempty(unitArray)
+        switch lower(unitArray{i})
+            case {'pa', 'paa', 'kpa', 'kpaa', 'mpa', 'mpaa', 'psi', 'psid', 'psia'}
+                ptFlag = true;
+                if ~contains(axesUnitString, unitArray{i})
+                    axesUnitString = [axesUnitString ', ' unitArray{i}];
+                end
+                
+        end
+    else
+        switch typeArray{i}
+            case 'PT'
+                ptFlag = true;
+            case 'TC'
+                tcFlag = true;
+            case 'FM'
+                fmFlag = true;
+            case 'LS'
+                lsFlag = true;
+            case {'DCVNC' 'DCVNO'}
+                vsFlag = true;
+            case {'PCVNC' 'PCVNO'}
+                vpFlag = true;
+            otherwise
+                unknownFlag = true;
+        end
     end
+    
 end
 
     if (ptFlag);	labels = [labels {'Pressure'}];        end
@@ -62,6 +82,16 @@ for i = 1:length(labels)
     axesLabelString = [axesLabelString, labels{i}];
 
 end
+
+if ~isempty(axesUnitString)
+    if strcmpi(axesUnitString(1), ',')
+        axesUnitString(1) = [];
+    end
+
+    axesUnitString = strtrim(axesUnitString);
+    axesLabelString = sprintf('%s (%s)', axesLabelString, axesUnitString);
+end
+
     
 end
 
