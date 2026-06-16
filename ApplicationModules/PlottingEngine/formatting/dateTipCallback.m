@@ -7,17 +7,19 @@ function output_txt = dateTipCallback(obj,event_obj)
 pos = get(event_obj,'Position');
 
 % Y Value precision scaling/formatting
-xFormatString = '%1.2e';
-if (pos(2) < 99999)
+xFormatString = '%.0f';
+if (pos(2) < 999999)
+    xFormatString = '.0f';
+elseif (pos(2) < 99999)
     xFormatString = '%3.2f';
 elseif (pos(2)) < 10;
     xFormatString = '%2.2f';
 elseif (pos(2)) < 500;
     xFormatString = '%3.1f';
 elseif (pos(2)) < 999
-    xFormatString = '%4f';   
+    xFormatString = '%4f';
 elseif (pos(2)) < 9999
-    xFormatString = '%5f';   
+    xFormatString = '%5f';
 end
 
 output_txt = {['X: ', datestr(pos(1),'HH:MM:SS.FFF') ],...
@@ -25,6 +27,6 @@ output_txt = {['X: ', datestr(pos(1),'HH:MM:SS.FFF') ],...
 
 % If there is a Z-coordinate in the position, display it as well
 if length(pos) > 2
-%     output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
+    %     output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
 end
 
